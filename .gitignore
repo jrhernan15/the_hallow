@@ -18,3 +18,7 @@ package-lock.json
 
 # Misc
 *.bak
+
+# Scratch / process artifacts (do not commit)
+uploads/
+screenshots/

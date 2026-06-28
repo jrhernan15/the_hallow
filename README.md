@@ -1,27 +1,33 @@
 # The Hollow — Cocktail Menu
 
-A self-contained cocktail menu and recipe book for the Hernandez House Bar.
-Open `index.html` in any browser to view it. No internet, server, or
-build step required — just double-click the file.
+A cocktail menu and recipe book for the Hernandez House Bar, served on the home
+network so anyone can pull it up on their phone at `http://<your-nuc>/`.
+See **[DEPLOY.md](DEPLOY.md)** for hosting.
 
 ## Files
 
-| File | What it is | Do you edit it? |
+| File | What it is | Edit it? |
 | --- | --- | --- |
-| `index.html` | The website (layout, styling, search, filters, print) | Rarely |
-| `recipes.js` | **The menu data — all the drinks** | **Yes, this is the one** |
-| `README.md` | This guide | — |
+| `cocktails.js` | **The menu data — all the drinks** | **Yes — this is the one** |
+| `index.html` | The page itself (a Claude Design component) | Rarely |
+| `scale.js` | Batch-scaling helper (e.g. double/triple a recipe) | No |
+| `support.js` | Generated React runtime — **do not edit** | No |
+| `assets/` | Logo, spirit artwork, and a local copy of React | No |
+| `deploy/Caddyfile`, `DEPLOY.md` | Hosting config + setup guide | Setup only |
 
-The website reads its drinks from `recipes.js`. To change the menu you only
-ever touch `recipes.js`, save it, and refresh the page in your browser.
+To change the menu you only ever touch `cocktails.js`.
+
+> **Heads up:** this version must be **served over the network** (see DEPLOY.md),
+> not opened by double-clicking the file. The page loads its data as a browser
+> module, which the `file://` protocol blocks.
 
 ## Add a drink
 
-1. Open `recipes.js` in any text editor.
-2. Copy the template block from the comment at the top of the file.
-3. Paste it inside the `[ ... ]` list — put it after another drink's `},`.
+1. Open `cocktails.js` in any text editor.
+2. Copy an existing `{ ... }` block.
+3. Paste it inside the `[ ... ]` list, after another drink's `},`.
 4. Fill in the fields, **keep the trailing comma** after the closing `}`.
-5. Save, then refresh the page.
+5. Get the file onto the server and refresh (see DEPLOY.md → "Updating the menu").
 
 A drink looks like this:
 
@@ -30,7 +36,7 @@ A drink looks like this:
   name:     "Gimlet",
   spirit:   "Gin",                 // section + Spirit filter
   base:     "Gin",                 // little label above the title
-  tags:     ["Sour/Tart","Citrus"],// Flavor chips (must match ALL selected)
+  tags:     ["Sour/Tart","Citrus"],// Flavor chips
   build:    "Shaken",              // Stirred | Shaken | Built | Muddled
   glass:    "Coupe",
   occasion: "Anytime",             // Aperitif | Anytime | Brunch | Nightcap | Digestif
@@ -53,8 +59,8 @@ Delete its entire `{ ... },` block (including the trailing comma) and save.
 
 ## Recommended field values
 
-Using a brand-new value is fine — it still appears and gets its own filter chip.
-These are just the ones already in use, in display order:
+A brand-new value is fine — it still appears and gets its own filter chip.
+These are just the ones already in use:
 
 - **spirit:** Gin, Bourbon, Rye, Tequila, Rum, Vodka, Cognac, Aperitivo
 - **tags (flavor):** Spirit-forward, Bitter, Sour/Tart, Sweet, Herbal, Floral, Citrus, Fruity, Refreshing/Long, Creamy/Rich
@@ -62,22 +68,14 @@ These are just the ones already in use, in display order:
 - **glass:** Rocks, Coupe, Highball, Collins, Copper mug, Mug, Julep cup, Wine glass
 - **occasion:** Aperitif, Anytime, Brunch, Nightcap, Digestif
 
-To change the **order** sections and filters appear in, edit the `GROUPS` list
-inside `index.html`.
-
 ## Handy fraction glyphs
 
 Copy/paste as needed: `½  ⅓  ⅔  ¼  ¾  ⅛  ⅙`
 
 ## Common mistakes
 
-- **Card didn't show up?** You probably missed a comma, or a quote isn't closed.
-  The page shows a "Couldn't load recipes.js" message if a typo breaks the file —
-  fix the punctuation and refresh.
+- **Card didn't show up?** You probably missed a comma or left a quote unclosed.
+  After editing `cocktails.js`, check the browser console (F12) — a syntax error
+  there means a punctuation slip. Fix it and refresh.
 - Keep quotes straight (`"`), and don't delete the `[` at the top or `];` at the
   bottom of the list.
-
-## Printing
-
-Use the **Print menu** button (or your browser's print). The print layout
-automatically expands every recipe and drops the search/filter controls.

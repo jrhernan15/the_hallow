@@ -1,778 +1,810 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Hollow — Hernandez House Bar</title>
+<!-- React vendored locally so the page works on the LAN without internet -->
+<script src="assets/vendor/react.production.min.js"></script>
+<script src="assets/vendor/react-dom.production.min.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root{
-    /* paper-warm base, sage + oak from V2, deeper forest accent, birch hairline */
-    --bg:#F7F4ED;
-    --bg-2:#EFEADF;
-    --card:#FBF9F3;
-    --ink:#262420;
-    --ink-soft:#5C584D;
-    --ink-faint:#8A8474;
-    --sage:#7E9070;
-    --sage-deep:#4F6243;
-    --sage-pale:#E6EADC;
-    --sage-line:#B9C6AC;
-    --forest:#2F3D2C;          /* deep hunter-green accent — used sparingly */
-    --oak:#AD7C44;
-    --oak-soft:#C79A60;
-    --birch:#E8E4DC;           /* whisper of birch-gray for hairlines + bands */
-    --line:#DDD6C7;
-    --shadow:0 1px 2px rgba(40,36,28,.05), 0 8px 24px rgba(40,36,28,.06);
-  }
-
   *{box-sizing:border-box;}
   html{-webkit-text-size-adjust:100%;}
-  body{
-    margin:0;
-    color:var(--ink);
-    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-    font-size:16px;
-    line-height:1.55;
-    -webkit-font-smoothing:antialiased;
-    /* very faint linen grain over the paper-warm ground — restrained */
-    background-color:var(--bg);
-    background-image:
-      repeating-linear-gradient(135deg, rgba(47,61,44,.014) 0 1px, transparent 1px 7px),
-      repeating-linear-gradient(45deg,  rgba(47,61,44,.010) 0 1px, transparent 1px 7px);
+  body{margin:0;-webkit-font-smoothing:antialiased;}
+  input[type=search]::-webkit-search-cancel-button{cursor:pointer;}
+  @keyframes hollowPulse{0%{box-shadow:0 0 0 0 var(--accent);}100%{box-shadow:0 0 0 10px transparent;}}
+
+  @media (max-width: 600px){
+    [data-header]{padding-top:22px !important;}
+    [data-toolbar]{padding:9px 12px 10px !important;gap:8px !important;}
+    [data-search]{flex:1 1 100% !important;order:-1 !important;min-width:0 !important;}
+    [data-surprise]{flex:1 1 auto !important;justify-content:center !important;}
+    [data-blabel]{position:absolute !important;width:1px !important;height:1px !important;overflow:hidden !important;clip:rect(0 0 0 0) !important;}
+    [data-ordersbtn]{padding:0 !important;width:42px !important;height:42px !important;justify-content:center !important;gap:0 !important;}
+    [data-summary]{padding-left:12px !important;padding-right:12px !important;}
+    [data-filterwrap]{padding:0 12px !important;margin-top:6px !important;}
+    [data-filterpanel]{border-radius:14px !important;padding:2px 13px 11px !important;}
+    [data-grid]{padding:0 12px !important;gap:13px !important;margin-top:12px !important;}
+    [data-cardhead]{padding:16px 16px 10px !important;}
+    [data-expandrow]{padding:0 16px 14px !important;}
+    [data-cardorder]{padding:10px 16px !important;}
+    [data-detail]{padding-left:16px !important;padding-right:16px !important;}
+    [data-modalwrap]{padding:14px !important;align-items:flex-end !important;}
+    [data-modal]{border-radius:18px 18px 0 0 !important;padding:20px 18px calc(18px + env(safe-area-inset-bottom)) !important;}
+  }
+  @media (min-width: 601px) and (max-width: 980px){
+    [data-grid]{padding-left:clamp(14px,2.4vw,18px) !important;padding-right:clamp(14px,2.4vw,18px) !important;}
   }
 
-  /* ---------- Header / masthead ---------- */
-  header.site{
-    max-width:1160px;
-    margin:0 auto;
-    padding:46px 24px 14px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
-    gap:0;
   }
-  .botmark{
-    color:var(--sage-deep);
-    line-height:0;
-    margin-bottom:14px;
-  }
-  .botmark svg{width:40px;height:auto;display:block;}
-  .wordmark{
-    font-family:'Fraunces',Georgia,serif;
-    font-weight:500;
-    font-size:clamp(40px,8.5vw,82px);
-    line-height:.98;
-    margin:0;
-    letter-spacing:.18em;
-    /* letterspacing pushes text right; nudge back so it stays optically centered */
-    text-indent:.18em;
-    color:var(--forest);
-  }
-  .tagline{
-    margin:14px 0 0;
-    font-size:11.5px;
-    letter-spacing:.34em;
-    text-transform:uppercase;
-    font-weight:600;
-    color:var(--oak);
-    text-indent:.34em;
-  }
-  /* short botanical rule echoing the section dividers */
-  .masthead-rule{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:12px;
-    width:min(280px,72vw);
-    margin:18px 0 0;
-    color:var(--sage);
-  }
-  .masthead-rule .line{
-    flex:1;height:1px;
-    background:linear-gradient(90deg,transparent,var(--sage-line));
-  }
-  .masthead-rule .line.r{background:linear-gradient(90deg,var(--sage-line),transparent);}
-  .masthead-rule svg{width:42px;height:16px;flex:none;}
-  p.lede{
-    margin:18px auto 0;
-    max-width:52ch;
-    color:var(--ink-soft);
-    font-size:15px;
-  }
-  .head-actions{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:16px;
-    margin-top:22px;
-    flex-wrap:wrap;
-  }
-  button.print-btn{
-    font-family:'Inter',sans-serif;
-    font-size:13px;
-    font-weight:600;
-    letter-spacing:.02em;
-    color:#F7F4EB;
-    background:var(--forest);
-    border:none;
-    border-radius:999px;
-    padding:11px 20px;
-    cursor:pointer;
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    transition:background .16s ease, transform .08s ease;
-    box-shadow:var(--shadow);
-  }
-  button.print-btn:hover{background:#243019;}
-  button.print-btn:active{transform:translateY(1px);}
-  .count-pill{
-    font-size:12.5px;
-    color:var(--ink-soft);
-    letter-spacing:.02em;
-  }
-  .count-pill b{color:var(--ink);font-weight:600;}
-
-  /* ---------- Controls ---------- */
-  .controls{
-    max-width:1160px;
-    margin:18px auto 0;
-    padding:0 24px;
-  }
-  .controls-inner{
-    background:var(--bg-2);
-    border:1px solid var(--birch);
-    border-radius:18px;
-    padding:18px 20px 16px;
-  }
-  .search-row{
-    display:flex;
-    gap:12px;
-    align-items:center;
-    margin-bottom:6px;
-  }
-  .search-wrap{position:relative;flex:1;min-width:0;}
-  .search-wrap svg{
-    position:absolute;left:14px;top:50%;transform:translateY(-50%);
-    width:16px;height:16px;color:var(--ink-faint);pointer-events:none;
-  }
-  input#search{
-    width:100%;
-    font-family:'Inter',sans-serif;
-    font-size:15px;
-    color:var(--ink);
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:11px;
-    padding:11px 14px 11px 38px;
-    outline:none;
-    transition:border-color .15s ease, box-shadow .15s ease;
-  }
-  input#search:focus{
-    border-color:var(--sage);
-    box-shadow:0 0 0 3px var(--sage-pale);
-  }
-  input#search::placeholder{color:var(--ink-faint);}
-  button.clear-all{
-    font-size:13px;font-weight:500;
-    color:var(--ink-soft);
-    background:transparent;
-    border:1px solid var(--line);
-    border-radius:11px;
-    padding:10px 14px;
-    cursor:pointer;
-    white-space:nowrap;
-    transition:all .14s ease;
-  }
-  button.clear-all:hover{border-color:var(--oak);color:var(--oak);}
-  button.clear-all[hidden]{display:none;}
-
-  .filter-group{
-    display:flex;
-    align-items:baseline;
-    gap:10px 12px;
-    padding:11px 0;
-    border-top:1px solid var(--birch);
-    flex-wrap:wrap;
-  }
-  .filter-group:first-of-type{border-top:1px solid var(--birch);margin-top:8px;}
-  .group-label{
-    font-size:11px;
-    letter-spacing:.16em;
-    text-transform:uppercase;
-    font-weight:600;
-    color:var(--ink-faint);
-    width:78px;
-    flex:none;
-    padding-top:3px;
-  }
-  .group-label .mode-hint{
-    display:block;
-    font-size:9px;
-    letter-spacing:.12em;
-    color:var(--oak);
-    font-weight:600;
-    margin-top:2px;
-  }
-  .chips{display:flex;flex-wrap:wrap;gap:7px;}
-  .chip{
-    font-family:'Inter',sans-serif;
-    font-size:12.5px;
-    font-weight:500;
-    color:var(--ink-soft);
-    background:var(--card);
-    border:1px solid var(--sage-line);
-    border-radius:999px;
-    padding:5.5px 13px;
-    cursor:pointer;
-    transition:all .13s ease;
-    user-select:none;
-    line-height:1.3;
-  }
-  .chip:hover{border-color:var(--forest);color:var(--ink);}
-  .chip.active{
-    background:var(--forest);
-    border-color:var(--forest);
-    color:#F4F1E6;
-  }
-
-  /* ---------- Grid ---------- */
-  main.grid{
-    max-width:1160px;
-    margin:18px auto 10px;
-    padding:0 24px;
-    display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(310px,1fr));
-    gap:18px;
-    align-items:start;
-  }
-  .no-results{
-    grid-column:1/-1;
-    text-align:center;
-    padding:60px 20px;
-    color:var(--ink-faint);
-    font-size:15px;
-  }
-  .no-results b{color:var(--ink-soft);font-weight:600;}
-
-  /* ---------- Spirit section divider (botanical branch) ---------- */
-  .spirit-section{
-    grid-column:1/-1;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    margin:18px 4px 0;
-  }
-  .spirit-section.first{margin-top:4px;}
-  .spirit-section .line{
-    flex:1;height:1px;
-    background:linear-gradient(90deg,transparent,var(--sage-line));
-  }
-  .spirit-section .line.r{background:linear-gradient(90deg,var(--sage-line),transparent);}
-  .spirit-section .sprig{flex:none;color:var(--sage);width:42px;height:16px;}
-  .spirit-section .sprig.flip{transform:scaleX(-1);}
-  .spirit-section .slabel{
-    flex:none;
-    font-family:'Fraunces',Georgia,serif;
-    font-weight:600;
-    font-size:17px;
-    letter-spacing:.05em;
-    color:var(--forest);
-    white-space:nowrap;
-  }
-
-  /* ---------- Card ---------- */
-  article.card{
-    position:relative;
-    background:var(--card);
-    border:1px solid var(--birch);
-    border-radius:16px;
-    box-shadow:var(--shadow);
-    overflow:hidden;
-    transition:border-color .15s ease, box-shadow .15s ease;
-  }
-  article.card:hover{border-color:var(--sage-line);}
-  article.card.open{border-color:var(--sage);}
-  /* quiet corner leaf glyph, top-right */
-  .card-leaf{
-    position:absolute;
-    top:12px;right:12px;
-    width:22px;height:22px;
-    color:var(--sage);
-    opacity:.16;
-    pointer-events:none;
-  }
-  .card-head{
-    padding:18px 20px 16px;
-    cursor:pointer;
-    position:relative;
-  }
-  .card-base{
-    font-size:10.5px;
-    letter-spacing:.18em;
-    text-transform:uppercase;
-    font-weight:600;
-    color:var(--oak);
-    display:inline-flex;
-    align-items:center;
-    gap:7px;
-  }
-  .card-base::before{
-    content:"";
-    width:13px;height:1.5px;background:var(--oak-soft);display:inline-block;
-  }
-  .card-name{
-    font-family:'Fraunces',Georgia,serif;
-    font-weight:500;
-    font-size:25px;
-    line-height:1.1;
-    margin:7px 0 0;
-    letter-spacing:-.01em;
-  }
-  .tag-pills{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 0;}
-  .tag-pill{
-    font-size:10.5px;
-    font-weight:500;
-    letter-spacing:.02em;
-    color:var(--sage-deep);
-    border:1px solid var(--sage-line);
-    background:rgba(126,144,112,.07);
-    border-radius:999px;
-    padding:2.5px 9px;
-    white-space:nowrap;
-  }
-  .card-summary{
-    margin:12px 0 0;
-    font-size:14px;
-    color:var(--ink-soft);
-    line-height:1.5;
-  }
-  .expand-row{
-    margin-top:14px;
-    display:flex;align-items:center;justify-content:space-between;
-  }
-  .expand-btn{
-    font-family:'Inter',sans-serif;
-    font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
-    color:var(--sage-deep);
-    background:none;border:none;cursor:pointer;padding:0;
-    display:inline-flex;align-items:center;gap:6px;
-  }
-  .expand-btn .sign{
-    font-size:15px;line-height:1;transition:transform .2s ease;display:inline-block;
-  }
-  article.card.open .expand-btn .sign{transform:rotate(45deg);}
-  .meta-mini{
-    font-size:11px;color:var(--ink-faint);letter-spacing:.04em;
-  }
-
-  /* ---------- Card detail ---------- */
-  .card-detail{
-    display:none;
-    padding:0 20px 20px;
-    border-top:1px solid var(--birch);
-    margin-top:2px;
-  }
-  article.card.open .card-detail{display:block;}
-  .detail-meta{
-    display:flex;flex-wrap:wrap;gap:6px 18px;
-    padding:14px 0 4px;
-    font-size:11.5px;color:var(--ink-faint);
-    letter-spacing:.03em;
-  }
-  .detail-meta span b{color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:10px;}
-  .detail-section{margin-top:14px;}
-  .detail-section h3{
-    font-family:'Inter',sans-serif;
-    font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--oak);font-weight:600;margin:0 0 7px;
-  }
-  ul.spec{list-style:none;margin:0;padding:0;}
-  ul.spec li{
-    font-size:14px;
-    padding:4px 0;
-    border-bottom:1px dotted var(--line);
-    display:flex;gap:10px;
-    color:var(--ink);
-  }
-  ul.spec li:last-child{border-bottom:none;}
-  ul.spec li .amt{
-    font-variant-numeric:tabular-nums;
-    color:var(--sage-deep);font-weight:600;
-    flex:none;min-width:62px;
-  }
-  ol.steps{margin:0;padding-left:18px;}
-  ol.steps li{font-size:13.5px;color:var(--ink-soft);padding:2px 0;line-height:1.5;}
-  .detail-line{font-size:13.5px;color:var(--ink-soft);}
-  .detail-line b{color:var(--ink);font-weight:600;}
-  .history{font-size:13px;color:var(--ink-soft);font-style:italic;line-height:1.55;}
-  .footnote{
-    margin-top:14px;
-    font-size:12px;
-    color:var(--ink-soft);
-    background:var(--sage-pale);
-    border-left:2.5px solid var(--sage);
-    border-radius:0 8px 8px 0;
-    padding:9px 12px;
-    line-height:1.5;
-  }
-  .footnote b{color:var(--sage-deep);font-weight:600;}
-
-  /* ---------- Footer ---------- */
-  footer.site{
-    max-width:1160px;margin:10px auto 50px;padding:24px;
-    text-align:center;color:var(--ink-faint);font-size:12.5px;letter-spacing:.04em;
-    border-top:1px solid var(--birch);
-  }
-  footer.site .verified{color:var(--ink-soft);}
-
-  @media (max-width:560px){
-    header.site{padding:32px 18px 12px;}
-    .controls,main.grid{padding-left:16px;padding-right:16px;}
-    main.grid{grid-template-columns:1fr;}
-    .group-label{width:100%;}
-    .spirit-section{margin-left:0;margin-right:0;}
-  }
-
-  /* ---------- Print ---------- */
-  @media print{
-    @page{margin:14mm 12mm;}
-    :root{--card:#fff;--bg:#fff;}
-    body{background:#fff !important;background-image:none !important;color:#000;font-size:11pt;}
-    header.site,.controls,.head-actions,button.print-btn,.expand-row{display:none !important;}
-    .print-title{display:block !important;}
-    .card-leaf{display:none !important;}
-    main.grid{
-      display:block;max-width:none;margin:0;padding:0;
-    }
-    /* keep the spirit dividers as section rules in print */
-    .spirit-section{
-      display:flex;margin:14pt 0 6pt;break-after:avoid;page-break-after:avoid;
-    }
-    .spirit-section .line{background:#000;height:.5pt;opacity:.4;}
-    .spirit-section .sprig{color:#444;}
-    .spirit-section .slabel{color:#000;font-size:13pt;}
-    article.card{
-      border:none;border-bottom:1px solid #bbb;border-radius:0;box-shadow:none;
-      break-inside:avoid;page-break-inside:avoid;
-      padding:0 0 10pt;margin:0 0 12pt;
-    }
-    .card-head{padding:0;cursor:default;}
-    .card-base{color:#000;}
-    .card-base::before{background:#000;}
-    .card-name{font-size:18pt;margin-top:3pt;}
-    .tag-pill{color:#000;border-color:#888;background:none;}
-    .card-summary{color:#222;}
-    .card-detail{display:block !important;border-top:none;padding:6pt 0 0;margin:0;}
-    .detail-meta{color:#333;}
-    ul.spec li{border-bottom:1px dotted #bbb;color:#000;}
-    ul.spec li .amt{color:#000;}
-    ol.steps li,.detail-line,.history{color:#222;}
-    .footnote{background:none;border-left:2px solid #000;color:#222;border-radius:0;padding:5pt 8pt;}
-    .footnote b{color:#000;}
-    footer.site{display:block !important;border-top:1px solid #000;color:#000;margin:14pt 0 0;}
-    .no-results{display:none;}
-  }
-  .print-title{display:none;text-align:center;margin-bottom:14pt;}
-  .print-title h1{font-family:'Fraunces',serif;font-weight:500;font-size:24pt;letter-spacing:.06em;margin:0;}
-  .print-title p{font-size:10pt;letter-spacing:.2em;text-transform:uppercase;color:#444;margin:6pt 0 0;}
 </style>
-</head>
-<body>
+</helmet>
 
-  <div class="print-title">
-    <h1>The Hollow</h1>
-    <p>Hernandez House Bar · Cocktail Menu</p>
-  </div>
+<div data-root style="{{ appStyle }}">
 
-  <header class="site">
-    <div class="masthead">
-      <div class="botmark" aria-hidden="true">
-        <!-- thin-line pine sprig -->
-        <svg viewBox="0 0 46 74" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M23 72 L23 8"/>
-          <path d="M23 62 L10 54"/><path d="M23 62 L36 54"/>
-          <path d="M23 53 L11 45"/><path d="M23 53 L35 45"/>
-          <path d="M23 44 L12 36"/><path d="M23 44 L34 36"/>
-          <path d="M23 35 L13 27"/><path d="M23 35 L33 27"/>
-          <path d="M23 26 L14 18"/><path d="M23 26 L32 18"/>
-          <path d="M23 13 L16 7"/><path d="M23 13 L30 7"/>
-        </svg>
-      </div>
-      <h1 class="wordmark">THE HOLLOW</h1>
-      <div class="tagline">Hernandez House Bar</div>
-      <div class="masthead-rule" aria-hidden="true">
-        <span class="line"></span>
-        <svg viewBox="0 0 46 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)">
-          <path d="M3 9 H32"/>
-          <path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/>
-          <path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/>
-          <path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/>
-        </svg>
-        <svg viewBox="0 0 46 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9 H32"/>
-          <path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/>
-          <path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/>
-          <path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/>
-        </svg>
-        <span class="line r"></span>
-      </div>
-      <p class="lede">Forty cocktails the bottles will actually make — verified spec by spec, tagged by how they taste, balanced across the whole shelf.</p>
+  <header data-chrome data-header style="max-width:1180px;margin:0 auto;padding:clamp(22px,5vw,42px) clamp(16px,4vw,24px) 6px;display:flex;flex-direction:column;align-items:center;text-align:center">
+    <div style="display:flex;align-items:center;justify-content:center;gap:18px;width:100%;max-width:760px;margin:0 auto">
+      <span style="flex:1;min-width:0;height:1px;background:linear-gradient(90deg,transparent,var(--div-line,#B9C6AC))" aria-hidden="true"></span>
+      <svg viewBox="0 0 46 18" width="52" height="20" fill="none" stroke="var(--accent2,#AD7C44)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="flex:none;transform:scaleX(-1);opacity:.85" aria-hidden="true"><path d="M3 9 H32"/><path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/><path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/><path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/></svg>
+      <img src="assets/logo.png" alt="The Hollow — Hernandez House Bar · Cocktails · Est. 2026" style="width:min(248px,52vw);height:auto;display:block;flex:none;filter:drop-shadow(0 6px 18px rgba(20,18,12,.18))">
+      <svg viewBox="0 0 46 18" width="52" height="20" fill="none" stroke="var(--accent2,#AD7C44)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="flex:none;opacity:.85" aria-hidden="true"><path d="M3 9 H32"/><path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/><path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/><path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/></svg>
+      <span style="flex:1;min-width:0;height:1px;background:linear-gradient(90deg,var(--div-line,#B9C6AC),transparent)" aria-hidden="true"></span>
     </div>
-    <div class="head-actions">
-      <button class="print-btn" onclick="window.print()" aria-label="Print menu">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-        Print menu
-      </button>
-      <div class="count-pill"><b id="shown">40</b> of <b>40</b> showing</div>
-    </div>
+    <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);margin:-1px;padding:0;border:0">The Hollow — Hernandez House Bar</h1>
   </header>
 
-  <section class="controls" aria-label="Filters">
-    <div class="controls-inner">
-      <div class="search-row">
-        <div class="search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          <input id="search" type="search" placeholder="Search by name or ingredient — try “Campari”, “mint”, “lime”…" autocomplete="off">
-        </div>
-        <button class="clear-all" id="clearAll" hidden>Clear all</button>
+  <div data-chrome style="position:sticky;top:0;z-index:30;background:var(--bg2,#EFEADF);border-bottom:1px solid var(--card-border,#E8E4DC)">
+    <div data-toolbar style="max-width:1180px;margin:0 auto;padding:11px 18px 12px;display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+      <div data-search style="position:relative;flex:1;min-width:190px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-faint,#8A8474);pointer-events:none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="search" value="{{ search }}" onChange="{{ onSearch }}" autocomplete="off" placeholder="Search drinks or ingredients…" style="width:100%;font-family:'Inter',sans-serif;font-size:15px;color:var(--ink,#262420);background:var(--field,#FBF9F3);border:1px solid var(--line,#DDD6C7);border-radius:11px;padding:11px 14px 11px 38px;outline:none;transition:border-color .15s ease,box-shadow .15s ease" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
       </div>
-      <div id="filters"></div>
+      <button type="button" data-surprise onClick="{{ onSurprise }}" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><span style="font-size:13px">✦</span>Surprise me</button>
+      <button type="button" onClick="{{ onToggleDark }}" title="Toggle dark mode" aria-label="Toggle dark mode" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border-radius:11px;border:1px solid var(--pill-line,#B9C6AC);background:var(--field,#FBF9F3);color:var(--ink-soft,#5C584D);cursor:pointer;font-size:16px;line-height:1" style-hover="border-color:var(--accent);color:var(--ink)">{{ darkIcon }}</button>
+      <button type="button" data-ordersbtn onClick="{{ onToggleOrders }}" title="The Well" aria-label="Open The Well" style="position:relative;font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-7 8z"></path><path d="M12 12v6"></path><path d="M8 21h8"></path></svg>
+        <span data-blabel>The Well</span><sc-if value="{{ hasOrders }}" hint-placeholder-val=""><span style="{{ ordersBadgeStyle }}">{{ ordersCount }}</span></sc-if>
+      </button>
     </div>
-  </section>
 
-  <main class="grid" id="grid"></main>
+    <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ true }}">
+      <div data-summary style="max-width:1180px;margin:0 auto;padding:0 18px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:12.5px;color:var(--ink-soft,#5C584D);white-space:nowrap">Showing <b style="color:var(--ink,#262420);font-weight:600">{{ shownCount }}</b> of {{ totalCount }}</span>
+        <span style="width:1px;height:15px;background:var(--card-border,#E8E4DC)"></span>
+        <sc-for list="{{ summaryChips }}" as="s" hint-placeholder-count="2">
+          <button type="button" onClick="{{ s.onRemove }}" style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--accent-ink,#F4F1E6);background:var(--accent,#2F3D2C);border:none;border-radius:999px;padding:4px 6px 4px 11px;cursor:pointer;white-space:nowrap" title="Remove filter">{{ s.label }}<span style="font-size:14px;line-height:.7;opacity:.85">×</span></button>
+        </sc-for>
+        <button type="button" onClick="{{ onClearAll }}" style="font-size:12.5px;font-weight:500;color:var(--ink-soft,#5C584D);background:transparent;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;white-space:nowrap">Clear all</button>
+      </div>
+    </sc-if>
+  </div>
 
-  <footer class="site">
-    <span class="verified" id="footerText">The Hollow · Hernandez House Bar · 40 cocktails · verified June 27, 2026</span>
-  </footer>
+  <div data-chrome data-filterwrap style="max-width:1180px;margin:8px auto 0;padding:0 18px">
+      <div data-filterpanel style="background:var(--bg2,#EFEADF);border:1px solid var(--card-border,#E8E4DC);border-radius:18px;padding:4px 18px 12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0 2px">
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint,#8A8474);font-weight:600">Refine the shelf</span>
+          <div style="display:inline-flex;align-items:center;gap:8px">
+            <span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint,#8A8474);font-weight:600">Sort</span>
+            <div role="group" aria-label="Sort" style="display:inline-flex;background:var(--field,#FBF9F3);border:1px solid var(--card-border,#E8E4DC);border-radius:999px;padding:3px">
+              <sc-for list="{{ sorts }}" as="so" hint-placeholder-count="2">
+                <button type="button" data-toggle onClick="{{ so.onClick }}" aria-pressed="{{ so.active }}" style="{{ so.style }}">{{ so.label }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <sc-for list="{{ filterGroups }}" as="grp" hint-placeholder-count="5">
+          <div style="display:flex;align-items:baseline;gap:10px 14px;padding:11px 0;border-top:1px solid var(--card-border,#E8E4DC);flex-wrap:wrap">
+            <div style="width:84px;flex:none;font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#8A8474);padding-top:4px">{{ grp.label }}<span style="display:block;font-size:9px;letter-spacing:.1em;color:var(--accent2,#AD7C44);margin-top:2px">{{ grp.modeHint }}</span></div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;flex:1;min-width:200px">
+              <sc-for list="{{ grp.chips }}" as="chip" hint-placeholder-count="6">
+                <button type="button" data-toggle onClick="{{ chip.onClick }}" aria-pressed="{{ chip.active }}" aria-disabled="{{ chip.disabled }}" style="{{ chip.style }}">{{ chip.value }}<span data-count style="{{ chip.countStyle }}">{{ chip.count }}</span></button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
 
-<!-- Recipe data lives in recipes.js — edit that file to change the menu -->
-<script src="recipes.js"></script>
-<script>
-"use strict";
+  <sc-if value="{{ notLoaded }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width:1180px;margin:46px auto;padding:0 20px;text-align:center;color:var(--ink-faint,#8A8474);font-size:15px;letter-spacing:.04em">Pouring the menu…</div>
+  </sc-if>
 
-/* Safety net: if recipes.js did not load, say so instead of a blank page. */
-if (typeof COCKTAILS === "undefined" || !Array.isArray(COCKTAILS)) {
-  var _g = document.getElementById("grid");
-  if (_g) _g.innerHTML = '<div class="no-results">Couldn\u2019t load <b>recipes.js</b> \u2014 make sure it\u2019s in the same folder as this page.</div>';
-  throw new Error("recipes.js not loaded");
-}
+  <main data-grid style="max-width:1180px;margin:16px auto 8px;padding:0 18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:18px;align-items:start">
+    <sc-if value="{{ noResults }}" hint-placeholder-val="{{ true }}">
+      <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--ink-faint,#8A8474);font-size:15px">No cocktails match those filters.<br><b style="color:var(--ink-soft,#5C584D);font-weight:600">Loosen a filter, or clear all to start over.</b></div>
+    </sc-if>
+    <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="3">
+      <sc-if value="{{ sec.spirit }}" hint-placeholder-val="Gin">
+        <div class="hollow-divider" style="grid-column:1/-1;display:flex;align-items:center;gap:14px;margin:16px 2px 0">
+          <span style="flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--div-line,#B9C6AC))"></span>
+          <sc-if value="{{ isSprig }}" hint-placeholder-val="{{ true }}">
+            <svg viewBox="0 0 46 18" width="40" height="15" fill="none" stroke="var(--div-line,#B9C6AC)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="transform:scaleX(-1)"><path d="M3 9 H32"/><path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/><path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/><path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/></svg>
+          </sc-if>
+          <sc-if value="{{ isFleuron }}" hint-placeholder-val="{{ true }}">
+            <span style="color:var(--div-line,#B9C6AC);font-size:13px;line-height:1">❧</span>
+          </sc-if>
+          <span style="flex:none;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;letter-spacing:.05em;color:var(--accent,#2F3D2C);white-space:nowrap">{{ sec.spirit }}</span>
+          <sc-if value="{{ isSprig }}" hint-placeholder-val="{{ true }}">
+            <svg viewBox="0 0 46 18" width="40" height="15" fill="none" stroke="var(--div-line,#B9C6AC)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 H32"/><path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/><path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/><path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/></svg>
+          </sc-if>
+          <sc-if value="{{ isFleuron }}" hint-placeholder-val="{{ true }}">
+            <span style="color:var(--div-line,#B9C6AC);font-size:13px;line-height:1">❧</span>
+          </sc-if>
+          <span style="flex:1;height:1px;background:linear-gradient(90deg,var(--div-line,#B9C6AC),transparent)"></span>
+        </div>
+      </sc-if>
+      <sc-for list="{{ sec.cards }}" as="c" hint-placeholder-count="4">
+        <article data-name="{{ c.name }}" style="{{ c.rootStyle }}">
+          <span aria-hidden="true" style="{{ c.iconStyle }}"></span>
+          <sc-if value="{{ index }}" hint-placeholder-val="{{ true }}">
+            <span style="position:absolute;top:14px;right:16px;font-family:'Fraunces',Georgia,serif;font-size:13px;font-weight:600;color:var(--accent2,#AD7C44);letter-spacing:.04em;pointer-events:none">{{ c.numLabel }}</span>
+          </sc-if>
+          <div data-cardhead role="button" tabindex="0" onClick="{{ c.onToggle }}" onKeyDown="{{ c.onKey }}" style="padding:18px 20px 12px;cursor:pointer;position:relative">
+            <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#AD7C44);display:inline-flex;align-items:center;gap:7px"><span style="width:13px;height:1.5px;background:var(--accent2,#AD7C44);display:inline-block"></span>{{ c.base }}</div>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:25px;line-height:1.1;margin:7px 0 0;letter-spacing:-.01em;color:var(--ink,#262420)">{{ c.name }}</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin:10px 0 0">
+              <sc-for list="{{ c.tagList }}" as="t" hint-placeholder-count="3">
+                <span style="font-size:10.5px;font-weight:500;letter-spacing:.02em;color:var(--pill-ink,#4F6243);border:1px solid var(--pill-line,#B9C6AC);background:var(--pill-bg,rgba(126,144,112,.08));border-radius:999px;padding:2.5px 9px;white-space:nowrap">{{ t }}</span>
+              </sc-for>
+            </div>
+            <p style="margin:12px 0 0;font-size:14px;color:var(--ink-soft,#5C584D);line-height:1.5">{{ c.summary }}</p>
+          </div>
+          <div data-expandrow style="padding:0 20px 16px;display:flex;align-items:center;gap:10px">
+            <button type="button" onClick="{{ c.onToggle }}" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#2F3D2C);background:transparent;border:none;padding:5px 0;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><span style="{{ c.signStyle }}">+</span>{{ c.expandLabel }}</button>
+            <span style="font-size:11px;color:var(--ink-faint,#8A8474);letter-spacing:.04em">{{ c.meta }}</span>
+            <span style="flex:1"></span>
+            <button type="button" data-cardorder onClick="{{ c.onOrder }}" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--accent-ink,#F4F1E6);background:var(--accent,#2F3D2C);border:none;border-radius:999px;padding:7px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap" style-hover="filter:brightness(1.08)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 10.5a6 6 0 0 1-12 0C6 10 9 7 12 3z"></path></svg>Pour</button>
+          </div>
+          <div data-detail style="{{ c.detailStyle }}">
+            <div style="display:flex;flex-wrap:wrap;gap:6px 18px;padding:14px 0 4px;font-size:11.5px;color:var(--ink-faint,#8A8474);letter-spacing:.03em">
+              <span><b style="color:var(--ink-soft,#5C584D);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:10px">Build</b>&nbsp;&nbsp;{{ c.build }}</span>
+              <span><b style="color:var(--ink-soft,#5C584D);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:10px">Glass</b>&nbsp;&nbsp;{{ c.glass }}</span>
+              <span><b style="color:var(--ink-soft,#5C584D);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:10px">Best for</b>&nbsp;&nbsp;{{ c.occasion }}</span>
+            </div>
+            <div style="margin-top:14px">
+              <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#AD7C44);font-weight:600;margin:0 0 7px">Pour</h3>
+              <ul style="list-style:none;margin:0;padding:0">
+                <sc-for list="{{ c.specRows }}" as="r" hint-placeholder-count="3">
+                  <li style="font-size:14px;padding:4px 0;border-bottom:1px dotted var(--line,#DDD6C7);display:flex;gap:10px;color:var(--ink,#262420)"><span style="font-variant-numeric:tabular-nums;color:var(--accent,#2F3D2C);font-weight:600;flex:none;min-width:62px">{{ r.amt }}</span><span>{{ r.ing }}</span></li>
+                </sc-for>
+              </ul>
+            </div>
+            <div style="margin-top:14px">
+              <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#AD7C44);font-weight:600;margin:0 0 7px">Method</h3>
+              <ol style="margin:0;padding-left:18px">
+                <sc-for list="{{ c.stepList }}" as="st" hint-placeholder-count="2">
+                  <li style="font-size:13.5px;color:var(--ink-soft,#5C584D);padding:2px 0;line-height:1.5">{{ st }}</li>
+                </sc-for>
+              </ol>
+            </div>
+            <div style="margin-top:14px">
+              <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#AD7C44);font-weight:600;margin:0 0 7px">Garnish</h3>
+              <p style="font-size:13.5px;color:var(--ink-soft,#5C584D);margin:0">{{ c.garnish }}</p>
+            </div>
+            <div style="margin-top:14px">
+              <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#AD7C44);font-weight:600;margin:0 0 7px">History</h3>
+              <p style="font-size:13px;color:var(--ink-soft,#5C584D);font-style:italic;line-height:1.55;margin:0">{{ c.history }}</p>
+            </div>
+            <div style="margin-top:14px;font-size:12px;color:var(--ink-soft,#5C584D);background:var(--pill-bg,rgba(126,144,112,.08));border-left:2.5px solid var(--accent,#2F3D2C);border-radius:0 8px 8px 0;padding:9px 12px;line-height:1.5"><b style="color:var(--accent,#2F3D2C);font-weight:600">Source note —</b> {{ c.note }}</div>
+          </div>
+        </article>
+      </sc-for>
+    </sc-for>
+  </main>
 
-/* Recipe data (the COCKTAILS list) now lives in recipes.js — see that file. */
+  <footer data-chrome style="max-width:1180px;margin:10px auto 50px;padding:24px;text-align:center;color:var(--ink-faint,#8A8474);font-size:12.5px;letter-spacing:.04em;border-top:1px solid var(--card-border,#E8E4DC)">{{ footerText }}</footer>
 
-/* ===================== FILTER CONFIG ===================== */
-const GROUPS = [
-  {key:"spirit",   label:"Spirit",   mode:"or",  order:["Gin","Bourbon","Rye","Tequila","Rum","Vodka","Cognac","Aperitivo"]},
-  {key:"tags",     label:"Flavor",   mode:"and", order:["Spirit-forward","Bitter","Sour/Tart","Sweet","Herbal","Floral","Citrus","Fruity","Refreshing/Long","Creamy/Rich"]},
-  {key:"build",    label:"Build",    mode:"or",  order:["Stirred","Shaken","Built","Muddled"]},
-  {key:"glass",    label:"Glass",    mode:"or",  order:["Rocks","Coupe","Highball","Collins","Copper mug","Mug","Julep cup","Wine glass"]},
-  {key:"occasion", label:"Occasion", mode:"or",  order:["Aperitif","Anytime","Brunch","Nightcap","Digestif"]},
-];
+  <sc-if value="{{ orderModalName }}" hint-placeholder-val="">
+    <div data-chrome data-modalwrap onClick="{{ onCloseOrder }}" style="position:fixed;inset:0;z-index:60;background:rgba(12,11,8,.55);display:flex;align-items:center;justify-content:center;padding:20px">
+      <div data-modal onClick="{{ stop }}" style="width:min(420px,100%);background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.45);padding:22px 22px 20px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267)">Pour a drink</div>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:24px;line-height:1.1;margin:6px 0 0;color:var(--ink,#ECE7D7)">{{ orderModalName }}</h2>
+          </div>
+          <button type="button" onClick="{{ onCloseOrder }}" aria-label="Close" style="flex:none;width:32px;height:32px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:18px;line-height:1;cursor:pointer">×</button>
+        </div>
+        <div style="margin-top:18px">
+          <label style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:6px">Name or table</label>
+          <input value="{{ draftGuest }}" onChange="{{ onDraftGuest }}" autocomplete="off" placeholder="e.g. Table 4, or Sam" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
+        </div>
+        <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px">
+          <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D)">Quantity</label>
+          <div style="display:inline-flex;align-items:center;gap:2px;background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:3px">
+            <button type="button" onClick="{{ onDecQty }}" aria-label="Decrease quantity" style="width:34px;height:34px;border:none;background:transparent;color:var(--ink,#ECE7D7);font-size:20px;line-height:1;cursor:pointer;border-radius:8px">−</button>
+            <span style="min-width:30px;text-align:center;font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink,#ECE7D7)">{{ draftQty }}</span>
+            <button type="button" onClick="{{ onIncQty }}" aria-label="Increase quantity" style="width:34px;height:34px;border:none;background:transparent;color:var(--ink,#ECE7D7);font-size:20px;line-height:1;cursor:pointer;border-radius:8px">+</button>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <label style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:6px">Notes (optional)</label>
+          <input value="{{ draftNote }}" onChange="{{ onDraftNote }}" autocomplete="off" placeholder="e.g. no garnish, extra cold" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px">
+          <button type="button" onClick="{{ onCloseOrder }}" style="flex:1;font-size:13px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:12px;cursor:pointer">Cancel</button>
+          <button type="button" onClick="{{ onPlaceOrder }}" style="flex:2;font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:12px;cursor:pointer" style-hover="filter:brightness(1.08)">Send to the bar</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
 
-const active = {};          // group.key -> Set of selected values
-GROUPS.forEach(g => active[g.key] = new Set());
-let searchText = "";
+  <sc-if value="{{ ordersOpen }}" hint-placeholder-val="">
+    <div data-chrome onClick="{{ onToggleOrders }}" style="position:fixed;inset:0;z-index:55;background:rgba(12,11,8,.5);display:flex;justify-content:flex-end">
+      <aside onClick="{{ stop }}" style="width:min(560px,100%);height:100%;background:var(--bg2,#1A1E14);border-left:1px solid var(--card-border,#2D3422);box-shadow:-12px 0 48px rgba(0,0,0,.35);display:flex;flex-direction:column">
+        <header style="padding:16px 18px 12px;border-bottom:1px solid var(--card-border,#2D3422)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <div>
+              <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:0;color:var(--ink,#ECE7D7)">The Well</h2>
+              <div style="font-size:12px;color:var(--ink-faint,#827E6D);margin-top:3px">{{ ordersSummary }}</div>
+            </div>
+            <button type="button" onClick="{{ onToggleOrders }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:13px;background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);border-radius:11px;padding:4px">
+            <button type="button" onClick="{{ onTabQueue }}" style="{{ queueTabStyle }}">{{ queueTabLabel }}</button>
+            <button type="button" onClick="{{ onTabBatches }}" style="{{ batchTabStyle }}">{{ batchTabLabel }}</button>
+          </div>
+        </header>
 
-/* ===================== BOTANICAL MARKS ===================== */
-// small horizontal sprig reused in the spirit-section dividers
-const SPRIG_SVG = ''
-  + '<svg class="sprig" viewBox="0 0 46 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  +   '<path d="M3 9 H32"/>'
-  +   '<path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/>'
-  +   '<path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/>'
-  +   '<path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/>'
-  + '</svg>';
-// quiet single corner leaf for each card
-const CARD_LEAF_SVG = ''
-  + '<svg class="card-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
-  +   '<path d="M4 20 C6 12 12 6 20 4 C18 12 12 18 4 20 Z"/>'
-  +   '<path d="M4 20 C9 16 14 11 20 4"/>'
-  + '</svg>';
+        <div style="flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <sc-if value="{{ stationIsQueue }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ noQueue }}" hint-placeholder-val="">
+              <div style="text-align:center;padding:46px 20px;color:var(--ink-faint,#827E6D)">
+                <div style="font-size:30px;margin-bottom:10px;opacity:.5">🍸</div>
+                <div style="font-size:14px;line-height:1.5">Nothing on the rail yet.<br>Drinks poured from the menu land here.</div>
+              </div>
+            </sc-if>
+            <sc-for list="{{ queueList }}" as="o" hint-placeholder-count="0">
+              <div style="{{ o.rowStyle }}">
+                <div onClick="{{ o.onToggleSelect }}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                  <span style="{{ o.boxStyle }}">{{ o.checkMark }}</span>
+                  <span style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:15px;color:var(--accent2,#CFA267);font-variant-numeric:tabular-nums">{{ o.qtyLabel }}</span>
+                  <span style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:16px;color:var(--ink,#ECE7D7)">{{ o.drink }}</span>
+                  <span style="flex:1"></span>
+                  <span style="font-size:11px;color:var(--ink-faint,#827E6D);white-space:nowrap">{{ o.timeLabel }}</span>
+                </div>
+                <sc-if value="{{ o.hasGuest }}" hint-placeholder-val="">
+                  <div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin:6px 0 0 30px"><span style="color:var(--ink-faint,#827E6D)">For</span> {{ o.guest }}</div>
+                </sc-if>
+                <sc-if value="{{ o.hasNote }}" hint-placeholder-val="">
+                  <div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);font-style:italic;margin:3px 0 0 30px">“{{ o.note }}”</div>
+                </sc-if>
+                <div style="display:flex;align-items:center;gap:8px;margin:11px 0 0 30px">
+                  <button type="button" onClick="{{ o.onView }}" style="font-size:12px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:999px;padding:5px 12px;cursor:pointer" style-hover="border-color:var(--accent)">Recipe</button>
+                  <button type="button" onClick="{{ o.onMake }}" style="font-size:12px;font-weight:600;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:6px 13px;cursor:pointer">Make now</button>
+                  <span style="flex:1"></span>
+                  <button type="button" onClick="{{ o.onRemove }}" aria-label="Remove order" style="font-size:12px;font-weight:600;color:var(--ink-faint,#827E6D);background:transparent;border:none;cursor:pointer;padding:5px 6px">Remove</button>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
 
-/* ===================== BUILD FILTER UI ===================== */
-function distinctValues(key){
-  const present = new Set();
-  COCKTAILS.forEach(c => {
-    const v = c[key];
-    if (Array.isArray(v)) v.forEach(x => present.add(x));
-    else present.add(v);
-  });
-  return present;
-}
+          <sc-if value="{{ stationIsBatches }}" hint-placeholder-val="">
+            <sc-if value="{{ noBatches }}" hint-placeholder-val="">
+              <div style="text-align:center;padding:46px 20px;color:var(--ink-faint,#827E6D)">
+                <div style="font-size:30px;margin-bottom:10px;opacity:.5">🥂</div>
+                <div style="font-size:14px;line-height:1.5">No flights yet.<br>Select drinks on the rail and tap <b style="color:var(--ink-soft,#B7B3A1)">Create flight</b>.</div>
+              </div>
+            </sc-if>
+            <sc-for list="{{ batchList }}" as="b" hint-placeholder-count="0">
+              <div style="{{ b.cardStyle }}">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D)">{{ b.timeLabel }}</span>
+                  <span style="flex:1"></span>
+                  <span style="{{ b.statusStyle }}">{{ b.statusLabel }}</span>
+                </div>
+                <div style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:16px;color:var(--ink,#ECE7D7);line-height:1.35;margin-top:7px">{{ b.summary }}</div>
+                <div style="display:flex;align-items:center;gap:9px;margin-top:6px;font-size:11.5px;color:var(--ink-faint,#827E6D)"><span>{{ b.countLabel }}</span><span style="width:3px;height:3px;border-radius:999px;background:var(--ink-faint,#827E6D)"></span><span>{{ b.progressLabel }}</span></div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
+                  <button type="button" onClick="{{ b.onOpen }}" style="font-size:12.5px;font-weight:600;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:7px 15px;cursor:pointer">Open &amp; make</button>
+                  <span style="flex:1"></span>
+                  <button type="button" onClick="{{ b.onRemove }}" aria-label="Remove flight" style="font-size:12px;font-weight:600;color:var(--ink-faint,#827E6D);background:transparent;border:none;cursor:pointer;padding:5px 6px">Remove</button>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+        </div>
 
-function buildFilters(){
-  const root = document.getElementById("filters");
-  GROUPS.forEach(g => {
-    const present = distinctValues(g.key);
-    // keep the curated order, then append any new values found in the data
-    const ordered = g.order.filter(v => present.has(v));
-    const extras = [...present].filter(v => !g.order.includes(v)).sort();
-    const values = ordered.concat(extras);
-    const row = document.createElement("div");
-    row.className = "filter-group";
+        <sc-if value="{{ hasSelection }}" hint-placeholder-val="">
+          <footer style="padding:12px 16px;border-top:1px solid var(--card-border,#2D3422);display:flex;align-items:center;gap:10px;background:var(--bg2,#1A1E14)">
+            <span style="font-size:13px;font-weight:600;color:var(--ink,#ECE7D7)">{{ selectionLabel }}</span>
+            <button type="button" onClick="{{ onClearSelection }}" style="font-size:12.5px;font-weight:500;color:var(--ink-soft,#B7B3A1);background:transparent;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px">Clear</button>
+            <span style="flex:1"></span>
+            <button type="button" onClick="{{ onCreateBatch }}" style="font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:11px 18px;cursor:pointer">Create flight</button>
+          </footer>
+        </sc-if>
+        <sc-if value="{{ hasDoneBatches }}" hint-placeholder-val="">
+          <footer style="padding:10px 16px;border-top:1px solid var(--card-border,#2D3422);display:flex;gap:8px">
+            <button type="button" onClick="{{ onClearDoneBatches }}" style="flex:1;font-size:12.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:10px;padding:9px;cursor:pointer">Clear finished flights</button>
+          </footer>
+        </sc-if>
+      </aside>
+    </div>
+  </sc-if>
 
-    const label = document.createElement("div");
-    label.className = "group-label";
-    label.innerHTML = g.label + (g.mode === "and"
-      ? '<span class="mode-hint">match all</span>'
-      : '<span class="mode-hint">any of</span>');
-    row.appendChild(label);
+  <sc-if value="{{ makeOpen }}" hint-placeholder-val="">
+    <div data-chrome onClick="{{ onCloseMake }}" style="position:fixed;inset:0;z-index:65;background:rgba(12,11,8,.62);display:flex;align-items:center;justify-content:center;padding:20px">
+      <div onClick="{{ stop }}" style="width:min(560px,100%);max-height:88vh;display:flex;flex-direction:column;background:var(--bg2,#1A1E14);border:1px solid var(--card-border,#2D3422);border-radius:18px;box-shadow:0 28px 70px rgba(0,0,0,.5);overflow:hidden">
+        <header style="padding:18px 20px;border-bottom:1px solid var(--card-border,#2D3422);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267)">Make · scaled recipe</div>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;line-height:1.1;margin:5px 0 0;color:var(--ink,#ECE7D7)">{{ makeTitle }}</h2>
+            <div style="font-size:12.5px;color:var(--ink-faint,#827E6D);margin-top:4px">{{ makeSubtitle }}</div>
+          </div>
+          <button type="button" onClick="{{ onCloseMake }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
+        </header>
+        <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ makeLines }}" as="ln" hint-placeholder-count="1">
+            <div style="{{ ln.lineStyle }}">
+              <div style="display:flex;align-items:center;gap:11px">
+                <sc-if value="{{ ln.isBatchLine }}" hint-placeholder-val="">
+                  <span onClick="{{ ln.onToggleMade }}" style="{{ ln.boxStyle }}">{{ ln.checkMark }}</span>
+                </sc-if>
+                <span style="font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:18px;color:var(--accent2,#CFA267);font-variant-numeric:tabular-nums">{{ ln.qtyLabel }}</span>
+                <span style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:19px;color:var(--ink,#ECE7D7)">{{ ln.drink }}</span>
+                <span style="flex:1"></span>
+                <span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">{{ ln.glass }}</span>
+              </div>
+              <div style="margin-top:12px">
+                <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#CFA267);font-weight:600;margin:0 0 7px">Pour <span style="color:var(--ink-faint,#827E6D)">· batched total</span></h3>
+                <ul style="list-style:none;margin:0;padding:0">
+                  <sc-for list="{{ ln.specRows }}" as="r" hint-placeholder-count="3">
+                    <li style="font-size:15px;padding:5px 0;border-bottom:1px dotted var(--line,#2D3422);display:flex;gap:10px;color:var(--ink,#ECE7D7)"><span style="font-variant-numeric:tabular-nums;color:var(--accent,#A6BB8E);font-weight:700;flex:none;min-width:74px">{{ r.amt }}</span><span>{{ r.ing }}</span></li>
+                  </sc-for>
+                </ul>
+              </div>
+              <div style="margin-top:12px">
+                <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#CFA267);font-weight:600;margin:0 0 6px">Method</h3>
+                <ol style="margin:0;padding-left:18px">
+                  <sc-for list="{{ ln.steps }}" as="st" hint-placeholder-count="2">
+                    <li style="font-size:13.5px;color:var(--ink-soft,#B7B3A1);padding:2px 0;line-height:1.5">{{ st }}</li>
+                  </sc-for>
+                </ol>
+              </div>
+              <div style="margin-top:10px;font-size:12.5px;color:var(--ink-soft,#B7B3A1)"><b style="color:var(--accent2,#CFA267);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:10px">Garnish</b>&nbsp;&nbsp;{{ ln.garnish }}</div>
+              <sc-if value="{{ ln.hasNotes }}" hint-placeholder-val="">
+                <div style="margin-top:10px;background:var(--pill-bg,rgba(166,187,142,.10));border-left:2.5px solid var(--accent2,#CFA267);border-radius:0 8px 8px 0;padding:8px 11px">
+                  <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:4px">Notes</div>
+                  <sc-for list="{{ ln.notesList }}" as="nt" hint-placeholder-count="1">
+                    <div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);line-height:1.45">• {{ nt }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ makeIsBatch }}" hint-placeholder-val="">
+          <footer style="padding:12px 16px;border-top:1px solid var(--card-border,#2D3422);display:flex;gap:10px">
+            <button type="button" onClick="{{ onMakeRemove }}" style="font-size:12.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 16px;cursor:pointer">Remove flight</button>
+            <span style="flex:1"></span>
+            <sc-if value="{{ makeIsDone }}" hint-placeholder-val="">
+              <button type="button" onClick="{{ onMakeReopen }}" style="font-size:13px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 18px;cursor:pointer">Reopen</button>
+            </sc-if>
+            <sc-if value="{{ makeNotDone }}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{ onMakeMarkDone }}" style="font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:11px 20px;cursor:pointer">Mark flight done</button>
+            </sc-if>
+          </footer>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
 
-    const chips = document.createElement("div");
-    chips.className = "chips";
-    values.forEach(v => {
-      const chip = document.createElement("button");
-      chip.className = "chip";
-      chip.type = "button";
-      chip.textContent = v;
-      chip.setAttribute("aria-pressed", "false");
-      chip.addEventListener("click", () => {
-        const set = active[g.key];
-        if (set.has(v)) { set.delete(v); chip.classList.remove("active"); chip.setAttribute("aria-pressed","false"); }
-        else { set.add(v); chip.classList.add("active"); chip.setAttribute("aria-pressed","true"); }
-        render();
-      });
-      chips.appendChild(chip);
-    });
-    row.appendChild(chips);
-    root.appendChild(row);
-  });
-}
+  <sc-if value="{{ toast }}" hint-placeholder-val="">
+    <div data-chrome style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:70;background:var(--accent,#A6BB8E);color:var(--accent-ink,#13160F);padding:11px 20px;border-radius:999px;box-shadow:0 12px 34px rgba(0,0,0,.32);font-size:13px;font-weight:600;letter-spacing:.02em">{{ toast }}</div>
+  </sc-if>
 
-/* ===================== MATCH + RENDER ===================== */
-function matches(c){
-  if (searchText){
-    const hay = (c.name + " " + c.summary + " " + c.spec.map(s => s[1]).join(" ")).toLowerCase();
-    if (!hay.includes(searchText)) return false;
-  }
-  for (const g of GROUPS){
-    const sel = active[g.key];
-    if (sel.size === 0) continue;
-    if (g.key === "tags"){                       // AND within Flavor
-      for (const v of sel) if (!c.tags.includes(v)) return false;
-    } else {                                      // OR within single-valued groups
-      if (!sel.has(c[g.key])) return false;
-    }
-  }
-  return true;
-}
-
-function pillsHTML(tags){
-  return '<div class="tag-pills">' + tags.map(t => '<span class="tag-pill">' + t + '</span>').join("") + '</div>';
-}
-
-function sectionHTML(spirit, first){
-  return ''
-    + '<div class="spirit-section' + (first ? ' first' : '') + '">'
-    +   '<span class="line"></span>'
-    +   SPRIG_SVG.replace('class="sprig"', 'class="sprig flip"')
-    +   '<span class="slabel">' + spirit + '</span>'
-    +   SPRIG_SVG
-    +   '<span class="line r"></span>'
-    + '</div>';
-}
-
-function cardHTML(c, idx){
-  const spec = c.spec.map(s =>
-    '<li><span class="amt">' + s[0] + '</span><span>' + s[1] + '</span></li>').join("");
-  const steps = c.steps.map(s => '<li>' + s + '</li>').join("");
-  return ''
-    + '<article class="card" data-idx="' + idx + '">'
-    +   CARD_LEAF_SVG
-    +   '<div class="card-head" role="button" tabindex="0" aria-expanded="false">'
-    +     '<div class="card-base">' + c.base + '</div>'
-    +     '<h2 class="card-name">' + c.name + '</h2>'
-    +     pillsHTML(c.tags)
-    +     '<p class="card-summary">' + c.summary + '</p>'
-    +     '<div class="expand-row">'
-    +       '<button class="expand-btn" type="button"><span class="sign">+</span> Recipe</button>'
-    +       '<span class="meta-mini">' + c.build + ' · ' + c.glass + '</span>'
-    +     '</div>'
-    +   '</div>'
-    +   '<div class="card-detail">'
-    +     '<div class="detail-meta">'
-    +       '<span><b>Build</b> &nbsp;' + c.build + '</span>'
-    +       '<span><b>Glass</b> &nbsp;' + c.glass + '</span>'
-    +       '<span><b>Best for</b> &nbsp;' + c.occasion + '</span>'
-    +     '</div>'
-    +     '<div class="detail-section"><h3>Pour</h3><ul class="spec">' + spec + '</ul></div>'
-    +     '<div class="detail-section"><h3>Method</h3><ol class="steps">' + steps + '</ol></div>'
-    +     '<div class="detail-section"><h3>Garnish</h3><p class="detail-line">' + c.garnish + '</p></div>'
-    +     '<div class="detail-section"><h3>History</h3><p class="history">' + c.history + '</p></div>'
-    +     '<div class="footnote"><b>Source note —</b> ' + c.note + '</div>'
-    +   '</div>'
-    + '</article>';
-}
-
-function render(){
-  const grid = document.getElementById("grid");
-  const visible = COCKTAILS.map((c, i) => [c, i]).filter(([c]) => matches(c));
-
-  if (visible.length === 0){
-    grid.innerHTML = '<div class="no-results">No cocktails match those filters.<br><b>Loosen a filter or clear all to start over.</b></div>';
-  } else {
-    // Group the already-filtered list into spirit sections (canonical order),
-    // each preceded by a botanical-branch divider. Filtering logic is untouched.
-    const baseOrder = GROUPS.find(g => g.key === "spirit").order;
-    const extraSpirits = [...new Set(COCKTAILS.map(c => c.spirit))].filter(s => !baseOrder.includes(s)).sort();
-    const spiritOrder = baseOrder.concat(extraSpirits);
-    let html = "";
-    let firstSection = true;
-    spiritOrder.forEach(sp => {
-      const inSpirit = visible.filter(([c]) => c.spirit === sp);
-      if (inSpirit.length === 0) return;
-      html += sectionHTML(sp, firstSection);
-      html += inSpirit.map(([c, i]) => cardHTML(c, i)).join("");
-      firstSection = false;
-    });
-    grid.innerHTML = html;
-  }
-
-  document.getElementById("shown").textContent = visible.length;
-
-  // clear-all visibility
-  const anyActive = searchText !== "" || GROUPS.some(g => active[g.key].size > 0);
-  document.getElementById("clearAll").hidden = !anyActive;
-
-  // wire card expand
-  grid.querySelectorAll(".card-head").forEach(head => {
-    const toggle = () => {
-      const card = head.closest(".card");
-      const open = card.classList.toggle("open");
-      head.setAttribute("aria-expanded", open ? "true" : "false");
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:900},&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Appearance&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const dir = (props && props.direction) || 'herbarium';
+    this.state = {
+      cocktails: [], loaded: false,
+      direction: dir,
+      dark: (props && props.dark != null) ? !!props.dark : true,
+      search: '', sort: 'spirit',
+      filters: { spirit: [], tags: [], build: [], glass: [], occasion: [] },
+      open: {}, filtersOpen: true, highlight: null,
+      orders: [], batches: [], ordersOpen: false, stationTab: 'queue',
+      selected: {}, makeView: null, orderModalName: null,
+      draftGuest: '', draftQty: 1, draftNote: '', toast: null,
     };
-    head.addEventListener("click", toggle);
-    head.addEventListener("keydown", e => {
-      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); toggle(); }
+    this.GROUPS = [
+      { key:'spirit',   label:'Spirit',   mode:'or',  order:['Gin','Bourbon','Rye','Tequila','Rum','Vodka','Cognac','Aperitivo'] },
+      { key:'tags',     label:'Flavor',   mode:'and', order:['Spirit-forward','Bitter','Sour/Tart','Sweet','Herbal','Floral','Citrus','Fruity','Refreshing/Long','Creamy/Rich'] },
+    ];
+    this.THEMES = {
+      herbarium: {
+        label:'Herbarium',
+        meta:{ radius:'16px', ornament:'sprig', leaf:true, index:false },
+        light:{ bg:'#F7F4ED', bg2:'#EFEADF', card:'#FBF9F3', cardBorder:'#E8E4DC', ink:'#262420', inkSoft:'#5C584D', inkFaint:'#8A8474', accent:'#2F3D2C', accentInk:'#F4F1E6', accent2:'#AD7C44', line:'#DDD6C7', pillBg:'rgba(126,144,112,.08)', pillInk:'#4F6243', pillLine:'#B9C6AC', divLine:'#B9C6AC', shadow:'0 1px 2px rgba(40,36,28,.05),0 10px 26px rgba(40,36,28,.06)', field:'#FBF9F3', focus:'rgba(126,144,112,.28)', grain:'rgba(47,61,44,.018)' },
+        dark:{ bg:'#13160F', bg2:'#1A1E14', card:'#1D2217', cardBorder:'#2D3422', ink:'#ECE7D7', inkSoft:'#B7B3A1', inkFaint:'#827E6D', accent:'#A6BB8E', accentInk:'#13160F', accent2:'#CFA267', line:'#2D3422', pillBg:'rgba(166,187,142,.10)', pillInk:'#B7C8A6', pillLine:'#3A4430', divLine:'#39432F', shadow:'0 1px 2px rgba(0,0,0,.4),0 14px 30px rgba(0,0,0,.35)', field:'#161A11', focus:'rgba(166,187,142,.22)', grain:'rgba(255,255,255,.014)' },
+      },
+    };
+  }
+
+  componentDidMount(){
+    import('./cocktails.js')
+      .then(m => this.setState({ cocktails: (m && m.COCKTAILS) || [], loaded: true }))
+      .catch(e => { console.error('Could not load cocktails.js', e); this.setState({ loaded: true }); });
+    import('./scale.js').then(m => { this._scaleSpec = m.scaleSpec; this.forceUpdate(); }).catch(()=>{});
+    try { if (window.matchMedia && window.matchMedia('(max-width:680px)').matches) this.setState({ filtersOpen: false }); } catch(e){}
+    try { const raw = localStorage.getItem('hollow_orders_v1'); if (raw) { const o = JSON.parse(raw); if (Array.isArray(o)) this.setState({ orders: o }); } } catch(e){}
+    try { const rb = localStorage.getItem('hollow_batches_v1'); if (rb) { const b = JSON.parse(rb); if (Array.isArray(b)) this.setState({ batches: b }); } } catch(e){}
+    this._onStorage = (e) => {
+      if (e.key === 'hollow_orders_v1') { try { const o = JSON.parse(e.newValue||'[]'); if (Array.isArray(o)) this.setState({ orders:o }); } catch(_){} }
+      if (e.key === 'hollow_batches_v1') { try { const b = JSON.parse(e.newValue||'[]'); if (Array.isArray(b)) this.setState({ batches:b }); } catch(_){} }
+    };
+    try { window.addEventListener('storage', this._onStorage); } catch(e){}
+  }
+  componentWillUnmount(){ try { window.removeEventListener('storage', this._onStorage); } catch(e){} }
+
+  persist(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  persistOrders(orders){ this.persist('hollow_orders_v1', orders); }
+  persistBatches(batches){ this.persist('hollow_batches_v1', batches); }
+  flashToast(msg, ms){ this.setState({ toast: msg }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast:null }), ms||2000); }
+
+  openOrder(name){ this.setState({ orderModalName: name, draftGuest:'', draftQty:1, draftNote:'' }); }
+  closeOrder(){ this.setState({ orderModalName: null }); }
+  incQty(){ this.setState(s => ({ draftQty: Math.min(99, s.draftQty + 1) })); }
+  decQty(){ this.setState(s => ({ draftQty: Math.max(1, s.draftQty - 1) })); }
+  placeOrder(){
+    const name = this.state.orderModalName; if (!name) return;
+    const o = { id:'o'+Date.now()+Math.floor(Math.random()*1000), drink:name, qty:this.state.draftQty, guest:(this.state.draftGuest||'').trim(), note:(this.state.draftNote||'').trim(), ts:Date.now(), batchId:null };
+    this.setState(s => { const orders = [o, ...s.orders]; this.persistOrders(orders); return { orders, orderModalName:null }; });
+    this.flashToast('Poured — sent to the bar ✓', 2200);
+  }
+
+  toggleOrders(){ this.setState(s => ({ ordersOpen: !s.ordersOpen, makeView:null })); }
+  setTab(t){ this.setState({ stationTab: t }); }
+  toggleSelect(id){ this.setState(s => { const sel = Object.assign({}, s.selected); if (sel[id]) delete sel[id]; else sel[id] = true; return { selected: sel }; }); }
+  clearSelection(){ this.setState({ selected: {} }); }
+  selectAllQueue(){ this.setState(s => { const sel = {}; s.orders.forEach(o => { if (!o.batchId) sel[o.id] = true; }); return { selected: sel }; }); }
+
+  createBatch(){
+    const ids = Object.keys(this.state.selected).filter(id => { const o = this.state.orders.find(x => x.id===id); return o && !o.batchId; });
+    if (!ids.length) return;
+    const bid = 'b'+Date.now()+Math.floor(Math.random()*1000);
+    this.setState(s => {
+      const orders = s.orders.map(o => ids.indexOf(o.id)!==-1 ? Object.assign({}, o, { batchId:bid }) : o);
+      const batches = [{ id:bid, ts:Date.now(), status:'making', made:{} }, ...s.batches];
+      this.persistOrders(orders); this.persistBatches(batches);
+      return { orders, batches, selected:{}, stationTab:'batches' };
     });
-  });
+    this.flashToast('Flight created ✓', 1800);
+  }
+  makeOrderNow(id){
+    const o = this.state.orders.find(x => x.id===id); if (!o || o.batchId) return;
+    const bid = 'b'+Date.now()+Math.floor(Math.random()*1000);
+    this.setState(s => {
+      const orders = s.orders.map(x => x.id===id ? Object.assign({}, x, { batchId:bid }) : x);
+      const batches = [{ id:bid, ts:Date.now(), status:'making', made:{} }, ...s.batches];
+      this.persistOrders(orders); this.persistBatches(batches);
+      return { orders, batches, stationTab:'batches', makeView:{ kind:'batch', id:bid } };
+    });
+  }
+  openMake(kind, id){ this.setState({ makeView: { kind, id } }); }
+  closeMake(){ this.setState({ makeView: null }); }
+  toggleMade(batchId, drink){
+    this.setState(s => {
+      const batches = s.batches.map(b => { if (b.id!==batchId) return b; const made = Object.assign({}, b.made||{}); if (made[drink]) delete made[drink]; else made[drink] = true; return Object.assign({}, b, { made }); });
+      this.persistBatches(batches); return { batches };
+    });
+  }
+  setBatchStatus(batchId, status){ this.setState(s => { const batches = s.batches.map(b => b.id===batchId ? Object.assign({}, b, { status }) : b); this.persistBatches(batches); return { batches }; }); }
+  removeBatch(batchId){
+    this.setState(s => {
+      const batches = s.batches.filter(b => b.id!==batchId);
+      const orders = s.orders.filter(o => o.batchId!==batchId);
+      this.persistBatches(batches); this.persistOrders(orders);
+      return { batches, orders, makeView:null };
+    });
+  }
+  clearDoneBatches(){ this.setState(s => { const doneIds = s.batches.filter(b=>b.status==='done').map(b=>b.id); const batches = s.batches.filter(b=>b.status!=='done'); const orders = s.orders.filter(o => doneIds.indexOf(o.batchId)===-1); this.persistBatches(batches); this.persistOrders(orders); return { batches, orders }; }); }
+  removeOrder(id){ this.setState(s => { const orders = s.orders.filter(o => o.id!==id); const sel = Object.assign({}, s.selected); delete sel[id]; this.persistOrders(orders); return { orders, selected:sel }; }); }
+  clearAllOrders(){ this.persistOrders([]); this.persistBatches([]); this.setState({ orders: [], batches: [], selected:{}, makeView:null }); }
+
+  setDirection(d){ this.setState({ direction: d }); }
+  toggleDark(){ this.setState(s => ({ dark: !s.dark })); }
+  setSort(v){ this.setState({ sort: v }); }
+  onSearch(e){ this.setState({ search: e.target.value }); }
+  toggleFilters(){ this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
+  toggleFilter(key, val){
+    this.setState(s => {
+      const arr = s.filters[key];
+      const next = arr.includes(val) ? arr.filter(x => x !== val) : arr.concat(val);
+      return { filters: Object.assign({}, s.filters, { [key]: next }) };
+    });
+  }
+  clearAll(){ this.setState({ search:'', filters:{ spirit:[], tags:[], build:[], glass:[], occasion:[] } }); }
+  toggleOpen(name){ this.setState(s => ({ open: Object.assign({}, s.open, { [name]: !s.open[name] }) })); }
+
+  surprise(){
+    const vis = this.computeVisible();
+    if (!vis.length) return;
+    const pick = vis[Math.floor(Math.random() * vis.length)];
+    this.setState(s => ({ open: Object.assign({}, s.open, { [pick.name]: true }), highlight: pick.name }), () => {
+      try {
+        const el = document.querySelector('[data-name="' + (window.CSS && CSS.escape ? CSS.escape(pick.name) : pick.name) + '"]');
+        if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 90; window.scrollTo({ top: y, behavior: 'smooth' }); }
+      } catch(e){}
+    });
+    clearTimeout(this._ht);
+    this._ht = setTimeout(() => this.setState({ highlight: null }), 2600);
+  }
+
+  passSearch(c){
+    const s = this.state.search.trim().toLowerCase();
+    if (!s) return true;
+    const hay = (c.name + ' ' + c.summary + ' ' + c.spec.map(x => x[1]).join(' ')).toLowerCase();
+    return hay.indexOf(s) !== -1;
+  }
+  passGroups(c, except){
+    for (const g of this.GROUPS){
+      if (g.key === except) continue;
+      const sel = this.state.filters[g.key];
+      if (!sel.length) continue;
+      if (g.key === 'tags'){ for (const v of sel) if (!c.tags.includes(v)) return false; }
+      else { if (!sel.includes(c[g.key])) return false; }
+    }
+    return true;
+  }
+  computeVisible(){ return this.state.cocktails.filter(c => this.passSearch(c) && this.passGroups(c, null)); }
+
+  renderVals(){
+    const st = this.state;
+    const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
+    const pal = st.dark ? dir.dark : dir.light;
+    const meta = dir.meta;
+
+    const appStyle = {
+      '--bg':pal.bg, '--bg2':pal.bg2, '--card':pal.card, '--card-border':pal.cardBorder,
+      '--ink':pal.ink, '--ink-soft':pal.inkSoft, '--ink-faint':pal.inkFaint,
+      '--accent':pal.accent, '--accent-ink':pal.accentInk, '--accent2':pal.accent2,
+      '--line':pal.line, '--pill-bg':pal.pillBg, '--pill-ink':pal.pillInk, '--pill-line':pal.pillLine,
+      '--div-line':pal.divLine, '--shadow':pal.shadow, '--field':pal.field, '--focus':pal.focus,
+      '--radius':meta.radius, '--grain':pal.grain,
+      backgroundColor: pal.bg,
+      backgroundImage:'repeating-linear-gradient(135deg, ' + pal.grain + ' 0 1px, transparent 1px 7px),repeating-linear-gradient(45deg, ' + pal.grain + ' 0 1px, transparent 1px 7px)',
+      color:'var(--ink)', minHeight:'100vh',
+      fontFamily:"'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif",
+      fontSize:'16px', lineHeight:'1.55',
+    };
+
+    const segStyle = (active) => ({ border:'none', borderRadius:'999px', padding:'6px 13px', cursor:'pointer', fontFamily:'Inter,sans-serif', fontSize:'11.5px', fontWeight:600, letterSpacing:'.03em', whiteSpace:'nowrap', backgroundColor: active ? 'var(--accent)' : 'transparent', color: active ? 'var(--accent-ink)' : 'var(--ink-soft)' });
+
+    const sorts = [
+      { key:'spirit', label:'By spirit' },
+      { key:'az', label:'A–Z' },
+    ].map(o => ({ label:o.label, active: st.sort === o.key, style: segStyle(st.sort === o.key), onClick: () => this.setSort(o.key) }));
+
+    // ---- counts + filter chips ----
+    const counted = (g, v) => {
+      let n = 0;
+      for (const c of st.cocktails){
+        if (!this.passSearch(c)) continue;
+        if (!this.passGroups(c, g.key)) continue;
+        if (g.key === 'tags' ? c.tags.includes(v) : c[g.key] === v) n++;
+      }
+      return n;
+    };
+    const distinct = (key) => {
+      const set = new Set();
+      st.cocktails.forEach(c => { const v = c[key]; if (Array.isArray(v)) v.forEach(x => set.add(x)); else set.add(v); });
+      return set;
+    };
+    const filterGroups = this.GROUPS.map(g => {
+      const present = distinct(g.key);
+      const ordered = g.order.filter(v => present.has(v));
+      const extras = [...present].filter(v => g.order.indexOf(v) === -1).sort();
+      const values = ordered.concat(extras);
+      const sel = st.filters[g.key];
+      const chips = values.map(v => {
+        const active = sel.includes(v);
+        const count = counted(g, v);
+        const disabled = count === 0 && !active;
+        const style = { fontFamily:'Inter,sans-serif', fontSize:'12.5px', fontWeight:500, borderRadius:'999px', padding:'5.5px 11px', cursor: disabled ? 'default' : 'pointer', lineHeight:1.3, userSelect:'none', display:'inline-flex', alignItems:'center', backgroundColor: active ? 'var(--accent)' : 'var(--field)', border:'1px solid ' + (active ? 'var(--accent)' : 'var(--pill-line)'), color: active ? 'var(--accent-ink)' : 'var(--ink-soft)', opacity: disabled ? 0.36 : 1, pointerEvents: disabled ? 'none' : 'auto' };
+        const countStyle = { marginLeft:'5px', fontSize:'11px', fontVariantNumeric:'tabular-nums', color: active ? 'var(--accent-ink)' : 'var(--ink-faint)', opacity: active ? 0.72 : 1 };
+        return { value:v, count:String(count), active, style, countStyle, onClick: () => this.toggleFilter(g.key, v) };
+      });
+      return { label:g.label, modeHint: g.mode === 'and' ? 'match all' : 'any of', chips };
+    });
+
+    // ---- active summary ----
+    const summaryChips = [];
+    this.GROUPS.forEach(g => st.filters[g.key].forEach(v => summaryChips.push({ label:v, onRemove: () => this.toggleFilter(g.key, v) })));
+    const selectedCount = this.GROUPS.reduce((a, g) => a + st.filters[g.key].length, 0);
+    const hasActive = st.search.trim() !== '' || selectedCount > 0;
+
+    // ---- visible + sections + card objects ----
+    const visible = this.computeVisible();
+    const totalCount = st.cocktails.length;
+    const shownCount = visible.length;
+
+    const ICONS = { gin:1, bourbon:1, rye:1, tequila:1, rum:1, vodka:1, cognac:1, aperitivo:1 };
+    let counter = 0;
+    const mkCard = (c) => {
+      counter++;
+      const ikey = (c.spirit || '').toLowerCase();
+      const iconSrc = ICONS[ikey] ? 'assets/spirits/' + ikey + '.png' : null;
+      const iconStyle = iconSrc
+        ? { position:'absolute', top:'16px', right:'16px', width:'27px', height:'27px', backgroundImage:'url("' + iconSrc + '")', backgroundSize:'contain', backgroundRepeat:'no-repeat', backgroundPosition:'center', opacity:0.9, pointerEvents:'none' }
+        : { display:'none' };
+      const open = !!st.open[c.name];
+      const hi = st.highlight === c.name;
+      const rootStyle = { position:'relative', background:'var(--card)', border:'1px solid ' + ((open || hi) ? 'var(--accent)' : 'var(--card-border)'), borderRadius:'var(--radius)', boxShadow: hi ? '0 0 0 2px var(--accent), 0 16px 36px rgba(0,0,0,.22)' : 'var(--shadow)', overflow:'hidden', transition:'border-color .15s ease, box-shadow .25s ease, background .3s ease' };
+      const detailStyle = { borderTop:'1px solid var(--card-border)', padding:'0 20px 20px', marginTop:'2px', display: open ? 'block' : 'none' };
+      const signStyle = { fontSize:'15px', lineHeight:1, display:'inline-block', transition:'transform .2s ease', transform: open ? 'rotate(45deg)' : 'none' };
+      return {
+        name:c.name, base:c.base, summary:c.summary, build:c.build, glass:c.glass, occasion:c.occasion,
+        garnish:c.garnish, history:c.history, note:c.note,
+        tagList:c.tags, specRows:c.spec.map(s => ({ amt:s[0], ing:s[1] })), stepList:c.steps,
+        meta: c.build + ' · ' + c.glass,
+        numLabel: ('0' + counter).slice(-2),
+        expandLabel: open ? 'Hide recipe' : 'Recipe',
+        rootStyle, detailStyle, signStyle, iconStyle,
+        onToggle: () => this.toggleOpen(c.name),
+        onOrder: () => this.openOrder(c.name),
+        onKey: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.toggleOpen(c.name); } },
+      };
+    };
+
+    let sections;
+    if (st.sort === 'az'){
+      const cards = [...visible].sort((a, b) => a.name.localeCompare(b.name)).map(mkCard);
+      sections = cards.length ? [{ spirit:null, cards }] : [];
+    } else {
+      const base = this.GROUPS.find(g => g.key === 'spirit').order;
+      const extras = [...new Set(st.cocktails.map(c => c.spirit))].filter(s => base.indexOf(s) === -1).sort();
+      const order = base.concat(extras);
+      sections = order.map(sp => ({ spirit:sp, list: visible.filter(c => c.spirit === sp) }))
+        .filter(s => s.list.length)
+        .map(s => ({ spirit:s.spirit, cards: s.list.map(mkCard) }));
+    }
+
+    // ---- orders & batches ----
+    const fmtTime = (ts) => { const d = new Date(ts); let h = d.getHours(); const m = d.getMinutes(); const ap = h < 12 ? 'AM' : 'PM'; h = h % 12 || 12; return h + ':' + ('0' + m).slice(-2) + ' ' + ap; };
+    const statusColor = { making:'var(--accent)', done:'var(--ink-faint)' };
+    const pill = (status) => ({ fontSize:'10px', letterSpacing:'.12em', textTransform:'uppercase', fontWeight:700, padding:'3px 9px', borderRadius:'999px', border:'1px solid ' + (statusColor[status]||statusColor.making), color: (statusColor[status]||statusColor.making), whiteSpace:'nowrap' });
+    const scaleSpec = this._scaleSpec || ((spec) => spec);
+    const byName = {}; st.cocktails.forEach(c => { byName[c.name] = c; });
+    const rowsOf = (spec) => (spec || []).map(r => ({ amt: r[0], ing: r[1] }));
+
+    const queueOrders = st.orders.filter(o => !o.batchId);
+    const queueList = queueOrders.map(o => {
+      const sel = !!st.selected[o.id];
+      return {
+        id:o.id, drink:o.drink, qtyLabel:'×' + o.qty, guest:o.guest, note:o.note,
+        hasGuest: !!o.guest, hasNote: !!o.note, timeLabel: fmtTime(o.ts), selected: sel,
+        rowStyle: { background:'var(--card)', border:'1px solid ' + (sel ? 'var(--accent)' : 'var(--card-border)'), borderRadius:'12px', padding:'11px 13px', cursor:'pointer', boxShadow: sel ? '0 0 0 1px var(--accent)' : 'none' },
+        boxStyle: { flex:'none', width:'20px', height:'20px', borderRadius:'6px', border:'1.5px solid ' + (sel ? 'var(--accent)' : 'var(--pill-line)'), background: sel ? 'var(--accent)' : 'transparent', color:'var(--accent-ink)', display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:'13px', lineHeight:1 },
+        checkMark: sel ? '✓' : '',
+        onToggleSelect: () => this.toggleSelect(o.id),
+        onView: () => this.openMake('order', o.id),
+        onMake: () => this.makeOrderNow(o.id),
+        onRemove: () => this.removeOrder(o.id),
+      };
+    });
+    const selCount = Object.keys(st.selected).filter(id => queueOrders.some(o => o.id===id)).length;
+
+    const batchList = st.batches.map(b => {
+      const ords = st.orders.filter(o => o.batchId===b.id);
+      const agg = {}; ords.forEach(o => { agg[o.drink] = (agg[o.drink]||0) + o.qty; });
+      const drinks = Object.keys(agg);
+      const totalDrinks = drinks.reduce((a,d) => a + agg[d], 0);
+      const madeCount = drinks.filter(d => (b.made||{})[d]).length;
+      const isDone = b.status === 'done';
+      return {
+        id:b.id, timeLabel: fmtTime(b.ts), title: 'Flight · ' + fmtTime(b.ts),
+        summary: drinks.map(d => agg[d] + '× ' + d).join('  ·  '),
+        countLabel: totalDrinks + ' drink' + (totalDrinks===1?'':'s') + ' · ' + drinks.length + ' recipe' + (drinks.length===1?'':'s'),
+        progressLabel: madeCount + '/' + drinks.length + ' made',
+        statusLabel: isDone ? 'Done' : 'Making', statusStyle: pill(isDone ? 'done' : 'making'),
+        cardStyle: { background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'13px 15px', opacity: isDone ? 0.66 : 1 },
+        onOpen: () => this.openMake('batch', b.id),
+        onRemove: () => this.removeBatch(b.id),
+      };
+    });
+
+    // make-view (scaled recipes)
+    let makeData = null;
+    if (st.makeView){
+      if (st.makeView.kind === 'order'){
+        const o = st.orders.find(x => x.id===st.makeView.id);
+        if (o){ const c = byName[o.drink];
+          makeData = { kind:'order', title:o.drink, subtitle: '×' + o.qty + (o.guest ? ' · for ' + o.guest : ''),
+            lines: [{ key:o.id, drink:o.drink, qtyLabel:'×'+o.qty, glass:c?c.glass:'', garnish:c?c.garnish:'',
+              specRows: c ? rowsOf(scaleSpec(c.spec, o.qty)) : [], steps: c?c.steps:[],
+              notesList: o.note ? [o.note] : [], hasNotes: !!o.note, isBatchLine:false, made:false,
+              lineStyle:{ background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'16px 16px 14px' } }] };
+        }
+      } else {
+        const b = st.batches.find(x => x.id===st.makeView.id);
+        if (b){ const ords = st.orders.filter(o => o.batchId===b.id);
+          const agg = {}, notes = {};
+          ords.forEach(o => { agg[o.drink] = (agg[o.drink]||0) + o.qty; if (o.note){ (notes[o.drink] = notes[o.drink]||[]).push((o.guest?o.guest+': ':'') + o.note); } });
+          const lines = Object.keys(agg).map(d => { const c = byName[d]; const made = !!(b.made||{})[d]; return {
+            key:b.id+'|'+d, drink:d, qtyLabel:'×'+agg[d], glass:c?c.glass:'', garnish:c?c.garnish:'',
+            specRows: c ? rowsOf(scaleSpec(c.spec, agg[d])) : [], steps: c?c.steps:[],
+            notesList: notes[d]||[], hasNotes: !!(notes[d]&&notes[d].length), isBatchLine:true, made,
+            checkMark: made ? '✓' : '',
+            boxStyle: { flex:'none', width:'24px', height:'24px', borderRadius:'7px', border:'1.5px solid ' + (made?'var(--accent)':'var(--pill-line)'), background: made?'var(--accent)':'transparent', color:'var(--accent-ink)', display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:'15px', lineHeight:1, cursor:'pointer' },
+            lineStyle:{ background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'15px 16px 14px', opacity: made?0.6:1 },
+            onToggleMade: () => this.toggleMade(b.id, d),
+          }; });
+          makeData = { kind:'batch', id:b.id, title:'Flight · ' + fmtTime(b.ts),
+            subtitle: lines.length + ' recipe' + (lines.length===1?'':'s') + ' · ' + ords.reduce((a,o)=>a+o.qty,0) + ' drinks',
+            isDone: b.status==='done', lines,
+            onMarkDone: () => this.setBatchStatus(b.id, 'done'),
+            onReopen: () => this.setBatchStatus(b.id, 'making'),
+            onRemove: () => this.removeBatch(b.id) };
+        }
+      }
+    }
+
+    const makingBatches = st.batches.filter(b => b.status!=='done').length;
+    const activeCount = queueOrders.length + st.orders.filter(o => { if (!o.batchId) return false; const b = st.batches.find(x=>x.id===o.batchId); return b && b.status!=='done'; }).length;
+    const ordersSummary = (queueOrders.length + ' on the rail · ' + st.batches.length + ' flight' + (st.batches.length===1?'':'s'));
+    const ordersBadgeStyle = { minWidth:'18px', height:'18px', padding:'0 5px', borderRadius:'999px', backgroundColor: activeCount ? 'var(--accent)' : 'var(--ink-faint)', color:'var(--accent-ink)', fontSize:'11px', fontWeight:700, display:'inline-flex', alignItems:'center', justifyContent:'center', fontVariantNumeric:'tabular-nums' };
+    const tabStyle = (active) => ({ flex:1, textAlign:'center', fontFamily:'Inter,sans-serif', fontSize:'12.5px', fontWeight:600, letterSpacing:'.02em', padding:'8px 10px', borderRadius:'9px', cursor:'pointer', border:'none', backgroundColor: active ? 'var(--accent)' : 'transparent', color: active ? 'var(--accent-ink)' : 'var(--ink-soft)' });
+
+    return {
+      appStyle,
+      darkIcon: st.dark ? '☀' : '☾',
+      onToggleOrders: () => this.toggleOrders(),
+      ordersOpen: st.ordersOpen, hasOrders: activeCount > 0, ordersCount: String(activeCount),
+      ordersBadgeStyle, ordersSummary,
+      stationTab: st.stationTab, stationIsQueue: st.stationTab==='queue', stationIsBatches: st.stationTab==='batches',
+      queueTabStyle: tabStyle(st.stationTab==='queue'), batchTabStyle: tabStyle(st.stationTab==='batches'),
+      onTabQueue: () => this.setTab('queue'), onTabBatches: () => this.setTab('batches'),
+      queueTabLabel: 'On the Rail (' + queueOrders.length + ')', batchTabLabel: 'Flights (' + st.batches.length + ')',
+      queueList, noQueue: queueOrders.length===0, batchList, noBatches: st.batches.length===0,
+      hasSelection: selCount>0, selectionLabel: selCount + ' selected',
+      onClearSelection: () => this.clearSelection(), onSelectAll: () => this.selectAllQueue(), onCreateBatch: () => this.createBatch(),
+      hasBatches: st.batches.length>0, hasDoneBatches: st.batches.some(b=>b.status==='done'),
+      onClearDoneBatches: () => this.clearDoneBatches(), onClearAllOrders: () => this.clearAllOrders(),
+      makeOpen: !!makeData, makeData, makeLines: makeData ? makeData.lines : [],
+      makeTitle: makeData ? makeData.title : '', makeSubtitle: makeData ? makeData.subtitle : '',
+      makeIsBatch: makeData ? makeData.kind==='batch' : false, makeIsDone: makeData ? !!makeData.isDone : false, makeNotDone: makeData ? !makeData.isDone : false,
+      onCloseMake: () => this.closeMake(),
+      onMakeMarkDone: () => { if (makeData && makeData.onMarkDone) makeData.onMarkDone(); },
+      onMakeReopen: () => { if (makeData && makeData.onReopen) makeData.onReopen(); },
+      onMakeRemove: () => { if (makeData && makeData.onRemove) makeData.onRemove(); },
+      orderModalName: st.orderModalName,
+      onCloseOrder: () => this.closeOrder(), onPlaceOrder: () => this.placeOrder(),
+      stop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
+      draftGuest: st.draftGuest, draftQty: String(st.draftQty), draftNote: st.draftNote,
+      onDraftGuest: (e) => this.setState({ draftGuest: e.target.value }),
+      onDraftNote: (e) => this.setState({ draftNote: e.target.value }),
+      onIncQty: () => this.incQty(), onDecQty: () => this.decQty(),
+      toast: st.toast,
+      onToggleDark: () => this.toggleDark(),
+      search: st.search, onSearch: (e) => this.onSearch(e),
+      onSurprise: () => this.surprise(),
+      onToggleFilters: () => this.toggleFilters(),
+      filtersOpen: st.filtersOpen,
+      filtersBtnStyle: { fontSize:'13px', fontWeight:600, color: st.filtersOpen ? 'var(--accent-ink)' : 'var(--accent)', background: st.filtersOpen ? 'var(--accent)' : 'var(--field)', border: '1px solid ' + (st.filtersOpen ? 'var(--accent)' : 'var(--pill-line)'), borderRadius:'11px', padding:'10px 14px', cursor:'pointer', whiteSpace:'nowrap', display:'inline-flex', alignItems:'center', gap:'7px' },
+      filterCountLabel: selectedCount ? '(' + selectedCount + ')' : '',
+      hasActive, shownCount, totalCount, summaryChips,
+      onClearAll: () => this.clearAll(),
+      sorts, filterGroups,
+      sections,
+      noResults: st.loaded && shownCount === 0,
+      notLoaded: !st.loaded,
+      isSprig: meta.ornament === 'sprig', isFleuron: meta.ornament === 'fleuron',
+      leaf: meta.leaf, index: meta.index,
+      footerText: 'The Hollow · Hernandez House Bar · verified June 2026',
+    };
+  }
 }
-
-/* ===================== WIRING ===================== */
-function clearAll(){
-  searchText = "";
-  document.getElementById("search").value = "";
-  GROUPS.forEach(g => active[g.key].clear());
-  document.querySelectorAll(".chip.active").forEach(ch => { ch.classList.remove("active"); ch.setAttribute("aria-pressed","false"); });
-  render();
-}
-
-document.getElementById("search").addEventListener("input", e => {
-  searchText = e.target.value.trim().toLowerCase();
-  render();
-});
-document.getElementById("clearAll").addEventListener("click", clearAll);
-
-document.getElementById("footerText").textContent =
-  "The Hollow · Hernandez House Bar · " + COCKTAILS.length + " cocktails · verified June 27, 2026";
-
-buildFilters();
-render();
 </script>
 </body>
 </html>

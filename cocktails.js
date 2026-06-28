@@ -1,56 +1,14 @@
 /* =========================================================================
-   THE HOLLOW — RECIPE DATA
-   =========================================================================
-   This is the ONLY file you edit to change the menu.
-   Add, remove, or edit drinks in the COCKTAILS list below, then save and
-   re-open index.html in your browser. Nothing else to touch.
-
-   ---- HOW TO ADD A DRINK -------------------------------------------------
-   Copy the template block below, paste it inside the [ ... ] list (after any
-   existing drink's closing "}," ), and fill it in. Keep the comma after "}".
-
-   {
-     name:     "Drink Name",          // shown as the card title
-     spirit:   "Gin",                 // groups the card into a section + the Spirit filter
-     base:     "Gin",                 // small label above the name (often same as spirit)
-     tags:     ["Sour/Tart","Citrus"],// flavor chips (Flavor filter, must match ALL selected)
-     build:    "Shaken",              // Stirred | Shaken | Built | Muddled
-     glass:    "Coupe",               // e.g. Rocks, Coupe, Highball, Collins, Mug...
-     occasion: "Anytime",             // Aperitif | Anytime | Brunch | Nightcap | Digestif
-     summary:  "One-line description shown on the card.",
-     spec:[                           // each line is [amount, ingredient]
-       ["2 oz","Some spirit"],
-       ["¾ oz","lemon juice"],
-       ["¾ oz","simple syrup"]
-     ],
-     steps:[                          // numbered method steps
-       "Shake with ice.",
-       "Strain into a chilled coupe."
-     ],
-     garnish: "Lemon twist",
-     history: "A sentence on where it comes from.",
-     note:    "Any spec caveat or source note (shown as 'Source note —')."
-   },
-
-   ---- RECOMMENDED VALUES (so the filters stay tidy) -----------------------
-   Using a NEW value is fine — it still shows up and gets its own filter chip.
-   These are just the existing ones, listed in the order they appear:
-
-     spirit:   Gin, Bourbon, Rye, Tequila, Rum, Vodka, Cognac, Aperitivo
-     tags:     Spirit-forward, Bitter, Sour/Tart, Sweet, Herbal, Floral,
-               Citrus, Fruity, Refreshing/Long, Creamy/Rich
-     build:    Stirred, Shaken, Built, Muddled
-     glass:    Rocks, Coupe, Highball, Collins, Copper mug, Mug,
-               Julep cup, Wine glass
-     occasion: Aperitif, Anytime, Brunch, Nightcap, Digestif
-
-   Tip: to change section/filter ordering, edit the GROUPS list inside the
-   HTML file. To remove a drink, delete its whole { ... }, block.
-
-   Fraction glyphs you can copy: ½ ⅓ ⅔ ¼ ¾ ⅛ ⅙
+   THE HOLLOW — RECIPE DATA  (edit this file to change the menu)
+   -------------------------------------------------------------------------
+   This is the only file you touch to add/remove/edit drinks. Each drink is a
+   { ... } block in the COCKTAILS list. Keep the trailing comma after each }.
+   Fields: name, spirit, base, tags[], build, glass, occasion, summary,
+           spec[ [amount, ingredient] ], steps[], garnish, history, note.
+   Fraction glyphs: ½ ⅓ ⅔ ¼ ¾ ⅛ ⅙
    ========================================================================= */
 
-const COCKTAILS = [
+export const COCKTAILS = [
   {name:"Negroni", spirit:"Gin", base:"Gin", tags:["Bitter","Spirit-forward","Herbal"], build:"Stirred", glass:"Rocks", occasion:"Aperitif",
    summary:`Equal parts gin, Campari, and sweet vermouth — the benchmark bitter aperitivo.`,
    spec:[["1 oz","Hendrick's gin"],["1 oz","Campari"],["1 oz","Carpano Antica sweet vermouth"]],

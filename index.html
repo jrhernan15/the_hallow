@@ -74,6 +74,15 @@
       </button>
     </div>
 
+    <sc-if value="{{ hasMyDrinks }}" hint-placeholder-val="">
+      <div style="max-width:1180px;margin:0 auto;padding:0 18px 11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:var(--ink-faint,#8A8474);white-space:nowrap">Your drinks</span>
+        <sc-for list="{{ myDrinks }}" as="md" hint-placeholder-count="1">
+          <span style="{{ md.style }}">{{ md.drink }} · {{ md.label }}</span>
+        </sc-for>
+      </div>
+    </sc-if>
+
     <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ true }}">
       <div data-summary style="max-width:1180px;margin:0 auto;padding:0 18px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-size:12.5px;color:var(--ink-soft,#5C584D);white-space:nowrap">Showing <b style="color:var(--ink,#262420);font-weight:600">{{ shownCount }}</b> of {{ totalCount }}</span>
@@ -213,7 +222,7 @@
         </div>
         <div style="margin-top:18px">
           <label style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:6px">Who's it for? (optional)</label>
-          <input value="{{ draftGuest }}" onChange="{{ onDraftGuest }}" autocomplete="off" placeholder="Janice, Abby — or leave it blank" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
+          <input value="{{ draftGuest }}" onChange="{{ onDraftGuest }}" autocomplete="off" placeholder="e.g. Janice, Abby — or leave it blank" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
         </div>
         <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px">
           <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D)">Quantity</label>
@@ -386,8 +395,11 @@
             <sc-if value="{{ makeIsDone }}" hint-placeholder-val="">
               <button type="button" onClick="{{ onMakeReopen }}" style="font-size:13px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 18px;cursor:pointer">Reopen</button>
             </sc-if>
+            <sc-if value="{{ makeIsMaking }}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{ onMakeMarkReady }}" style="font-size:13px;font-weight:600;color:var(--accent2,#CFA267);background:transparent;border:1px solid var(--accent2,#CFA267);border-radius:11px;padding:11px 18px;cursor:pointer">Mark ready</button>
+            </sc-if>
             <sc-if value="{{ makeNotDone }}" hint-placeholder-val="{{ true }}">
-              <button type="button" onClick="{{ onMakeMarkDone }}" style="font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:11px 20px;cursor:pointer">Mark round done</button>
+              <button type="button" onClick="{{ onMakeMarkServed }}" style="font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:11px 20px;cursor:pointer">Mark served</button>
             </sc-if>
           </footer>
         </sc-if>
@@ -444,6 +456,23 @@
                   <span style="{{ it.boxStyle }}">{{ it.checkMark }}</span>
                   <span style="flex:1;font-size:14.5px;color:var(--ink,#ECE7D7)">{{ it.name }}</span>
                   <span style="font-size:11.5px;color:var(--ink-faint,#827E6D);font-variant-numeric:tabular-nums">{{ it.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+          <div style="height:1px;background:var(--card-border,#2D3422);margin:16px 0 2px"></div>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px">
+            <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink,#ECE7D7)">Drinks</div>
+            <div style="font-size:11.5px;color:var(--ink-faint,#827E6D)">{{ drink86Note }}</div>
+          </div>
+          <div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin:5px 0 2px;line-height:1.5">Take a specific drink off the menu — independent of ingredients.</div>
+          <sc-for list="{{ drinkGroups }}" as="dg" hint-placeholder-count="1">
+            <div style="margin-top:14px">
+              <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:2px">{{ dg.label }}</div>
+              <sc-for list="{{ dg.items }}" as="di" hint-placeholder-count="3">
+                <div onClick="{{ di.onToggle }}" style="{{ di.rowStyle }}">
+                  <span style="{{ di.boxStyle }}">{{ di.checkMark }}</span>
+                  <span style="flex:1;font-size:14.5px;color:var(--ink,#ECE7D7)">{{ di.name }}</span>
                 </div>
               </sc-for>
             </div>
@@ -548,7 +577,7 @@ class Component extends DCLogic {
     } catch(e){}
   }
   toMs(t){ const ms = Date.parse(String(t || '').replace(' ', 'T') + 'Z'); return isNaN(ms) ? Date.now() : ms; }
-  mapTicket(t){ return { id:String(t.id), drink:t.drink, qty:t.qty || 1, guest:t.guest_name || '', note:t.notes || '', ts:this.toMs(t.created_at), batchId: (t.round_id != null ? String(t.round_id) : null), mine: (this._mine || []).indexOf(t.id) !== -1 }; }
+  mapTicket(t){ return { id:String(t.id), drink:t.drink, qty:t.qty || 1, guest:t.guest_name || '', note:t.notes || '', status: t.status || 'rail', ts:this.toMs(t.created_at), batchId: (t.round_id != null ? String(t.round_id) : null), mine: (this._mine || []).indexOf(t.id) !== -1 }; }
   applyServerState(d){
     const rounds = (d && Array.isArray(d.rounds)) ? d.rounds : [];
     const rail   = (d && Array.isArray(d.rail))   ? d.rail   : [];
@@ -556,8 +585,13 @@ class Component extends DCLogic {
     rail.forEach(t => orders.push(this.mapTicket(t)));
     rounds.forEach(r => (r.tickets || []).forEach(t => orders.push(this.mapTicket(t))));
     orders.sort((a, b) => b.ts - a.ts);
-    const batches = rounds.map(r => ({ id:String(r.id), ts:this.toMs(r.created_at), status: (r.status === 'served' ? 'done' : 'making') }));
+    const batches = rounds.map(r => ({ id:String(r.id), ts:this.toMs(r.created_at), status: (r.status === 'served' ? 'done' : (r.status === 'up' ? 'up' : 'making')) }));
     batches.sort((a, b) => b.ts - a.ts);
+    // chime when one of my own drinks becomes ready (transitions to 'up')
+    const prev = this._prevMine || {}; const cur = {}; let justReady = false;
+    orders.forEach(o => { if (o.mine) { cur[o.id] = o.status; if (o.status === 'up' && prev[o.id] && prev[o.id] !== 'up') justReady = true; } });
+    this._prevMine = cur;
+    if (justReady) this.chime();
     const theme = (d && d.theme) || 'auto';
     this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme) });
   }
@@ -573,6 +607,7 @@ class Component extends DCLogic {
     const name = (this.state.draftGuest || '').trim();
     const note = (this.state.draftNote || '').trim();
     const qty = this.state.draftQty || 1;
+    this.unlockAudio();
     this.api('POST', '/api/tickets', { drink: drink, name: name, notes: note, qty: qty })
       .then(t => { try { this._mine = (this._mine || []).concat(t.id); localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){} this.refreshState(); })
       .catch(() => this.flashToast('Could not reach the bar — try again', 2400));
@@ -613,6 +648,15 @@ class Component extends DCLogic {
     this.api('PATCH', '/api/rounds/' + batchId, { status: (status === 'done' ? 'served' : 'working') })
       .then(() => this.refreshState()).catch(() => this.flashToast('Could not update the round', 2000));
   }
+  setRoundStatus(id, s){ this.api('PATCH', '/api/rounds/' + id, { status: s }).then(() => this.refreshState()).catch(() => this.flashToast('Could not update the round', 2000)); }
+  unlockAudio(){ try { const C = window.AudioContext || window.webkitAudioContext; if (!C) return; this._actx = this._actx || new C(); if (this._actx.state === 'suspended') this._actx.resume(); } catch(e){} }
+  chime(){ try {
+    const C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+    const ctx = this._actx || (this._actx = new C()); if (ctx.state === 'suspended') ctx.resume();
+    const t0 = ctx.currentTime;
+    [880, 1320].forEach((f, i) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type='sine'; o.frequency.value=f; o.connect(g); g.connect(ctx.destination); const t=t0+i*0.16; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.28,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.3); o.start(t); o.stop(t+0.32); });
+    if (navigator.vibrate) navigator.vibrate([90, 50, 90]);
+  } catch(e){} }
   removeBatch(batchId){
     this.setState({ makeView: null });
     this.api('DELETE', '/api/rounds/' + batchId).then(() => this.refreshState()).catch(()=>{});
@@ -697,7 +741,7 @@ class Component extends DCLogic {
   }
   cleanIng(s){ return String(s||'').replace(/\s*\([^)]*\)/g, '').trim(); }
   reqIngs(c){ return (c.spec||[]).filter(s => !/optional/i.test(s[1])).map(s => this.cleanIng(s[1])); }
-  isAvailable(c){ const out = this.state.eightySix; if (!out || !out.length) return true; const req = this.reqIngs(c); for (const i of req) if (out.indexOf(i) !== -1) return false; return true; }
+  isAvailable(c){ const out = this.state.eightySix; if (!out || !out.length) return true; if (out.indexOf('drink:'+c.name) !== -1) return false; const req = this.reqIngs(c); for (const i of req) if (out.indexOf(i) !== -1) return false; return true; }
   computeVisible(){ return this.state.cocktails.filter(c => this.passSearch(c) && this.passGroups(c, null) && this.isAvailable(c)); }
 
   renderVals(){
@@ -818,7 +862,7 @@ class Component extends DCLogic {
 
     // ---- orders & batches ----
     const fmtTime = (ts) => { const d = new Date(ts); let h = d.getHours(); const m = d.getMinutes(); const ap = h < 12 ? 'AM' : 'PM'; h = h % 12 || 12; return h + ':' + ('0' + m).slice(-2) + ' ' + ap; };
-    const statusColor = { making:'var(--accent)', done:'var(--ink-faint)' };
+    const statusColor = { making:'var(--accent)', up:'var(--accent2)', done:'var(--ink-faint)' };
     const pill = (status) => ({ fontSize:'10px', letterSpacing:'.12em', textTransform:'uppercase', fontWeight:700, padding:'3px 9px', borderRadius:'999px', border:'1px solid ' + (statusColor[status]||statusColor.making), color: (statusColor[status]||statusColor.making), whiteSpace:'nowrap' });
     const scaleSpec = this._scaleSpec || ((spec) => spec);
     const byName = {}; st.cocktails.forEach(c => { byName[c.name] = c; });
@@ -853,7 +897,7 @@ class Component extends DCLogic {
         summary: drinks.map(d => agg[d] + '× ' + d).join('  ·  '),
         countLabel: totalDrinks + ' drink' + (totalDrinks===1?'':'s') + ' · ' + drinks.length + ' recipe' + (drinks.length===1?'':'s'),
         progressLabel: madeCount + '/' + drinks.length + ' made',
-        statusLabel: isDone ? 'Done' : 'Making', statusStyle: pill(isDone ? 'done' : 'making'),
+        statusLabel: b.status==='done' ? 'Done' : (b.status==='up' ? 'Ready' : 'Making'), statusStyle: pill(b.status==='done' ? 'done' : (b.status==='up' ? 'up' : 'making')),
         cardStyle: { background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'13px 15px', opacity: isDone ? 0.66 : 1 },
         onOpen: () => this.openMake('batch', b.id),
         onRemove: () => this.removeBatch(b.id),
@@ -888,9 +932,10 @@ class Component extends DCLogic {
           }; });
           makeData = { kind:'batch', id:b.id, title:'Round · ' + fmtTime(b.ts),
             subtitle: lines.length + ' recipe' + (lines.length===1?'':'s') + ' · ' + ords.reduce((a,o)=>a+o.qty,0) + ' drinks',
-            isDone: b.status==='done', lines,
-            onMarkDone: () => this.setBatchStatus(b.id, 'done'),
-            onReopen: () => this.setBatchStatus(b.id, 'making'),
+            isDone: b.status==='done', isMaking: b.status==='making', lines,
+            onMarkReady: () => this.setRoundStatus(b.id, 'up'),
+            onMarkServed: () => this.setRoundStatus(b.id, 'served'),
+            onReopen: () => this.setRoundStatus(b.id, 'working'),
             onRemove: () => this.removeBatch(b.id) };
         }
       }
@@ -933,6 +978,23 @@ class Component extends DCLogic {
     const themeOptions = [['auto','Auto'],['herbarium','Default'],['halloween','Halloween'],['christmas','Christmas'],['birthday','Birthday']].map((p) => ({ key:p[0], label:p[1], style: themeChip(st.serverTheme===p[0]), onSelect: () => this.setTheme(p[0]) }));
     const themeAutoNote = 'Auto follows the calendar — now showing ' + ((this.THEMES[this.autoTheme()]||{}).label || 'Default') + '.';
 
+    // ---- per-drink 86 (take a single drink off the menu) ----
+    const drinkSpiritOrder = (this.GROUPS.find(g=>g.key==='spirit')||{}).order || [];
+    const drinkBySpirit = {}; st.cocktails.forEach(c => { (drinkBySpirit[c.spirit]=drinkBySpirit[c.spirit]||[]).push(c); });
+    const drinkSpiritKeys = drinkSpiritOrder.filter(k=>drinkBySpirit[k]).concat(Object.keys(drinkBySpirit).filter(k=>drinkSpiritOrder.indexOf(k)===-1));
+    const drinkGroups = drinkSpiritKeys.map(sp => ({ label:sp, items: drinkBySpirit[sp].map(c => { const inStock = !outSet['drink:'+c.name]; return {
+        name:c.name, inStock,
+        rowStyle:{ display:'flex', alignItems:'center', gap:'11px', padding:'9px 4px', cursor:'pointer', borderBottom:'1px solid var(--card-border)', opacity: inStock?1:0.5 },
+        boxStyle: box86(inStock), checkMark: inStock?'✓':'',
+        onToggle: () => this.toggle86('drink:'+c.name, inStock) }; }) }));
+    const drink86Count = st.cocktails.filter(c => outSet['drink:'+c.name]).length;
+
+    // ---- your drinks (per-phone live status strip) ----
+    const myLabel = (s) => s==='up' ? 'Ready!' : (s==='working' ? 'Making' : 'On the rail');
+    const myPill = (s) => { const up=s==='up', work=s==='working'; return { fontSize:'12px', fontWeight:600, padding:'4px 11px', borderRadius:'999px', whiteSpace:'nowrap', border:'1px solid '+(up?'var(--accent2)':'var(--pill-line)'), background: up?'var(--accent2)':(work?'var(--pill-bg)':'var(--field)'), color: up?'var(--accent-ink)':(work?'var(--pill-ink)':'var(--ink-soft)') }; };
+    const myDrinks = st.orders.filter(o => o.mine && o.status !== 'served').sort((a,b)=>a.ts-b.ts).map(o => ({ drink: o.drink + (o.qty>1?' ×'+o.qty:''), label: myLabel(o.status), style: myPill(o.status) }));
+    const outIngredients = st.eightySix.filter(n => n.indexOf('drink:') !== 0).length;
+
     return {
       appStyle,
       darkIcon: st.dark ? '☀' : '☾',
@@ -950,9 +1012,10 @@ class Component extends DCLogic {
       onClearDoneBatches: () => this.clearDoneBatches(), onClearAllOrders: () => this.clearAllOrders(),
       makeOpen: !!makeData, makeData, makeLines: makeData ? makeData.lines : [],
       makeTitle: makeData ? makeData.title : '', makeSubtitle: makeData ? makeData.subtitle : '',
-      makeIsBatch: makeData ? makeData.kind==='batch' : false, makeIsDone: makeData ? !!makeData.isDone : false, makeNotDone: makeData ? !makeData.isDone : false,
+      makeIsBatch: makeData ? makeData.kind==='batch' : false, makeIsDone: makeData ? !!makeData.isDone : false, makeIsMaking: makeData ? !!makeData.isMaking : false, makeNotDone: makeData ? !makeData.isDone : false,
       onCloseMake: () => this.closeMake(),
-      onMakeMarkDone: () => { if (makeData && makeData.onMarkDone) makeData.onMarkDone(); },
+      onMakeMarkReady: () => { if (makeData && makeData.onMarkReady) makeData.onMarkReady(); },
+      onMakeMarkServed: () => { if (makeData && makeData.onMarkServed) makeData.onMarkServed(); },
       onMakeReopen: () => { if (makeData && makeData.onReopen) makeData.onReopen(); },
       onMakeRemove: () => { if (makeData && makeData.onRemove) makeData.onRemove(); },
       orderModalName: st.orderModalName,
@@ -971,8 +1034,10 @@ class Component extends DCLogic {
       onGateInput: (e) => this.onGateInput(e), onSubmitGate: () => this.submitGate(), onCloseGate: () => this.closeGate(),
       pantryOpen: st.pantryOpen, onClose86: () => this.close86(),
       eightySixGroups: eightySixGroups, has86: st.eightySix.length>0, onRestockAll: () => this.restockAll(),
-      eightySixStock: (stockTotal - st.eightySix.length) + ' of ' + stockTotal + ' in stock',
+      eightySixStock: (stockTotal - outIngredients) + ' of ' + stockTotal + ' in stock',
       eightySixHidden: hiddenCount + ' drink' + (hiddenCount===1?'':'s') + ' hidden',
+      drinkGroups: drinkGroups, drink86Note: drink86Count===0 ? 'All drinks on the menu.' : (drink86Count + ' drink' + (drink86Count===1?'':'s') + ' 86’d.'),
+      hasMyDrinks: myDrinks.length>0, myDrinks: myDrinks,
       logoSrc: logoSrc, themeOptions: themeOptions, themeAutoNote: themeAutoNote,
       search: st.search, onSearch: (e) => this.onSearch(e),
       onSurprise: () => this.surprise(),

@@ -208,7 +208,7 @@
     </sc-for>
   </main>
 
-  <footer data-chrome style="max-width:1180px;margin:10px auto 50px;padding:24px;text-align:center;color:var(--ink-faint,#8A8474);font-size:12.5px;letter-spacing:.04em;border-top:1px solid var(--card-border,#E8E4DC)">{{ footerText }} <button type="button" onClick="{{ onToggleDark }}" title="Toggle light / dark" aria-label="Toggle light or dark mode" style="margin-left:9px;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;color:var(--accent2,#AD7C44);background:none;border:1.5px solid var(--accent2,#AD7C44);border-radius:999px;padding:4px;cursor:pointer;opacity:.85" style-hover="opacity:1;background:var(--pill-bg,rgba(126,144,112,.08))"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="{{ darkIconPath }}"></path></svg></button> <button type="button" onClick="{{ onOpen86 }}" aria-label="The 86 — staff stock list" title="The 86" style="margin-left:9px;display:inline-flex;align-items:center;vertical-align:middle;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--accent2,#AD7C44);background:none;border:1.5px solid var(--accent2,#AD7C44);border-radius:999px;padding:3px 11px;cursor:pointer;opacity:.85" style-hover="opacity:1;background:var(--pill-bg,rgba(126,144,112,.08))">The 86</button></footer>
+  <footer data-chrome style="max-width:1180px;margin:10px auto 50px;padding:24px;text-align:center;color:var(--ink-faint,#8A8474);font-size:12.5px;letter-spacing:.04em;border-top:1px solid var(--card-border,#E8E4DC)">{{ footerText }} <button type="button" onClick="{{ onOpenSettings }}" title="Settings" aria-label="Open settings" style="margin-left:9px;display:inline-flex;align-items:center;gap:5px;vertical-align:middle;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--accent2,#AD7C44);background:none;border:1.5px solid var(--accent2,#AD7C44);border-radius:999px;padding:3px 11px;cursor:pointer;opacity:.85" style-hover="opacity:1;background:var(--pill-bg,rgba(126,144,112,.08))"><svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>Settings</button> <button type="button" onClick="{{ onOpen86 }}" aria-label="The 86 — staff stock list" title="The 86" style="margin-left:9px;display:inline-flex;align-items:center;vertical-align:middle;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--accent2,#AD7C44);background:none;border:1.5px solid var(--accent2,#AD7C44);border-radius:999px;padding:3px 11px;cursor:pointer;opacity:.85" style-hover="opacity:1;background:var(--pill-bg,rgba(126,144,112,.08))">The 86</button></footer>
 
   <sc-if value="{{ orderModalName }}" hint-placeholder-val="">
     <div data-chrome data-modalwrap onClick="{{ onCloseOrder }}" style="position:fixed;inset:0;z-index:60;background:rgba(12,11,8,.55);display:flex;align-items:center;justify-content:center;padding:20px">
@@ -480,14 +480,6 @@
                 </sc-for>
               </div>
               <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:10px;line-height:1.4">{{ themeAutoNote }}</div>
-              <div style="height:1px;background:var(--card-border,#2D3422);margin:16px 0 0"></div>
-              <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:14px 0 4px">Notification sound</div>
-              <div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin:0 0 9px;line-height:1.5">Plays on this phone when one of your drinks is marked ready. Tap to hear &amp; set — “Match theme” follows the season.</div>
-              <div style="display:flex;flex-wrap:wrap;gap:7px">
-                <sc-for list="{{ chimeOptions }}" as="ch" hint-placeholder-count="7">
-                  <button type="button" onClick="{{ ch.onSelect }}" style="{{ ch.style }}">{{ ch.label }}</button>
-                </sc-for>
-              </div>
             </div>
           </sc-if>
           <sc-if value="{{ tab86IsLedger }}" hint-placeholder-val="">
@@ -584,6 +576,57 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ settingsOpen }}" hint-placeholder-val="">
+    <div data-chrome onClick="{{ onCloseSettings }}" style="position:fixed;inset:0;z-index:58;background:rgba(12,11,8,.5);display:flex;justify-content:flex-end">
+      <aside onClick="{{ stop }}" style="width:min(460px,100%);height:100%;background:var(--bg2,#1A1E14);border-left:1px solid var(--card-border,#2D3422);box-shadow:-12px 0 48px rgba(0,0,0,.35);display:flex;flex-direction:column">
+        <header style="padding:16px 18px 14px;border-bottom:1px solid var(--card-border,#2D3422);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+          <div>
+            <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267)">This device</div>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:2px 0 0;color:var(--ink,#ECE7D7)">Settings</h2>
+          </div>
+          <button type="button" onClick="{{ onCloseSettings }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
+        </header>
+        <div style="flex:1;overflow:auto;overscroll-behavior:contain;padding:16px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:0 0 6px">Your name</div>
+          <input type="text" value="{{ myName }}" onChange="{{ onMyName }}" autocomplete="name" placeholder="e.g. James" style="width:100%;box-sizing:border-box;font-family:'Inter',sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
+          <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin:7px 2px 0;line-height:1.45">Saved on this device and pre-filled into “Who's it for?” when you order.</div>
+
+          <div style="height:1px;background:var(--card-border,#2D3422);margin:18px 0 0"></div>
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:14px 0 8px">Your tab</div>
+          <sc-if value="{{ hasMyDrinks }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ myDrinks }}" as="md" hint-placeholder-count="2">
+                <span style="{{ md.style }}">{{ md.drink }} · {{ md.label }}</span>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noMyDrinks }}" hint-placeholder-val="">
+            <div style="font-size:13px;color:var(--ink-faint,#827E6D);line-height:1.5">Nothing on the board yet — once you order, your drinks show here until they're served.</div>
+          </sc-if>
+
+          <div style="height:1px;background:var(--card-border,#2D3422);margin:18px 0 0"></div>
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:14px 0 8px">Appearance</div>
+          <div style="display:flex;gap:7px">
+            <button type="button" onClick="{{ onSetLight }}" style="{{ appearanceLightStyle }}">Light</button>
+            <button type="button" onClick="{{ onSetDark }}" style="{{ appearanceDarkStyle }}">Dark</button>
+          </div>
+
+          <div style="height:1px;background:var(--card-border,#2D3422);margin:18px 0 0"></div>
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:14px 0 4px">Notification sound</div>
+          <div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin:0 0 9px;line-height:1.5">Plays when one of your drinks is marked ready. Tap to hear &amp; set — “Match theme” follows the season.</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            <sc-for list="{{ chimeOptions }}" as="ch" hint-placeholder-count="6">
+              <button type="button" onClick="{{ ch.onSelect }}" style="{{ ch.style }}">{{ ch.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <footer style="padding:12px 16px;border-top:1px solid var(--card-border,#2D3422)">
+          <button type="button" onClick="{{ onResetMyData }}" style="width:100%;font-size:12.5px;font-weight:600;color:#CC7A6A;background:transparent;border:1px solid #6E4A44;border-radius:11px;padding:11px;cursor:pointer">Reset my data</button>
+        </footer>
+      </aside>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ showTop }}" hint-placeholder-val="">
     <button type="button" data-chrome onClick="{{ onScrollTop }}" aria-label="Back to top" style="position:fixed;right:18px;bottom:24px;z-index:50;width:46px;height:46px;border-radius:999px;border:1px solid var(--pill-line,#B9C6AC);background:var(--accent,#2F3D2C);color:var(--accent-ink,#F4F1E6);box-shadow:0 8px 22px rgba(0,0,0,.28);cursor:pointer;display:inline-flex;align-items:center;justify-content:center" style-hover="filter:brightness(1.08)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"></path></svg></button>
   </sc-if>
@@ -611,6 +654,7 @@ class Component extends DCLogic {
       draftGuest: '', draftQty: 1, draftNote: '', toast: null, showTop: false,
       eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto', eightySixTab: 'ingredients', chimePref: 'auto',
       ledgerOpen: false, ledgerRows: [], ledgerNightStart: '', ledgerNow: '', ledgerScope: 'tonight',
+      settingsOpen: false, myName: '',
     };
     this.GROUPS = [
       { key:'spirit',   label:'Spirit',   mode:'or',  order:['Gin','Bourbon','Rye','Tequila','Rum','Vodka','Cognac','Aperitivo','THC'] },
@@ -655,6 +699,7 @@ class Component extends DCLogic {
     try { this._mine = JSON.parse(localStorage.getItem('hollow_mine_v1') || '[]'); if (!Array.isArray(this._mine)) this._mine = []; } catch(e){ this._mine = []; }
     try { const cp = localStorage.getItem('hollow_chime'); if (cp) this.setState({ chimePref: cp }); } catch(e){}
     try { const dk = localStorage.getItem('hollow_dark'); if (dk != null) this.setState({ dark: dk === '1' }); } catch(e){}
+    try { const nm = localStorage.getItem('hollow_name_v1'); if (nm) this.setState({ myName: nm }); } catch(e){}
     this.refreshState();
     this.openStream();
     this._onScroll = () => { const v = (window.scrollY || window.pageYOffset || 0) > 400; if (v !== this.state.showTop) this.setState({ showTop: v }); };
@@ -699,7 +744,7 @@ class Component extends DCLogic {
 
   flashToast(msg, ms){ this.setState({ toast: msg }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast:null }), ms||2000); }
 
-  openOrder(name){ this.setState({ orderModalName: name, draftGuest: '', draftQty:1, draftNote:'' }); }
+  openOrder(name){ this.setState({ orderModalName: name, draftGuest: this.state.myName || '', draftQty:1, draftNote:'' }); }
   closeOrder(){ this.setState({ orderModalName: null }); }
   incQty(){ this.setState(s => ({ draftQty: Math.min(99, s.draftQty + 1) })); }
   decQty(){ this.setState(s => ({ draftQty: Math.max(1, s.draftQty - 1) })); }
@@ -712,7 +757,7 @@ class Component extends DCLogic {
     this.api('POST', '/api/tickets', { drink: drink, name: name, notes: note, qty: qty })
       .then(t => { try { this._mine = (this._mine || []).concat(t.id); localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){} this.refreshState(); })
       .catch(() => this.flashToast('Could not reach the bar — try again', 2400));
-    this.setState({ orderModalName: null, draftGuest: '' });
+    this.setState({ orderModalName: null, draftGuest: this.state.myName || '' });
     this.flashToast('Sent to the bar ✓', 2200);
   }
 
@@ -844,6 +889,11 @@ class Component extends DCLogic {
   fetchHistory(){ fetch('/api/history').then(r=>r.json()).then(d=>{ this.setState({ ledgerRows: Array.isArray(d.rows)?d.rows:[], ledgerNightStart: d.nightStart||'', ledgerNow: d.now||'' }); }).catch(()=>{}); }
   newNight(){ this.api('POST','/api/history/new-night',{ code:'5352' }).then(()=>this.fetchHistory()).catch(()=>this.flashToast('Could not start a new night',2000)); }
   clearHistory(){ try { if (!window.confirm('Clear all-time stats? This erases the whole history and cannot be undone.')) return; } catch(e){} this.api('POST','/api/history/clear',{ code:'5352' }).then(()=>this.fetchHistory()).catch(()=>this.flashToast('Could not clear stats',2000)); }
+  openSettings(){ this.setState({ settingsOpen:true }); }
+  closeSettings(){ this.setState({ settingsOpen:false }); }
+  onMyName(e){ const v = (e.target.value || '').slice(0,60); this.setState({ myName: v }); try { localStorage.setItem('hollow_name_v1', v); } catch(_){} }
+  setDark(v){ try { localStorage.setItem('hollow_dark', v ? '1' : '0'); } catch(_){} this.setState({ dark: !!v }); }
+  resetMyData(){ try { if (!window.confirm('Clear this device’s saved name, preferences, and tab?')) return; } catch(_){} try { ['hollow_name_v1','hollow_chime','hollow_dark','hollow_mine_v1'].forEach(k => localStorage.removeItem(k)); } catch(_){} this._mine = []; this.setState({ myName:'', chimePref:'auto', dark:true, draftGuest:'' }); this.refreshState(); this.flashToast('Reset ✓', 1600); }
   toggle86(ing, makeOut){ this.setState(s => { const set=new Set(s.eightySix); if (makeOut) set.add(ing); else set.delete(ing); return { eightySix:[...set] }; }); this.api('POST','/api/86',{ ingredient:ing, out:makeOut, code:'5352' }).then(()=>this.refreshState()).catch(()=>{ this.flashToast('Could not reach the bar',2000); this.refreshState(); }); }
   restockAll(){ this.setState({ eightySix: [] }); this.api('POST','/api/86/restock',{ code:'5352' }).then(()=>this.refreshState()).catch(()=>this.refreshState()); }
   onLogoDown(){ clearTimeout(this._logoT); this._logoT = setTimeout(()=>this.openEightySix(), 1500); }
@@ -919,7 +969,7 @@ class Component extends DCLogic {
     const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
     const pal = st.dark ? dir.dark : dir.light;
     try { document.documentElement.style.background = pal.bg; document.body.style.background = pal.bg; } catch(e){}
-    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.ledgerOpen);
+    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.ledgerOpen || st.settingsOpen);
     if (_overlay && !this._overlayLocked) { this._overlayLocked = true; this.lockScroll(); }
     else if (!_overlay && this._overlayLocked) { this._overlayLocked = false; this.unlockScroll(); }
     const meta = dir.meta;
@@ -1226,6 +1276,10 @@ class Component extends DCLogic {
       ledgerSince: ledgerVals.ledgerSince, hasLedger: ledgerVals.hasLedger, ledgerEmpty: ledgerVals.ledgerEmpty, ledgerStaff: ledgerVals.ledgerStaff,
       ledgerTop: ledgerVals.ledgerTop, ledgerOz: ledgerVals.ledgerOz, ledgerSupers: ledgerVals.ledgerSupers, ledgerFeed: ledgerVals.ledgerFeed,
       darkIconPath: st.dark ? sunPath : moonPath,
+      settingsOpen: st.settingsOpen, onOpenSettings: () => this.openSettings(), onCloseSettings: () => this.closeSettings(),
+      myName: st.myName, onMyName: (e) => this.onMyName(e), noMyDrinks: myDrinks.length===0,
+      appearanceLightStyle: themeChip(!st.dark), appearanceDarkStyle: themeChip(st.dark),
+      onSetLight: () => this.setDark(false), onSetDark: () => this.setDark(true), onResetMyData: () => this.resetMyData(),
       onToggleOrders: () => this.toggleOrders(),
       ordersOpen: st.ordersOpen, hasOrders: activeCount > 0, ordersCount: String(activeCount),
       ordersBadgeStyle, ordersSummary,

@@ -22,3 +22,9 @@ package-lock.json
 # Scratch / process artifacts (do not commit)
 uploads/
 screenshots/
+
+# Live ordering database (created at runtime, never commit)
+data/
+*.db
+*.db-wal
+*.db-shm

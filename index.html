@@ -636,7 +636,14 @@ class Component extends DCLogic {
   onLogoUp(){ clearTimeout(this._logoT); }
 
   // ---- themes ----
-  autoTheme(){ try { const d=new Date(); const m=d.getMonth(); const day=d.getDate(); if (m===9) return 'halloween'; if (m===11 && day<=26) return 'christmas'; } catch(e){} return 'herbarium'; }
+  autoTheme(){ try {
+    const d=new Date(); const y=d.getFullYear(); const m=d.getMonth(); const day=d.getDate();
+    if (m===9) return 'halloween';                              // October
+    const nov1=new Date(y,10,1).getDay();                       // weekday of Nov 1 (0=Sun)
+    const blackFriday = 1 + ((4 - nov1 + 7) % 7) + 21 + 1;      // day after the 4th Thursday (Thanksgiving)
+    if (m===10 && day>=blackFriday) return 'christmas';         // day after Thanksgiving -> Nov 30
+    if (m===11 && day<=26) return 'christmas';                  // Dec 1 -> 26
+  } catch(e){} return 'herbarium'; }
   resolveTheme(t){ if (t==='auto') return this.autoTheme(); return this.THEMES[t] ? t : 'herbarium'; }
   setTheme(t){ this.setState({ serverTheme: t, direction: this.resolveTheme(t) }); this.api('POST','/api/theme',{ theme:t, code:'5352' }).then(()=>this.refreshState()).catch(()=>{ this.flashToast('Could not save theme',2000); this.refreshState(); }); }
 

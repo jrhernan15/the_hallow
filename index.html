@@ -252,7 +252,7 @@
           </div>
         </header>
 
-        <div style="flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+        <div style="flex:1;overflow:auto;overscroll-behavior:contain;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
           <sc-if value="{{ stationIsQueue }}" hint-placeholder-val="{{ true }}">
             <sc-if value="{{ noQueue }}" hint-placeholder-val="">
               <div style="text-align:center;padding:46px 20px;color:var(--ink-faint,#827E6D)">
@@ -339,7 +339,7 @@
           </div>
           <button type="button" onClick="{{ onCloseMake }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
         </header>
-        <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+        <div style="flex:1;overflow:auto;overscroll-behavior:contain;padding:16px;display:flex;flex-direction:column;gap:14px">
           <sc-for list="{{ makeLines }}" as="ln" hint-placeholder-count="1">
             <div style="{{ ln.lineStyle }}">
               <div style="display:flex;align-items:center;gap:11px">
@@ -541,6 +541,8 @@ class Component extends DCLogic {
   setDirection(d){ this.setState({ direction: d }); }
   toggleDark(){ this.setState(s => ({ dark: !s.dark })); }
   scrollTop(){ try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e){ window.scrollTo(0, 0); } }
+  lockScroll(){ try { this._scrollY = window.scrollY || window.pageYOffset || 0; const b = document.body; b.style.position = 'fixed'; b.style.top = (-this._scrollY) + 'px'; b.style.left = '0'; b.style.right = '0'; b.style.width = '100%'; b.style.overflow = 'hidden'; } catch(e){} }
+  unlockScroll(){ try { const b = document.body; b.style.position = ''; b.style.top = ''; b.style.left = ''; b.style.right = ''; b.style.width = ''; b.style.overflow = ''; window.scrollTo(0, this._scrollY || 0); } catch(e){} }
   setSort(v){ this.setState({ sort: v }); }
   onSearch(e){ this.setState({ search: e.target.value }); }
   toggleFilters(){ this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
@@ -591,6 +593,9 @@ class Component extends DCLogic {
     const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
     const pal = st.dark ? dir.dark : dir.light;
     try { document.documentElement.style.background = pal.bg; document.body.style.background = pal.bg; } catch(e){}
+    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView);
+    if (_overlay && !this._overlayLocked) { this._overlayLocked = true; this.lockScroll(); }
+    else if (!_overlay && this._overlayLocked) { this._overlayLocked = false; this.unlockScroll(); }
     const meta = dir.meta;
 
     const appStyle = {

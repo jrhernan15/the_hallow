@@ -67,7 +67,7 @@
         <input type="search" value="{{ search }}" onChange="{{ onSearch }}" autocomplete="off" placeholder="Search drinks or ingredients…" style="width:100%;font-family:'Inter',sans-serif;font-size:15px;color:var(--ink,#262420);background:var(--field,#FBF9F3);border:1px solid var(--line,#DDD6C7);border-radius:11px;padding:11px 14px 11px 38px;outline:none;transition:border-color .15s ease,box-shadow .15s ease" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
       </div>
       <button type="button" data-surprise onClick="{{ onSurprise }}" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><span style="font-size:13px">✦</span>Surprise me</button>
-      <button type="button" onClick="{{ onToggleDark }}" title="Toggle dark mode" aria-label="Toggle dark mode" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border-radius:11px;border:1px solid var(--pill-line,#B9C6AC);background:var(--field,#FBF9F3);color:var(--ink-soft,#5C584D);cursor:pointer;font-size:16px;line-height:1" style-hover="border-color:var(--accent);color:var(--ink)">{{ darkIcon }}</button>
+      <button type="button" onClick="{{ onToggleDark }}" title="Toggle dark mode" aria-label="Toggle dark mode" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border-radius:11px;border:1px solid var(--pill-line,#B9C6AC);background:var(--field,#FBF9F3);color:var(--ink-soft,#5C584D);cursor:pointer;font-size:16px;line-height:1" style-hover="border-color:var(--accent);color:var(--ink)"><svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true"><path d="{{ darkIconPath }}"></path></svg></button>
       <button type="button" data-ordersbtn onClick="{{ onToggleOrders }}" title="The Pass" aria-label="Open The Pass" style="position:relative;font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 7L5.66 5h12.69l-1.78 2H7.43z"></path></svg>
         <span data-blabel>The Pass</span><sc-if value="{{ hasOrders }}" hint-placeholder-val=""><span style="{{ ordersBadgeStyle }}">{{ ordersCount }}</span></sc-if>
@@ -392,14 +392,11 @@
           <footer style="padding:12px 16px;border-top:1px solid var(--card-border,#2D3422);display:flex;gap:10px">
             <button type="button" onClick="{{ onMakeRemove }}" style="font-size:12.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 16px;cursor:pointer">Remove round</button>
             <span style="flex:1"></span>
-            <sc-if value="{{ makeIsDone }}" hint-placeholder-val="">
+            <sc-if value="{{ makeCanReopen }}" hint-placeholder-val="">
               <button type="button" onClick="{{ onMakeReopen }}" style="font-size:13px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 18px;cursor:pointer">Reopen</button>
             </sc-if>
             <sc-if value="{{ makeIsMaking }}" hint-placeholder-val="{{ true }}">
-              <button type="button" onClick="{{ onMakeMarkReady }}" style="font-size:13px;font-weight:600;color:var(--accent2,#CFA267);background:transparent;border:1px solid var(--accent2,#CFA267);border-radius:11px;padding:11px 18px;cursor:pointer">Mark ready</button>
-            </sc-if>
-            <sc-if value="{{ makeNotDone }}" hint-placeholder-val="{{ true }}">
-              <button type="button" onClick="{{ onMakeMarkServed }}" style="font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:11px 20px;cursor:pointer">Mark served</button>
+              <button type="button" onClick="{{ onMakeMarkReady }}" style="font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent2,#CFA267);border:none;border-radius:11px;padding:11px 20px;cursor:pointer">Mark ready</button>
             </sc-if>
           </footer>
         </sc-if>
@@ -739,7 +736,7 @@ class Component extends DCLogic {
     this.setState({ makeView: null });
     this.api('DELETE', '/api/rounds/' + batchId).then(() => this.refreshState()).catch(()=>{});
   }
-  clearDoneBatches(){ this.api('POST', '/api/clear-served').then(() => this.refreshState()).catch(()=>{}); }
+  clearDoneBatches(){ const ids = (this.state.batches || []).filter(b => b.status==='up' || b.status==='done').map(b => b.id); if (!ids.length) return; Promise.all(ids.map(id => this.api('DELETE', '/api/rounds/' + id))).then(() => this.refreshState()).catch(() => this.refreshState()); }
   removeOrder(id){
     this.setState(s => { const sel = Object.assign({}, s.selected); delete sel[id]; return { selected: sel }; });
     this.api('DELETE', '/api/tickets/' + id).then(() => this.refreshState()).catch(()=>{});
@@ -977,7 +974,7 @@ class Component extends DCLogic {
         countLabel: totalDrinks + ' drink' + (totalDrinks===1?'':'s') + ' · ' + drinks.length + ' recipe' + (drinks.length===1?'':'s'),
         progressLabel: madeCount + '/' + drinks.length + ' made',
         statusLabel: b.status==='done' ? 'Done' : (b.status==='up' ? 'Ready' : 'Making'), statusStyle: pill(b.status==='done' ? 'done' : (b.status==='up' ? 'up' : 'making')),
-        cardStyle: { background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'13px 15px', opacity: isDone ? 0.66 : 1 },
+        cardStyle: { background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'13px 15px', opacity: (b.status==='up' || isDone) ? 0.66 : 1 },
         onOpen: () => this.openMake('batch', b.id),
         onRemove: () => this.removeBatch(b.id),
       };
@@ -1013,7 +1010,6 @@ class Component extends DCLogic {
             subtitle: lines.length + ' recipe' + (lines.length===1?'':'s') + ' · ' + ords.reduce((a,o)=>a+o.qty,0) + ' drinks',
             isDone: b.status==='done', isMaking: b.status==='making', lines,
             onMarkReady: () => this.setRoundStatus(b.id, 'up'),
-            onMarkServed: () => this.setRoundStatus(b.id, 'served'),
             onReopen: () => this.setRoundStatus(b.id, 'working'),
             onRemove: () => this.removeBatch(b.id) };
         }
@@ -1021,7 +1017,7 @@ class Component extends DCLogic {
     }
 
     const makingBatches = st.batches.filter(b => b.status!=='done').length;
-    const activeCount = queueOrders.length + st.orders.filter(o => { if (!o.batchId) return false; const b = st.batches.find(x=>x.id===o.batchId); return b && b.status!=='done'; }).length;
+    const activeCount = queueOrders.length + st.orders.filter(o => { if (!o.batchId) return false; const b = st.batches.find(x=>x.id===o.batchId); return b && b.status==='working'; }).length;
     const ordersSummary = (queueOrders.length + ' on the rail · ' + st.batches.length + ' round' + (st.batches.length===1?'':'s'));
     const ordersBadgeStyle = { minWidth:'18px', height:'18px', padding:'0 5px', borderRadius:'999px', backgroundColor: activeCount ? 'var(--accent)' : 'var(--ink-faint)', color:'var(--accent-ink)', fontSize:'11px', fontWeight:700, display:'inline-flex', alignItems:'center', justifyContent:'center', fontVariantNumeric:'tabular-nums' };
     const tabStyle = (active) => ({ flex:1, textAlign:'center', fontFamily:'Inter,sans-serif', fontSize:'12.5px', fontWeight:600, letterSpacing:'.02em', padding:'8px 10px', borderRadius:'9px', cursor:'pointer', border:'none', backgroundColor: active ? 'var(--accent)' : 'transparent', color: active ? 'var(--accent-ink)' : 'var(--ink-soft)' });
@@ -1057,6 +1053,8 @@ class Component extends DCLogic {
     const themeOptions = [['auto','Auto'],['herbarium','Default'],['halloween','Halloween'],['christmas','Christmas'],['birthday','Birthday']].map((p) => ({ key:p[0], label:p[1], style: themeChip(st.serverTheme===p[0]), onSelect: () => this.setTheme(p[0]) }));
     const themeAutoNote = 'Auto follows the calendar — now showing ' + ((this.THEMES[this.autoTheme()]||{}).label || 'Default') + '.';
     const chimeOptions = [['auto','Match theme'],['classic','Classic'],['ghost','Ghost'],['sleigh','Sleigh bells'],['party','Party'],['off','Off']].map((p) => ({ key:p[0], label:p[1], style: themeChip(st.chimePref===p[0]), onSelect: () => this.setChime(p[0]) }));
+    const sunPath = 'M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z';
+    const moonPath = 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z';
 
     // ---- per-drink 86 (take a single drink off the menu) ----
     const drinkSpiritOrder = (this.GROUPS.find(g=>g.key==='spirit')||{}).order || [];
@@ -1077,7 +1075,7 @@ class Component extends DCLogic {
 
     return {
       appStyle,
-      darkIcon: st.dark ? '☀' : '☾',
+      darkIconPath: st.dark ? sunPath : moonPath,
       onToggleOrders: () => this.toggleOrders(),
       ordersOpen: st.ordersOpen, hasOrders: activeCount > 0, ordersCount: String(activeCount),
       ordersBadgeStyle, ordersSummary,
@@ -1088,14 +1086,13 @@ class Component extends DCLogic {
       queueList, noQueue: queueOrders.length===0, batchList, noBatches: st.batches.length===0,
       hasSelection: selCount>0, selectionLabel: selCount + ' selected',
       onClearSelection: () => this.clearSelection(), onSelectAll: () => this.selectAllQueue(), onCreateBatch: () => this.createBatch(),
-      hasBatches: st.batches.length>0, hasDoneBatches: st.batches.some(b=>b.status==='done'),
+      hasBatches: st.batches.length>0, hasDoneBatches: st.batches.some(b=>b.status==='up' || b.status==='done'),
       onClearDoneBatches: () => this.clearDoneBatches(), onClearAllOrders: () => this.clearAllOrders(),
       makeOpen: !!makeData, makeData, makeLines: makeData ? makeData.lines : [],
       makeTitle: makeData ? makeData.title : '', makeSubtitle: makeData ? makeData.subtitle : '',
-      makeIsBatch: makeData ? makeData.kind==='batch' : false, makeIsDone: makeData ? !!makeData.isDone : false, makeIsMaking: makeData ? !!makeData.isMaking : false, makeNotDone: makeData ? !makeData.isDone : false,
+      makeIsBatch: makeData ? makeData.kind==='batch' : false, makeIsMaking: makeData ? !!makeData.isMaking : false, makeCanReopen: makeData ? (makeData.kind==='batch' && !makeData.isMaking) : false,
       onCloseMake: () => this.closeMake(),
       onMakeMarkReady: () => { if (makeData && makeData.onMarkReady) makeData.onMarkReady(); },
-      onMakeMarkServed: () => { if (makeData && makeData.onMarkServed) makeData.onMarkServed(); },
       onMakeReopen: () => { if (makeData && makeData.onReopen) makeData.onReopen(); },
       onMakeRemove: () => { if (makeData && makeData.onRemove) makeData.onRemove(); },
       orderModalName: st.orderModalName,

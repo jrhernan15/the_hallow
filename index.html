@@ -68,9 +68,9 @@
       </div>
       <button type="button" data-surprise onClick="{{ onSurprise }}" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><span style="font-size:13px">✦</span>Surprise me</button>
       <button type="button" onClick="{{ onToggleDark }}" title="Toggle dark mode" aria-label="Toggle dark mode" style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;flex:none;border-radius:11px;border:1px solid var(--pill-line,#B9C6AC);background:var(--field,#FBF9F3);color:var(--ink-soft,#5C584D);cursor:pointer;font-size:16px;line-height:1" style-hover="border-color:var(--accent);color:var(--ink)">{{ darkIcon }}</button>
-      <button type="button" data-ordersbtn onClick="{{ onToggleOrders }}" title="The Well" aria-label="Open The Well" style="position:relative;font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent)">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-7 8z"></path><path d="M12 12v6"></path><path d="M8 21h8"></path></svg>
-        <span data-blabel>The Well</span><sc-if value="{{ hasOrders }}" hint-placeholder-val=""><span style="{{ ordersBadgeStyle }}">{{ ordersCount }}</span></sc-if>
+      <button type="button" data-ordersbtn onClick="{{ onToggleOrders }}" title="The Pass" aria-label="Open The Pass" style="position:relative;font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 7L5.66 5h12.69l-1.78 2H7.43z"></path></svg>
+        <span data-blabel>The Pass</span><sc-if value="{{ hasOrders }}" hint-placeholder-val=""><span style="{{ ordersBadgeStyle }}">{{ ordersCount }}</span></sc-if>
       </button>
     </div>
 
@@ -160,7 +160,7 @@
             <button type="button" onClick="{{ c.onToggle }}" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#2F3D2C);background:transparent;border:none;padding:5px 0;cursor:pointer;display:inline-flex;align-items:center;gap:6px"><span style="{{ c.signStyle }}">+</span>{{ c.expandLabel }}</button>
             <span style="font-size:11px;color:var(--ink-faint,#8A8474);letter-spacing:.04em">{{ c.meta }}</span>
             <span style="flex:1"></span>
-            <button type="button" data-cardorder onClick="{{ c.onOrder }}" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--accent-ink,#F4F1E6);background:var(--accent,#2F3D2C);border:none;border-radius:999px;padding:7px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap" style-hover="filter:brightness(1.08)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5 L9 8 L10.5 3"></path><path d="M9 8 L4 15"></path><path d="M2.5 15.5 L5.5 14.5"></path><path d="M20 4.5 L15 8 L13.5 3"></path><path d="M15 8 L20 15"></path><path d="M21.5 15.5 L18.5 14.5"></path><path d="M12 1.5 L12 3.2"></path><path d="M10.6 2 L13.4 2"></path></svg>Send to bar</button>
+            <button type="button" data-cardorder onClick="{{ c.onOrder }}" style="font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--accent-ink,#F4F1E6);background:var(--accent,#2F3D2C);border:none;border-radius:999px;padding:7px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap" style-hover="filter:brightness(1.08)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 7L5.66 5h12.69l-1.78 2H7.43z"></path></svg>Send to bar</button>
           </div>
           <div data-detail style="{{ c.detailStyle }}">
             <div style="display:flex;flex-wrap:wrap;gap:6px 18px;padding:14px 0 4px;font-size:11.5px;color:var(--ink-faint,#8A8474);letter-spacing:.03em">
@@ -213,7 +213,7 @@
         </div>
         <div style="margin-top:18px">
           <label style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:6px">Who's it for? (optional)</label>
-          <input value="{{ draftGuest }}" onChange="{{ onDraftGuest }}" autocomplete="off" placeholder="Janice aka Abby" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
+          <input value="{{ draftGuest }}" onChange="{{ onDraftGuest }}" autocomplete="off" placeholder="Janice, Abby — or leave it blank" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
         </div>
         <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px">
           <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D)">Quantity</label>
@@ -478,7 +478,7 @@ class Component extends DCLogic {
 
   flashToast(msg, ms){ this.setState({ toast: msg }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast:null }), ms||2000); }
 
-  openOrder(name){ this.setState({ orderModalName: name, draftGuest: this._myName || '', draftQty:1, draftNote:'' }); }
+  openOrder(name){ this.setState({ orderModalName: name, draftGuest: '', draftQty:1, draftNote:'' }); }
   closeOrder(){ this.setState({ orderModalName: null }); }
   incQty(){ this.setState(s => ({ draftQty: Math.min(99, s.draftQty + 1) })); }
   decQty(){ this.setState(s => ({ draftQty: Math.max(1, s.draftQty - 1) })); }
@@ -487,11 +487,10 @@ class Component extends DCLogic {
     const name = (this.state.draftGuest || '').trim();
     const note = (this.state.draftNote || '').trim();
     const qty = this.state.draftQty || 1;
-    try { this._myName = name; localStorage.setItem('hollow_name_v1', name); } catch(e){}
     this.api('POST', '/api/tickets', { drink: drink, name: name, notes: note, qty: qty })
       .then(t => { try { this._mine = (this._mine || []).concat(t.id); localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){} this.refreshState(); })
       .catch(() => this.flashToast('Could not reach the bar — try again', 2400));
-    this.setState({ orderModalName: null });
+    this.setState({ orderModalName: null, draftGuest: '' });
     this.flashToast('Sent to the bar ✓', 2200);
   }
 

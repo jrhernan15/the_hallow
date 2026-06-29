@@ -38,7 +38,10 @@ boot — that's your "always-on."
 
 ```bash
 sudo cp /srv/the_hollow/deploy/Caddyfile /etc/caddy/Caddyfile
-sudo chown -R caddy:caddy /srv/the_hollow
+# Caddy only needs to READ these files. Keep them owned by YOU (so `git pull`
+# works without sudo) and just make them world-readable:
+sudo chown -R "$(logname)":"$(logname)" /srv/the_hollow
+sudo chmod -R a+rX /srv/the_hollow
 sudo systemctl reload caddy
 systemctl status caddy --no-pager      # should say "active (running)"
 ```
@@ -103,8 +106,8 @@ custom DNS entry in your router) is the fallback.
 ## Updating the menu later
 
 1. Edit `cocktails.js` (add/remove drinks — see `README.md`).
-2. Get the changed file onto the server: `git pull` in `/srv/the_hollow`, or copy
-   the file over.
+2. Get the changed file onto the server: run `git pull` in `/srv/the_hollow`
+   **as your normal user (no `sudo`)**, or copy the file over.
 3. Refresh the page. No restart needed — `cocktails.js` is served with no-cache,
    so edits appear immediately.
 
@@ -113,8 +116,13 @@ Only if you change the **Caddyfile** do you need: `sudo systemctl reload caddy`.
 ## Troubleshooting
 
 - **Blank page / no drinks:** check the logs with `journalctl -u caddy -e`.
-  Confirm `/srv/the_hollow/index.html` exists and the `caddy` user can read the
-  folder (`sudo chown -R caddy:caddy /srv/the_hollow`).
+  Confirm `/srv/the_hollow/index.html` exists and is world-readable
+  (`sudo chmod -R a+rX /srv/the_hollow`).
+- **`git pull` says "dubious ownership":** the folder is owned by a different
+  user than the one running git. Hand ownership back to yourself, then pull
+  without sudo:
+  `sudo chown -R "$(logname)":"$(logname)" /srv/the_hollow && sudo chmod -R a+rX /srv/the_hollow`.
+  (Quick-but-messier alternative: `sudo git config --global --add safe.directory /srv/the_hollow` and keep using `sudo git pull`.)
 - **Port 80 already in use:** change `:80` to `:8080` in the Caddyfile, reload,
   and visit `http://<ip>:8080/`.
 - **Want HTTPS on the LAN?** Optional and a bit more involved (browsers distrust

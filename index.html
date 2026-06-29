@@ -435,50 +435,57 @@
             </div>
             <button type="button" onClick="{{ onClose86 }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
           </div>
-          <div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin-top:10px;line-height:1.5">Uncheck anything you're out of — drinks that need it disappear from the menu for everyone. Optional items and garnishes don't count.</div>
-        </header>
-        <div style="flex:1;overflow:auto;overscroll-behavior:contain;padding:8px 16px 16px">
-          <div style="margin:6px 0 2px">
-            <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:8px">Theme</div>
-            <div style="display:flex;flex-wrap:wrap;gap:7px">
-              <sc-for list="{{ themeOptions }}" as="th" hint-placeholder-count="5">
-                <button type="button" onClick="{{ th.onSelect }}" style="{{ th.style }}">{{ th.label }}</button>
-              </sc-for>
-            </div>
-            <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:8px;line-height:1.4">{{ themeAutoNote }}</div>
-          </div>
-          <div style="height:1px;background:var(--card-border,#2D3422);margin:14px 0 2px"></div>
-          <sc-for list="{{ eightySixGroups }}" as="grp" hint-placeholder-count="1">
-            <div style="margin-top:14px">
-              <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:2px">{{ grp.label }}</div>
-              <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
-                <div onClick="{{ it.onToggle }}" style="{{ it.rowStyle }}">
-                  <span style="{{ it.boxStyle }}">{{ it.checkMark }}</span>
-                  <span style="flex:1;font-size:14.5px;color:var(--ink,#ECE7D7)">{{ it.name }}</span>
-                  <span style="font-size:11.5px;color:var(--ink-faint,#827E6D);font-variant-numeric:tabular-nums">{{ it.count }}</span>
-                </div>
-              </sc-for>
-            </div>
-          </sc-for>
-          <div style="height:1px;background:var(--card-border,#2D3422);margin:16px 0 2px"></div>
-          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px">
-            <div style="font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--ink,#ECE7D7)">Drinks</div>
-            <div style="font-size:11.5px;color:var(--ink-faint,#827E6D)">{{ drink86Note }}</div>
-          </div>
-          <div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin:5px 0 2px;line-height:1.5">Take a specific drink off the menu — independent of ingredients.</div>
-          <sc-for list="{{ drinkGroups }}" as="dg" hint-placeholder-count="1">
-            <div style="margin-top:14px">
-              <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:2px">{{ dg.label }}</div>
-              <sc-for list="{{ dg.items }}" as="di" hint-placeholder-count="3">
-                <div onClick="{{ di.onToggle }}" style="{{ di.rowStyle }}">
-                  <span style="{{ di.boxStyle }}">{{ di.checkMark }}</span>
-                  <span style="flex:1;font-size:14.5px;color:var(--ink,#ECE7D7)">{{ di.name }}</span>
-                </div>
-              </sc-for>
-            </div>
-          </sc-for>
+          </header>
+        <div style="display:flex;gap:6px;padding:12px 16px 4px;border-bottom:1px solid var(--card-border,#2D3422)">
+          <button type="button" onClick="{{ on86TabIng }}" style="{{ tab86IngStyle }}">Ingredients</button>
+          <button type="button" onClick="{{ on86TabDrinks }}" style="{{ tab86DrinkStyle }}">Drinks</button>
+          <button type="button" onClick="{{ on86TabTheme }}" style="{{ tab86ThemeStyle }}">Theme</button>
         </div>
-        <sc-if value="{{ has86 }}" hint-placeholder-val="">
+        <div style="flex:1;overflow:auto;overscroll-behavior:contain;padding:4px 16px 16px">
+          <sc-if value="{{ tab86IsIng }}" hint-placeholder-val="{{ true }}">
+            <div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin:10px 0 2px;line-height:1.5">Uncheck anything you're out of — drinks that need it disappear from the menu for everyone. Optional items and garnishes don't count.</div>
+            <sc-for list="{{ eightySixGroups }}" as="grp" hint-placeholder-count="1">
+              <div style="margin-top:14px">
+                <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:2px">{{ grp.label }}</div>
+                <sc-for list="{{ grp.items }}" as="it" hint-placeholder-count="3">
+                  <div onClick="{{ it.onToggle }}" style="{{ it.rowStyle }}">
+                    <span style="{{ it.boxStyle }}">{{ it.checkMark }}</span>
+                    <span style="flex:1;font-size:14.5px;color:var(--ink,#ECE7D7)">{{ it.name }}</span>
+                    <span style="font-size:11.5px;color:var(--ink-faint,#827E6D);font-variant-numeric:tabular-nums">{{ it.count }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ tab86IsDrinks }}" hint-placeholder-val="">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:10px 0 2px">
+              <div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);line-height:1.5;flex:1">Take a specific drink off the menu — independent of ingredients.</div>
+              <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);white-space:nowrap">{{ drink86Note }}</div>
+            </div>
+            <sc-for list="{{ drinkGroups }}" as="dg" hint-placeholder-count="1">
+              <div style="margin-top:14px">
+                <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:2px">{{ dg.label }}</div>
+                <sc-for list="{{ dg.items }}" as="di" hint-placeholder-count="3">
+                  <div onClick="{{ di.onToggle }}" style="{{ di.rowStyle }}">
+                    <span style="{{ di.boxStyle }}">{{ di.checkMark }}</span>
+                    <span style="flex:1;font-size:14.5px;color:var(--ink,#ECE7D7)">{{ di.name }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ tab86IsTheme }}" hint-placeholder-val="">
+            <div style="margin:10px 0 2px">
+              <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <sc-for list="{{ themeOptions }}" as="th" hint-placeholder-count="5">
+                  <button type="button" onClick="{{ th.onSelect }}" style="{{ th.style }}">{{ th.label }}</button>
+                </sc-for>
+              </div>
+              <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:10px;line-height:1.4">{{ themeAutoNote }}</div>
+            </div>
+          </sc-if>
+        </div>
+        <sc-if value="{{ show86Footer }}" hint-placeholder-val="">
           <footer style="padding:12px 16px;border-top:1px solid var(--card-border,#2D3422)">
             <button type="button" onClick="{{ onRestockAll }}" style="width:100%;font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:12px;cursor:pointer">Restock all (clear the 86)</button>
           </footer>
@@ -512,7 +519,7 @@ class Component extends DCLogic {
       orders: [], batches: [], ordersOpen: false, stationTab: 'queue',
       selected: {}, makeView: null, orderModalName: null,
       draftGuest: '', draftQty: 1, draftNote: '', toast: null, showTop: false,
-      eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto',
+      eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto', eightySixTab: 'ingredients',
     };
     this.GROUPS = [
       { key:'spirit',   label:'Spirit',   mode:'or',  order:['Gin','Bourbon','Rye','Tequila','Rum','Vodka','Cognac','Aperitivo','THC'] },
@@ -674,6 +681,7 @@ class Component extends DCLogic {
   submitGate(){ if ((this.state.gateInput||'').trim() === '5352'){ try { localStorage.setItem('hollow_86_ok','1'); } catch(e){} this.setState({ pantryGate:false, pantryOpen:true, gateErr:false, gateInput:'' }); } else { this.setState({ gateErr:true, gateInput:'' }); } }
   closeGate(){ this.setState({ pantryGate:false, gateErr:false }); }
   close86(){ this.setState({ pantryOpen:false }); }
+  set86Tab(t){ this.setState({ eightySixTab: t }); }
   toggle86(ing, makeOut){ this.setState(s => { const set=new Set(s.eightySix); if (makeOut) set.add(ing); else set.delete(ing); return { eightySix:[...set] }; }); this.api('POST','/api/86',{ ingredient:ing, out:makeOut, code:'5352' }).then(()=>this.refreshState()).catch(()=>{ this.flashToast('Could not reach the bar',2000); this.refreshState(); }); }
   restockAll(){ this.setState({ eightySix: [] }); this.api('POST','/api/86/restock',{ code:'5352' }).then(()=>this.refreshState()).catch(()=>this.refreshState()); }
   onLogoDown(){ clearTimeout(this._logoT); this._logoT = setTimeout(()=>this.openEightySix(), 1500); }
@@ -1034,6 +1042,10 @@ class Component extends DCLogic {
       onGateInput: (e) => this.onGateInput(e), onSubmitGate: () => this.submitGate(), onCloseGate: () => this.closeGate(),
       pantryOpen: st.pantryOpen, onClose86: () => this.close86(),
       eightySixGroups: eightySixGroups, has86: st.eightySix.length>0, onRestockAll: () => this.restockAll(),
+      tab86IsIng: st.eightySixTab==='ingredients', tab86IsDrinks: st.eightySixTab==='drinks', tab86IsTheme: st.eightySixTab==='theme',
+      tab86IngStyle: tabStyle(st.eightySixTab==='ingredients'), tab86DrinkStyle: tabStyle(st.eightySixTab==='drinks'), tab86ThemeStyle: tabStyle(st.eightySixTab==='theme'),
+      on86TabIng: () => this.set86Tab('ingredients'), on86TabDrinks: () => this.set86Tab('drinks'), on86TabTheme: () => this.set86Tab('theme'),
+      show86Footer: st.eightySix.length>0 && st.eightySixTab!=='theme',
       eightySixStock: (stockTotal - outIngredients) + ' of ' + stockTotal + ' in stock',
       eightySixHidden: hiddenCount + ' drink' + (hiddenCount===1?'':'s') + ' hidden',
       drinkGroups: drinkGroups, drink86Note: drink86Count===0 ? 'All drinks on the menu.' : (drink86Count + ' drink' + (drink86Count===1?'':'s') + ' 86’d.'),

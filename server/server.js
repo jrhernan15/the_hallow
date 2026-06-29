@@ -67,6 +67,7 @@ const Q = {
   cascade:       db.prepare("UPDATE tickets SET status = ?, updated_at = datetime('now') WHERE round_id = ?"),
   disband:       db.prepare("UPDATE tickets SET round_id = NULL, status = 'rail', updated_at = datetime('now') WHERE round_id = ?"),
   deleteRound:   db.prepare("DELETE FROM rounds WHERE id = ?"),
+  deleteRoundTickets: db.prepare("DELETE FROM tickets WHERE round_id = ?"),
   clearTickets:  db.prepare("DELETE FROM tickets"),
   clearRounds:   db.prepare("DELETE FROM rounds"),
   clearServedTix: db.prepare("DELETE FROM tickets WHERE round_id IN (SELECT id FROM rounds WHERE status = 'served')"),
@@ -174,7 +175,8 @@ const server = http.createServer(async (req, res) => {
 
     if ((m = pathname.match(/^\/api\/rounds\/(\d+)$/)) && method === "DELETE") {
       const id = Number(m[1]);
-      db.transaction(() => { Q.disband.run(id); Q.deleteRound.run(id); })();
+      // Remove = discard the round and its drinks entirely (not back to the rail).
+      db.transaction(() => { Q.deleteRoundTickets.run(id); Q.deleteRound.run(id); })();
       broadcast();
       return sendJSON(res, 200, { ok: true });
     }

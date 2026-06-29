@@ -213,7 +213,7 @@
         </div>
         <div style="margin-top:18px">
           <label style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:6px">Who's it for? (optional)</label>
-          <input value="{{ draftGuest }}" onChange="{{ onDraftGuest }}" autocomplete="off" placeholder="Sam, Table 4 — or leave it blank" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
+          <input value="{{ draftGuest }}" onChange="{{ onDraftGuest }}" autocomplete="off" placeholder="Janice aka Abby" style="width:100%;font-family:Inter,sans-serif;font-size:15px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
         </div>
         <div style="margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:14px">
           <label style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D)">Quantity</label>
@@ -395,6 +395,10 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ showTop }}" hint-placeholder-val="">
+    <button type="button" data-chrome onClick="{{ onScrollTop }}" aria-label="Back to top" style="position:fixed;right:18px;bottom:24px;z-index:50;width:46px;height:46px;border-radius:999px;border:1px solid var(--pill-line,#B9C6AC);background:var(--accent,#2F3D2C);color:var(--accent-ink,#F4F1E6);box-shadow:0 8px 22px rgba(0,0,0,.28);cursor:pointer;display:inline-flex;align-items:center;justify-content:center" style-hover="filter:brightness(1.08)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"></path></svg></button>
+  </sc-if>
+
   <sc-if value="{{ toast }}" hint-placeholder-val="">
     <div data-chrome style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:70;background:var(--accent,#A6BB8E);color:var(--accent-ink,#13160F);padding:11px 20px;border-radius:999px;box-shadow:0 12px 34px rgba(0,0,0,.32);font-size:13px;font-weight:600;letter-spacing:.02em">{{ toast }}</div>
   </sc-if>
@@ -415,7 +419,7 @@ class Component extends DCLogic {
       open: {}, filtersOpen: true, highlight: null,
       orders: [], batches: [], ordersOpen: false, stationTab: 'queue',
       selected: {}, makeView: null, orderModalName: null,
-      draftGuest: '', draftQty: 1, draftNote: '', toast: null,
+      draftGuest: '', draftQty: 1, draftNote: '', toast: null, showTop: false,
     };
     this.GROUPS = [
       { key:'spirit',   label:'Spirit',   mode:'or',  order:['Gin','Bourbon','Rye','Tequila','Rum','Vodka','Cognac','Aperitivo'] },
@@ -441,8 +445,10 @@ class Component extends DCLogic {
     try { this._mine = JSON.parse(localStorage.getItem('hollow_mine_v1') || '[]'); if (!Array.isArray(this._mine)) this._mine = []; } catch(e){ this._mine = []; }
     this.refreshState();
     this.openStream();
+    this._onScroll = () => { const v = (window.scrollY || window.pageYOffset || 0) > 400; if (v !== this.state.showTop) this.setState({ showTop: v }); };
+    try { window.addEventListener('scroll', this._onScroll, { passive: true }); } catch(e){}
   }
-  componentWillUnmount(){ try { if (this._es) this._es.close(); } catch(e){} }
+  componentWillUnmount(){ try { if (this._es) this._es.close(); } catch(e){} try { window.removeEventListener('scroll', this._onScroll); } catch(e){} }
 
   // ---- shared board (The Pass): server-backed + live over SSE ----
   api(method, path, body){
@@ -535,6 +541,7 @@ class Component extends DCLogic {
 
   setDirection(d){ this.setState({ direction: d }); }
   toggleDark(){ this.setState(s => ({ dark: !s.dark })); }
+  scrollTop(){ try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e){ window.scrollTo(0, 0); } }
   setSort(v){ this.setState({ sort: v }); }
   onSearch(e){ this.setState({ search: e.target.value }); }
   toggleFilters(){ this.setState(s => ({ filtersOpen: !s.filtersOpen })); }
@@ -584,6 +591,7 @@ class Component extends DCLogic {
     const st = this.state;
     const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
     const pal = st.dark ? dir.dark : dir.light;
+    try { document.documentElement.style.background = pal.bg; document.body.style.background = pal.bg; } catch(e){}
     const meta = dir.meta;
 
     const appStyle = {
@@ -808,6 +816,7 @@ class Component extends DCLogic {
       onIncQty: () => this.incQty(), onDecQty: () => this.decQty(),
       toast: st.toast,
       onToggleDark: () => this.toggleDark(),
+      showTop: st.showTop, onScrollTop: () => this.scrollTop(),
       search: st.search, onSearch: (e) => this.onSearch(e),
       onSurprise: () => this.surprise(),
       onToggleFilters: () => this.toggleFilters(),

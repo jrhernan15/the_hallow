@@ -129,6 +129,62 @@ Only if you change the **Caddyfile** do you need: `sudo systemctl reload caddy`.
   self-signed certs by name); plain HTTP is fine for a home network. Ask if you
   want to set this up.
 
+## The live ordering board (the API)
+
+This powers **The Pass** — guests adding drinks to The Rail, the bartender firing
+Rounds, and live status. It's a small Node service backed by SQLite, kept always-on
+by systemd, with Caddy proxying `/api/*` to it. Run these on the NUC after a `git pull`.
+
+1. Install Node system-wide (via NodeSource — don't use `nvm` for a service):
+
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+node --version
+```
+
+2. Install the service's dependency:
+
+```bash
+cd /srv/the_hollow/server
+npm install --omit=dev
+# If it fails to fetch a prebuilt binary, add build tools and retry:
+#   sudo apt install -y build-essential python3 && npm install --omit=dev
+```
+
+3. Install + start the service (it auto-creates `/srv/the_hollow/data` for the db):
+
+```bash
+# If your login isn't jrhernan15, edit the User=/Group= lines first:
+#   sudoedit /srv/the_hollow/deploy/thehollow-api.service
+sudo cp /srv/the_hollow/deploy/thehollow-api.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now thehollow-api.service
+systemctl status thehollow-api.service --no-pager     # should be active (running)
+```
+
+4. Update Caddy to proxy the API, then reload:
+
+```bash
+sudo cp /srv/the_hollow/deploy/Caddyfile /etc/caddy/Caddyfile
+sudo systemctl reload caddy
+```
+
+5. Smoke test:
+
+```bash
+curl -s http://localhost/api/health    # {"ok":true}
+curl -s http://localhost/api/state     # {"rail":[],"rounds":[]}
+```
+
+Notes:
+
+- The database lives at `/srv/the_hollow/data/hollow.db` (gitignored). Wipe the
+  board for a fresh party with `curl -X POST http://localhost/api/reset` (a "Reset
+  the Pass" button comes in a later phase).
+- Logs: `journalctl -u thehollow-api -e`.
+- The service binds to `127.0.0.1` only; guests reach it through Caddy, never directly.
+
 ## Why it must be served (not double-clicked)
 
 This version loads its data and React as browser modules/scripts that the

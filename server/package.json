@@ -1,0 +1,14 @@
+{
+  "name": "thehollow-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Hollow — shared live ordering API (The Pass / The Rail / Rounds)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.11.1"
+  }
+}

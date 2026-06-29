@@ -1,16 +1,21 @@
-# The Hollow — static menu server for the LAN.
-# Serves the site folder over plain HTTP on port 80, so anyone on the
-# network can open http://<nuc-ip>/ (or http://<hostname>.local/).
-#
-# Install this at /etc/caddy/Caddyfile (see DEPLOY.md) and point `root` at
-# wherever you copied the repo on the NUC.
+# The Hollow — LAN server: static menu + live ordering API.
+# Install at /etc/caddy/Caddyfile (see DEPLOY.md). Point `root` at wherever you
+# copied the repo on the NUC.
 
 :80 {
-	root * /srv/the_hollow
-	file_server
 	encode gzip
 
-	# Recipe/data files: never cache, so menu edits show up on a refresh.
-	@data path /cocktails.js /scale.js
-	header @data Cache-Control "no-cache"
+	# Live ordering API  ->  Node service (server/server.js) on localhost.
+	handle /api/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	# Everything else  ->  the static menu files.
+	handle {
+		root * /srv/the_hollow
+		# Editable data files: never cache, so menu edits show up on a refresh.
+		@data path /cocktails.js /scale.js
+		header @data Cache-Control "no-cache"
+		file_server
+	}
 }

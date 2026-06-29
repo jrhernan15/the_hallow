@@ -1,0 +1,21 @@
+[Unit]
+Description=The Hollow ordering API (The Pass)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/srv/the_hollow/server
+# /usr/bin/env finds the system Node installed via NodeSource (/usr/bin/node).
+ExecStart=/usr/bin/env node /srv/the_hollow/server/server.js
+Environment=PORT=3000
+Environment=HOST=127.0.0.1
+Environment=HOLLOW_DB=/srv/the_hollow/data/hollow.db
+Restart=always
+RestartSec=3
+# Run as the user that owns /srv/the_hollow (so it can write the database).
+# Change this if your login isn't jrhernan15.
+User=jrhernan15
+Group=jrhernan15
+
+[Install]
+WantedBy=multi-user.target

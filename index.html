@@ -310,7 +310,7 @@
                   <span style="{{ b.statusStyle }}">{{ b.statusLabel }}</span>
                 </div>
                 <div style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:16px;color:var(--ink,#ECE7D7);line-height:1.35;margin-top:7px">{{ b.summary }}</div>
-                <div style="display:flex;align-items:center;gap:9px;margin-top:6px;font-size:11.5px;color:var(--ink-faint,#827E6D)"><span>{{ b.countLabel }}</span><span style="width:3px;height:3px;border-radius:999px;background:var(--ink-faint,#827E6D)"></span><span>{{ b.progressLabel }}</span></div>
+                <div style="display:flex;align-items:center;gap:9px;margin-top:6px;font-size:11.5px;color:var(--ink-faint,#827E6D)"><span>{{ b.countLabel }}</span><sc-if value="{{ b.hasFor }}" hint-placeholder-val=""><span style="width:3px;height:3px;border-radius:999px;background:var(--ink-faint,#827E6D)"></span><span style="color:var(--ink-soft,#B7B3A1)">{{ b.forLabel }}</span></sc-if></div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
                   <button type="button" onClick="{{ b.onOpen }}" style="font-size:12.5px;font-weight:600;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:7px 15px;cursor:pointer">Open &amp; make</button>
                   <span style="flex:1"></span>
@@ -361,6 +361,9 @@
                 <span style="flex:1"></span>
                 <span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">{{ ln.glass }}</span>
               </div>
+              <sc-if value="{{ ln.hasFor }}" hint-placeholder-val="">
+                <div style="margin-top:9px;font-size:12.5px;color:var(--ink-soft,#B7B3A1)"><b style="color:var(--accent2,#CFA267);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:10px">For</b>&nbsp;&nbsp;{{ ln.forLabel }}</div>
+              </sc-if>
               <div style="margin-top:12px">
                 <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#CFA267);font-weight:600;margin:0 0 7px">Pour <span style="color:var(--ink-faint,#827E6D)">· batched total</span></h3>
                 <ul style="list-style:none;margin:0;padding:0">
@@ -1136,13 +1139,13 @@ class Component extends DCLogic {
       const agg = {}; ords.forEach(o => { agg[o.drink] = (agg[o.drink]||0) + o.qty; });
       const drinks = Object.keys(agg);
       const totalDrinks = drinks.reduce((a,d) => a + agg[d], 0);
-      const madeCount = drinks.filter(d => (b.made||{})[d]).length;
+      const guests = ords.filter(o => o.guest && o.guest.trim()).map(o => o.guest.trim() + (o.qty>1 ? ' ×'+o.qty : ''));
       const isDone = b.status === 'done';
       return {
         id:b.id, timeLabel: fmtTime(b.ts), title: 'Round · ' + fmtTime(b.ts),
         summary: drinks.map(d => agg[d] + '× ' + d).join('  ·  '),
         countLabel: totalDrinks + ' drink' + (totalDrinks===1?'':'s') + ' · ' + drinks.length + ' recipe' + (drinks.length===1?'':'s'),
-        progressLabel: madeCount + '/' + drinks.length + ' made',
+        forLabel: guests.length ? 'For ' + guests.join(', ') : '', hasFor: guests.length>0,
         statusLabel: b.status==='done' ? 'Done' : (b.status==='up' ? 'Ready' : 'Making'), statusStyle: pill(b.status==='done' ? 'done' : (b.status==='up' ? 'up' : 'making')),
         cardStyle: { background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'13px 15px', opacity: (b.status==='up' || isDone) ? 0.66 : 1 },
         onOpen: () => this.openMake('batch', b.id),
@@ -1159,18 +1162,19 @@ class Component extends DCLogic {
           makeData = { kind:'order', title:o.drink, subtitle: '×' + o.qty + (o.guest ? ' · for ' + o.guest : ''),
             lines: [{ key:o.id, drink:o.drink, qtyLabel:'×'+o.qty, glass:c?c.glass:'', garnish:c?c.garnish:'',
               specRows: c ? rowsOf(scaleSpec(c.spec, o.qty)) : [], steps: c?c.steps:[],
-              notesList: o.note ? [o.note] : [], hasNotes: !!o.note, isBatchLine:false, made:false,
+              notesList: o.note ? [o.note] : [], hasNotes: !!o.note, isBatchLine:false, made:false, forLabel:'', hasFor:false,
               lineStyle:{ background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'16px 16px 14px' } }] };
         }
       } else {
         const b = st.batches.find(x => x.id===st.makeView.id);
         if (b){ const ords = st.orders.filter(o => o.batchId===b.id);
-          const agg = {}, notes = {};
-          ords.forEach(o => { agg[o.drink] = (agg[o.drink]||0) + o.qty; if (o.note){ (notes[o.drink] = notes[o.drink]||[]).push((o.guest?o.guest+': ':'') + o.note); } });
+          const agg = {}, notes = {}, forNames = {};
+          ords.forEach(o => { agg[o.drink] = (agg[o.drink]||0) + o.qty; if (o.note){ (notes[o.drink] = notes[o.drink]||[]).push((o.guest?o.guest+': ':'') + o.note); } if (o.guest && o.guest.trim()){ (forNames[o.drink] = forNames[o.drink]||[]).push(o.guest.trim() + (o.qty>1?' ×'+o.qty:'')); } });
           const lines = Object.keys(agg).map(d => { const c = byName[d]; const made = !!(b.made||{})[d]; return {
             key:b.id+'|'+d, drink:d, qtyLabel:'×'+agg[d], glass:c?c.glass:'', garnish:c?c.garnish:'',
             specRows: c ? rowsOf(scaleSpec(c.spec, agg[d])) : [], steps: c?c.steps:[],
             notesList: notes[d]||[], hasNotes: !!(notes[d]&&notes[d].length), isBatchLine:false, made,
+            forLabel: (forNames[d]||[]).join(', '), hasFor: !!(forNames[d]&&forNames[d].length),
             checkMark: made ? '✓' : '',
             boxStyle: { flex:'none', width:'24px', height:'24px', borderRadius:'7px', border:'1.5px solid ' + (made?'var(--accent)':'var(--pill-line)'), background: made?'var(--accent)':'transparent', color:'var(--accent-ink)', display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:'15px', lineHeight:1, cursor:'pointer' },
             lineStyle:{ background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'15px 16px 14px', opacity: made?0.6:1 },

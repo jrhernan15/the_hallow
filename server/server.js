@@ -119,6 +119,36 @@ function logRoundDrink(roundId, drink) {
   })();
 }
 
+// The Ledger's "tonight" window resets automatically at 4 AM Eastern each day
+// (handles EST/EDT). Returns the most recent 4 AM ET as a UTC string matching
+// the history.created_at format, so "tonight" = rows >= this.
+const RESET_HOUR = 4, RESET_TZ = "America/New_York";
+function zoneParts(instant) {
+  const dtf = new Intl.DateTimeFormat("en-US", { timeZone: RESET_TZ, hour12: false, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const m = {}; for (const p of dtf.formatToParts(instant)) m[p.type] = p.value;
+  if (m.hour === "24") m.hour = "00";
+  return m;
+}
+function zoneOffsetMs(instant) {
+  const m = zoneParts(instant);
+  return Date.UTC(+m.year, +m.month - 1, +m.day, +m.hour, +m.minute, +m.second) - instant.getTime();
+}
+function etWallToUTC(y, mo, d, h) {
+  const guess = Date.UTC(y, mo, d, h, 0, 0);
+  let utc = guess - zoneOffsetMs(new Date(guess));
+  return new Date(guess - zoneOffsetMs(new Date(utc)));   // refine once for DST edges
+}
+function dbFmt(d) {
+  const p = (n, l = 2) => String(n).padStart(l, "0");
+  return d.getUTCFullYear() + "-" + p(d.getUTCMonth() + 1) + "-" + p(d.getUTCDate()) + " " + p(d.getUTCHours()) + ":" + p(d.getUTCMinutes()) + ":" + p(d.getUTCSeconds()) + "." + p(d.getUTCMilliseconds(), 3);
+}
+function lastResetUTC(now) {
+  const m = zoneParts(now);
+  let y = +m.year, mo = +m.month - 1, d = +m.day, h = +m.hour;
+  if (h < RESET_HOUR) { const ydy = new Date(Date.UTC(y, mo, d) - 86400000); return dbFmt(etWallToUTC(ydy.getUTCFullYear(), ydy.getUTCMonth(), ydy.getUTCDate(), RESET_HOUR)); }
+  return dbFmt(etWallToUTC(y, mo, d, RESET_HOUR));
+}
+
 function getState() {
   const rail = Q.railTickets.all();
   const rounds = Q.allRounds.all().map((r) => ({ ...r, tickets: Q.roundTickets.all(r.id) }));
@@ -287,7 +317,10 @@ const server = http.createServer(async (req, res) => {
     // ---- The Ledger (persistent drink stats) ----
     if (pathname === "/api/history" && method === "GET") {
       const ns = Q.getSetting.get("night_start");
-      return sendJSON(res, 200, { rows: Q.historyRows.all(), nightStart: (ns && ns.value) || null, now: Q.nowStr.get().t });
+      const manual = (ns && ns.value) || "";
+      const auto = lastResetUTC(new Date());                       // auto-reset at 4 AM ET
+      const nightStart = (manual && manual > auto) ? manual : auto; // a later manual reset wins
+      return sendJSON(res, 200, { rows: Q.historyRows.all(), nightStart, now: Q.nowStr.get().t });
     }
     if (pathname === "/api/history/new-night" && method === "POST") {
       const b = await readBody(req);

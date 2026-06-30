@@ -82,6 +82,7 @@
         <span data-blabel>The Pass</span><sc-if value="{{ hasOrders }}" hint-placeholder-val=""><span style="{{ ordersBadgeStyle }}">{{ ordersCount }}</span></sc-if><sc-if value="{{ bartenderArmed }}" hint-placeholder-val=""><span class="bmdot" aria-hidden="true"></span></sc-if>
       </button>
       <button type="button" data-ledgerbtn onClick="{{ onOpenBook }}" title="The Book" aria-label="Open The Book" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zM21 18.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"></path></svg><span data-llabel>The Book</span></button>
+      <button type="button" data-helpbtn onClick="{{ onOpenHelp }}" title="How it works" aria-label="How it works" style="flex:none;width:40px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8 3.59 8 8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"></path></svg></button>
       <button type="button" data-settingsbtn onClick="{{ onOpenSettings }}" title="Settings" aria-label="Settings" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><sc-if value="{{ hasMyName }}" hint-placeholder-val=""><span data-slabel>{{ settingsName }}</span></sc-if></button>
     </div>
 
@@ -714,6 +715,34 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ helpOpen }}" hint-placeholder-val="">
+    <div data-chrome onClick="{{ onCloseHelp }}" style="position:fixed;inset:0;z-index:58;background:rgba(12,11,8,.5);display:flex;justify-content:flex-end">
+      <aside onClick="{{ stop }}" style="width:min(440px,100%);height:100%;background:var(--bg2,#1A1E14);border-left:1px solid var(--card-border,#2D3422);box-shadow:-12px 0 48px rgba(0,0,0,.35);display:flex;flex-direction:column">
+        <header style="padding:16px 18px 12px;border-bottom:1px solid var(--card-border,#2D3422)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <div><div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267)">The Hollow</div><h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:2px 0 0;color:var(--ink,#ECE7D7)">How it works</h2></div>
+            <button type="button" onClick="{{ onCloseHelp }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
+          </div>
+        </header>
+        <div style="flex:1;overflow:auto;overscroll-behavior:contain;padding:14px 18px 18px">
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:2px 0 6px">Ordering</div>
+          <div style="display:flex;align-items:flex-start;gap:11px;padding:5px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent2,#CFA267);margin-top:8px"></span><div style="font-size:13.5px;color:var(--ink-soft,#B7B3A1);line-height:1.5"><b style="color:var(--ink,#ECE7D7);font-weight:600">Tap a drink</b>, then “Send to the bar.”</div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;padding:5px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent2,#CFA267);margin-top:8px"></span><div style="font-size:13.5px;color:var(--ink-soft,#B7B3A1);line-height:1.5"><b style="color:var(--ink,#ECE7D7);font-weight:600">Your drinks</b> show up top — they stick around till the night's over.</div></div>
+          <div style="display:flex;align-items:flex-start;gap:11px;padding:5px 0"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent2,#CFA267);margin-top:8px"></span><div style="font-size:13.5px;color:var(--ink-soft,#B7B3A1);line-height:1.5">Set your <b style="color:var(--ink,#ECE7D7);font-weight:600">name in Settings</b> so the bar knows who ordered.</div></div>
+
+          <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:18px 0 4px">Once you're in</div>
+          <div style="display:flex;align-items:flex-start;gap:13px;padding:11px 0;border-bottom:1px solid var(--card-border,#2D3422)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;margin-top:1px;color:var(--accent2,#CFA267)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM7.5 18c-.83 0-1.5-.67-1.5-1.5S6.67 15 7.5 15s1.5.67 1.5 1.5S8.33 18 7.5 18zm0-9C6.67 9 6 8.33 6 7.5S6.67 6 7.5 6 9 6.67 9 7.5 8.33 9 7.5 9zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5 4.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm0-9c-.83 0-1.5-.67-1.5-1.5S15.67 6 16.5 6s1.5.67 1.5 1.5S17.33 9 16.5 9z"></path></svg><div><div style="font-size:14.5px;color:var(--ink,#ECE7D7);font-weight:600">The Dice</div><div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin-top:2px;line-height:1.4">Can't decide? Tap it and the bar picks for you.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:13px;padding:11px 0;border-bottom:1px solid var(--card-border,#2D3422)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;margin-top:1px;color:var(--accent2,#CFA267)"><path d="M12 6c0-.55-.45-1-1-1H5.82l.66-3.18.02-.23c0-.31-.13-.59-.33-.8L5.38 0 .44 4.94C.17 5.21 0 5.59 0 6v6.5c0 .83.67 1.5 1.5 1.5h6.75c.62 0 1.15-.38 1.38-.91l2.26-5.29c.07-.17.11-.36.11-.55V6zm11 6.5c0-.83-.67-1.5-1.5-1.5h-6.75c-.62 0-1.15.38-1.38.91l-2.26 5.29c-.07.17-.11.36-.11.55V18c0 .55.45 1 1 1h5.18l-.66 3.18-.02.24c0 .31.13.59.33.8l.79.78 4.94-4.94c.27-.27.44-.65.44-1.06v-6.5z"></path></svg><div><div style="font-size:14.5px;color:var(--ink,#ECE7D7);font-weight:600">The Verdict</div><div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin-top:2px;line-height:1.4">React to your drink — render your verdict.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:13px;padding:11px 0;border-bottom:1px solid var(--card-border,#2D3422)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;margin-top:1px;color:var(--accent2,#CFA267)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path></svg><div><div style="font-size:14.5px;color:var(--ink,#ECE7D7);font-weight:600">The Wall</div><div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin-top:2px;line-height:1.4">Leave a toast or a one-liner for the night.</div></div></div>
+          <div style="display:flex;align-items:flex-start;gap:13px;padding:11px 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;margin-top:1px;color:var(--accent2,#CFA267)"><path d="M4 13h4v7H4zm6-9h4v16h-4zm6 5h4v11h-4z"></path></svg><div><div style="font-size:14.5px;color:var(--ink,#ECE7D7);font-weight:600">The Ledger</div><div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin-top:2px;line-height:1.4">Tonight's crowd favorite and the running tally.</div></div></div>
+          <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:9px">The Wall &amp; The Ledger live in The Book.</div>
+
+          <div style="text-align:center;font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:13.5px;color:var(--accent2,#CFA267);margin-top:20px;padding-top:14px;border-top:1px solid var(--card-border,#2D3422)">No app to download — it runs on the house WiFi.</div>
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ settingsOpen }}" hint-placeholder-val="">
     <div data-chrome onClick="{{ onCloseSettings }}" style="position:fixed;inset:0;z-index:58;background:rgba(12,11,8,.5);display:flex;justify-content:flex-end">
       <aside onClick="{{ stop }}" style="width:min(460px,100%);height:100%;background:var(--bg2,#1A1E14);border-left:1px solid var(--card-border,#2D3422);box-shadow:-12px 0 48px rgba(0,0,0,.35);display:flex;flex-direction:column">
@@ -878,7 +907,7 @@ class Component extends DCLogic {
       draftGuest: '', draftQty: 1, draftNote: '', toast: null, showTop: false,
       eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto', eightySixTab: 'ingredients', chimePref: 'auto',
       ledgerOpen: false, ledgerRows: [], ledgerNightStart: '', ledgerNow: '', ledgerScope: 'tonight',
-      settingsOpen: false, myName: '', welcomeOpen: false, welcomeName: '', confirm: null,
+      settingsOpen: false, myName: '', welcomeOpen: false, welcomeName: '', confirm: null, helpOpen: false,
       bartenderMode: false, bartenderAlert: null, bmBannerDismissed: false, verdictDrink: null,
       wallOpen: false, wallPosts: [], wallNightStart: '', wallScope: 'tonight', wallDraft: '',
       bookOpen: false, bookTab: 'wall', bookScope: 'tonight',
@@ -1215,6 +1244,8 @@ class Component extends DCLogic {
   clearHistory(){ try { if (!window.confirm('Clear all-time stats? This erases the whole history and cannot be undone.')) return; } catch(e){} this.api('POST','/api/history/clear',{ code:'5352' }).then(()=>this.fetchHistory()).catch(()=>this.flashToast('Could not clear stats',2000)); }
   openSettings(){ this.setState({ settingsOpen:true }); }
   closeSettings(){ this.setState({ settingsOpen:false }); }
+  openHelp(){ this.setState({ helpOpen:true }); }
+  closeHelp(){ this.setState({ helpOpen:false }); }
   onMyName(e){ const v = (e.target.value || '').slice(0,60); this.setState({ myName: v }); try { localStorage.setItem('hollow_name_v1', v); } catch(_){} }
   setDark(v){ try { localStorage.setItem('hollow_dark', v ? '1' : '0'); } catch(_){} this.setState({ dark: !!v }); }
   resetMyData(){ try { if (!window.confirm('Clear this device’s saved name, preferences, and tab?')) return; } catch(_){} try { ['hollow_name_v1','hollow_chime','hollow_dark','hollow_mine_v1'].forEach(k => localStorage.removeItem(k)); } catch(_){} this._mine = []; this.setState({ myName:'', chimePref:'auto', dark:true, draftGuest:'' }); this.refreshState(); this.flashToast('Reset ✓', 1600); }
@@ -1296,7 +1327,7 @@ class Component extends DCLogic {
     const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
     const pal = st.dark ? dir.dark : dir.light;
     try { document.documentElement.style.background = pal.bg; document.body.style.background = pal.bg; } catch(e){}
-    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.bookOpen || st.settingsOpen || st.welcomeOpen || st.confirm || st.verdictDrink);
+    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.bookOpen || st.settingsOpen || st.welcomeOpen || st.confirm || st.verdictDrink || st.helpOpen);
     if (_overlay && !this._overlayLocked) { this._overlayLocked = true; this.lockScroll(); }
     else if (!_overlay && this._overlayLocked) { this._overlayLocked = false; this.unlockScroll(); }
     const meta = dir.meta;
@@ -1678,6 +1709,7 @@ class Component extends DCLogic {
       ledgerHasFave: ledgerVals.hasFave, ledgerFave: ledgerVals.ledgerFave, ledgerFaveN: ledgerVals.ledgerFaveN, ledgerHasPoop: ledgerVals.hasPoop, ledgerPoop: ledgerVals.ledgerPoop, ledgerPoopN: ledgerVals.ledgerPoopN,
       darkIconPath: st.dark ? sunPath : moonPath,
       settingsOpen: st.settingsOpen, onOpenSettings: () => this.openSettings(), onCloseSettings: () => this.closeSettings(),
+      helpOpen: st.helpOpen, onOpenHelp: () => this.openHelp(), onCloseHelp: () => this.closeHelp(),
       myName: st.myName, onMyName: (e) => this.onMyName(e), noMyDrinks: myDrinks.length===0,
       hasMyName: !!(st.myName && st.myName.trim()), settingsName: (st.myName||'').trim().split(/\s+/)[0] || '',
       appearanceLightStyle: themeChip(!st.dark), appearanceDarkStyle: themeChip(st.dark),

@@ -83,7 +83,7 @@
       <button type="button" data-settingsbtn onClick="{{ onOpenSettings }}" title="Settings" aria-label="Settings" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><sc-if value="{{ hasMyName }}" hint-placeholder-val=""><span data-slabel>{{ settingsName }}</span></sc-if></button>
     </div>
 
-    <sc-if value="{{ hasMyDrinks }}" hint-placeholder-val="">
+    <sc-if value="{{ hasStrip }}" hint-placeholder-val="">
       <div style="max-width:1180px;margin:0 auto;padding:0 18px 11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <span style="font-size:11px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;color:var(--ink-faint,#8A8474);white-space:nowrap">Your drinks</span>
         <sc-for list="{{ myDrinks }}" as="md" hint-placeholder-count="1">
@@ -98,6 +98,14 @@
               </sc-for>
             </span>
           </sc-if>
+        </sc-for>
+        <sc-for list="{{ myPastPours }}" as="md" hint-placeholder-count="1">
+          <span style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;border:1px solid var(--card-border,#2D3422);background:var(--card,#1D2217);border-radius:999px;padding:4px 7px 4px 12px">
+            <span style="font-size:11.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);white-space:nowrap">{{ md.drink }} · rate</span>
+            <sc-for list="{{ md.reactions }}" as="rx" hint-placeholder-count="5">
+              <button type="button" onClick="{{ rx.onTap }}" style="{{ rx.style }}">{{ rx.emoji }}<sc-if value="{{ rx.hasCount }}" hint-placeholder-val=""><span style="font-size:11.5px;color:var(--ink-soft,#B7B3A1)">{{ rx.count }}</span></sc-if></button>
+            </sc-for>
+          </span>
         </sc-for>
       </div>
     </sc-if>
@@ -816,7 +824,7 @@ class Component extends DCLogic {
       search: '', sort: 'spirit',
       filters: { spirit: [], tags: [], build: [], glass: [], occasion: [] },
       open: {}, filtersOpen: true, highlight: null,
-      orders: [], batches: [], reactions: {}, myPours: [], ordersOpen: false, stationTab: 'queue',
+      orders: [], batches: [], reactions: {}, myPours: [], serverNightStart: '', ordersOpen: false, stationTab: 'queue',
       selected: {}, makeView: null, orderModalName: null,
       draftGuest: '', draftQty: 1, draftNote: '', toast: null, showTop: false,
       eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto', eightySixTab: 'ingredients', chimePref: 'auto',
@@ -914,7 +922,7 @@ class Component extends DCLogic {
     this._prevMine = cur;
     if (justReady) this.chime();
     const theme = (d && d.theme) || 'auto';
-    this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {} });
+    this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {}, serverNightStart: (d && d.nightStart) || '' });
     if (this.state.bookOpen){ if (this.state.bookTab === 'wall') this.fetchWall(); else this.fetchHistory(); }
   }
 
@@ -1499,6 +1507,9 @@ class Component extends DCLogic {
     const myLabel = (s) => s==='up' ? 'Ready!' : (s==='working' ? 'Making' : 'On the rail');
     const myPill = (s) => { const up=s==='up', work=s==='working'; return { fontSize:'12px', fontWeight:600, padding:'4px 11px', borderRadius:'999px', whiteSpace:'nowrap', border:'1px solid '+(up?'var(--accent2)':'var(--pill-line)'), background: up?'var(--accent2)':(work?'var(--pill-bg)':'var(--field)'), color: up?'var(--accent-ink)':(work?'var(--pill-ink)':'var(--ink-soft)') }; };
     const myDrinks = st.orders.filter(o => o.mine && o.status !== 'served').sort((a,b)=>a.ts-b.ts).map(o => ({ drink: o.drink + (o.qty>1?' ×'+o.qty:''), name: o.drink, label: myLabel(o.status), style: myPill(o.status), ready: o.status==='up', notReady: o.status!=='up', reactions: o.status==='up' ? reactionRow(o.drink) : [] }));
+    const nightMs = st.serverNightStart ? this.toMs(st.serverNightStart) : 0;
+    const _liveNames = {}; st.orders.forEach(o => { if (o.mine && o.status !== 'served') _liveNames[o.drink] = true; });
+    const myPastPours = (st.myPours || []).filter(p => p && p.drink && (!nightMs || (p.ts||0) >= nightMs) && !_liveNames[p.drink]).sort((a,b)=>(b.ts||0)-(a.ts||0)).map(p => ({ drink: p.drink, reactions: reactionRow(p.drink) }));
     const outIngredients = st.eightySix.filter(n => n.indexOf('drink:') !== 0).length;
 
     // ---- The Ledger (drink stats) ----
@@ -1570,7 +1581,7 @@ class Component extends DCLogic {
       canDelete: wallStaff, onDelete: () => this.deleteWallPost(p.id) }; });
     const bookTabStyle = (on) => ({ fontFamily:"'Inter',sans-serif", fontSize:'14.5px', fontWeight: on?600:500, color: on ? 'var(--ink)' : 'var(--ink-faint)', background:'transparent', border:'none', borderBottom: on ? '2px solid var(--accent)' : '2px solid transparent', padding:'0 1px 6px', cursor:'pointer', lineHeight:'1' });
     const bookScopeStyle = (on) => ({ fontFamily:"'Inter',sans-serif", fontSize:'11.5px', fontWeight:600, color: on ? 'var(--accent-ink)' : 'var(--ink-soft)', background: on ? 'var(--accent)' : 'transparent', border:'none', borderRadius:'999px', padding:'4px 11px', cursor:'pointer' });
-    const myPourCards = (st.myPours || []).slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).map(p => ({ drink: p.drink, time: fmtTime(p.ts), reactions: reactionRow(p.drink) }));
+    const myPourCards = (st.myPours || []).filter(p => p && p.drink && (!nightMs || (p.ts||0) >= nightMs)).slice().sort((a,b)=>(b.ts||0)-(a.ts||0)).map(p => ({ drink: p.drink, time: fmtTime(p.ts), reactions: reactionRow(p.drink) }));
 
     return {
       appStyle,
@@ -1646,7 +1657,7 @@ class Component extends DCLogic {
       eightySixStock: (stockTotal - outIngredients) + ' of ' + stockTotal + ' in stock',
       eightySixHidden: hiddenCount + ' drink' + (hiddenCount===1?'':'s') + ' hidden',
       drinkGroups: drinkGroups, drink86Note: drink86Count===0 ? 'All drinks on the menu.' : (drink86Count + ' drink' + (drink86Count===1?'':'s') + ' 86’d.'),
-      hasMyDrinks: myDrinks.length>0, myDrinks: myDrinks,
+      hasMyDrinks: myDrinks.length>0, myDrinks: myDrinks, myPastPours: myPastPours, hasPastPours: myPastPours.length>0, hasStrip: (myDrinks.length>0 || myPastPours.length>0),
       logoSrc: logoSrc, themeOptions: themeOptions, themeAutoNote: themeAutoNote, chimeGroups: chimeGroups,
       search: st.search, onSearch: (e) => this.onSearch(e),
       onSurprise: () => this.surprise(),

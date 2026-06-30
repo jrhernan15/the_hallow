@@ -188,7 +188,11 @@ function getState() {
   const themeRow = Q.getSetting.get("theme");
   const reactions = {};
   for (const r of Q.reactionCounts.all()) { (reactions[r.drink] = reactions[r.drink] || {})[r.emoji] = r.n; }
-  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions };
+  const nsRow = Q.getSetting.get("night_start");
+  const manualNS = (nsRow && nsRow.value) || "";
+  const autoNS = lastResetUTC(new Date());
+  const nightStart = (manualNS && manualNS > autoNS) ? manualNS : autoNS;
+  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions, nightStart };
 }
 
 /* ---- Server-Sent Events ---- */

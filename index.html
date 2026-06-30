@@ -378,9 +378,16 @@
                 <span style="flex:1"></span>
                 <span style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">{{ ln.glass }}</span>
               </div>
-              <sc-if value="{{ ln.hasFor }}" hint-placeholder-val="">
-                <div style="margin-top:9px;font-size:12.5px;color:var(--ink-soft,#B7B3A1)"><b style="color:var(--accent2,#CFA267);font-weight:600;text-transform:uppercase;letter-spacing:.1em;font-size:10px">For</b>&nbsp;&nbsp;{{ ln.forLabel }}</div>
-              </sc-if>
+              <div style="margin-top:9px">
+                <sc-for list="{{ ln.orders }}" as="od" hint-placeholder-count="1">
+                  <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dotted var(--line,#2D3422)">
+                    <span style="font-size:12.5px;color:var(--ink-soft,#B7B3A1)"><span style="color:var(--ink-faint,#827E6D)">For</span> {{ od.who }}{{ od.qtyLabel }}</span>
+                    <span style="flex:1"></span>
+                    <button type="button" onClick="{{ od.onRail }}" title="Send back to the rail" style="font-size:11.5px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:999px;padding:3px 10px;cursor:pointer">→ Rail</button>
+                    <button type="button" onClick="{{ od.onRemove }}" title="Remove this order" style="font-size:11.5px;font-weight:600;color:var(--ink-faint,#827E6D);background:transparent;border:none;cursor:pointer;padding:3px 5px">Remove</button>
+                  </div>
+                </sc-for>
+              </div>
               <div style="margin-top:12px">
                 <h3 style="font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#CFA267);font-weight:600;margin:0 0 7px">Pour <span style="color:var(--ink-faint,#827E6D)">· batched total</span></h3>
                 <ul style="list-style:none;margin:0;padding:0">
@@ -963,6 +970,7 @@ class Component extends DCLogic {
     this.setState(s => { const sel = Object.assign({}, s.selected); delete sel[id]; return { selected: sel }; });
     this.api('DELETE', '/api/tickets/' + id).then(() => this.refreshState()).catch(()=>{});
   }
+  ticketToRail(id){ this.api('POST', '/api/tickets/' + id + '/rail', {}).then(() => this.refreshState()).catch(() => this.flashToast('Could not move it', 2000)); }
   clearAllOrders(){ this.api('POST', '/api/reset').then(() => this.refreshState()).catch(()=>{}); }
 
   // ---- The 86 (gated stock board) ----
@@ -1246,6 +1254,7 @@ class Component extends DCLogic {
             specRows: c ? rowsOf(scaleSpec(c.spec, agg[d])) : [], steps: c?c.steps:[],
             notesList: notes[d]||[], hasNotes: !!(notes[d]&&notes[d].length), isBatchLine:true, made,
             forLabel: (forNames[d]||[]).join(', '), hasFor: !!(forNames[d]&&forNames[d].length),
+            orders: ords.filter(o=>o.drink===d).map(o => ({ key:String(o.id), who:(o.guest&&o.guest.trim())||'No name', qtyLabel:(o.qty>1?' ×'+o.qty:''), onRail:()=>this.ticketToRail(o.id), onRemove:()=>this.removeOrder(o.id) })),
             checkMark: made ? '✓' : '',
             boxStyle: { flex:'none', width:'24px', height:'24px', borderRadius:'7px', border:'1.5px solid ' + (made?'var(--accent2)':'var(--pill-line)'), background: made?'var(--accent2)':'transparent', color:'var(--accent-ink)', display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:'15px', lineHeight:1, cursor:'pointer' },
             lineStyle:{ background:'var(--card)', border:'1px solid ' + (made?'var(--accent2)':'var(--card-border)'), borderRadius:'14px', padding:'15px 16px 14px', opacity: made?0.62:1 },

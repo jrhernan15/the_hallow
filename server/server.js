@@ -74,6 +74,8 @@ const Q = {
   getTicket:     db.prepare("SELECT * FROM tickets WHERE id = ?"),
   railTickets:   db.prepare("SELECT * FROM tickets WHERE status = 'rail' ORDER BY created_at, id"),
   deleteTicket:  db.prepare("DELETE FROM tickets WHERE id = ?"),
+  railTicket:    db.prepare("UPDATE tickets SET round_id = NULL, status = 'rail', updated_at = datetime('now') WHERE id = ?"),
+  roundTixCount: db.prepare("SELECT COUNT(*) AS n FROM tickets WHERE round_id = ?"),
   insertRound:   db.prepare("INSERT INTO rounds (drink, count) VALUES (?, ?)"),
   getRound:      db.prepare("SELECT * FROM rounds WHERE id = ?"),
   allRounds:     db.prepare("SELECT * FROM rounds ORDER BY created_at, id"),
@@ -117,6 +119,14 @@ function logRoundDrink(roundId, drink) {
   db.transaction(() => {
     for (const t of tix) Q.insertHistory.run(t.drink, t.qty || 1, t.guest_name || null, roundId);
   })();
+}
+
+// After a round's tickets change (one pulled to the rail or removed), refresh its
+// status — or delete the round if it's now empty.
+function recomputeRound(roundId) {
+  if (roundId == null) return;
+  if (Q.roundTixCount.get(roundId).n === 0) { Q.deleteRound.run(roundId); return; }
+  Q.setRoundStat.run(Q.roundNotUpCount.get(roundId).n === 0 ? "up" : "working", roundId);
 }
 
 // The Ledger's "tonight" window resets automatically at 4 AM Eastern each day
@@ -214,7 +224,20 @@ const server = http.createServer(async (req, res) => {
 
     let m;
     if ((m = pathname.match(/^\/api\/tickets\/(\d+)$/)) && method === "DELETE") {
-      Q.deleteTicket.run(Number(m[1]));
+      const id = Number(m[1]); const t = Q.getTicket.get(id);
+      Q.deleteTicket.run(id);
+      if (t) recomputeRound(t.round_id);   // keep the round (or clean it up) in sync
+      broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+
+    // Pull a single ticket out of its round, back to the rail.
+    if ((m = pathname.match(/^\/api\/tickets\/(\d+)\/rail$/)) && method === "POST") {
+      const id = Number(m[1]); const t = Q.getTicket.get(id);
+      if (!t) return sendJSON(res, 404, { error: "ticket not found" });
+      const rid = t.round_id;
+      Q.railTicket.run(id);
+      recomputeRound(rid);
       broadcast();
       return sendJSON(res, 200, { ok: true });
     }

@@ -19,15 +19,18 @@
   html{-webkit-text-size-adjust:100%;}
   body{margin:0;-webkit-font-smoothing:antialiased;}
   input[type=search]::-webkit-search-cancel-button{cursor:pointer;}
+  [data-toolbar] > button{height:40px;}
   @keyframes hollowPulse{0%{box-shadow:0 0 0 0 var(--accent);}100%{box-shadow:0 0 0 10px transparent;}}
 
   @media (max-width: 600px){
     [data-header]{padding-top:22px !important;}
     [data-toolbar]{padding:9px 12px 10px !important;gap:8px !important;}
     [data-search]{flex:1 1 100% !important;order:-1 !important;min-width:0 !important;}
-    [data-surprise]{flex:1 1 auto !important;justify-content:center !important;}
-    [data-blabel]{position:absolute !important;width:1px !important;height:1px !important;overflow:hidden !important;clip:rect(0 0 0 0) !important;}
-    [data-ordersbtn]{padding:0 !important;width:42px !important;height:42px !important;justify-content:center !important;gap:0 !important;}
+    [data-surprise]{padding:0 11px !important;}
+    [data-llabel]{display:none !important;}
+    [data-ledgerbtn]{width:40px !important;padding:0 !important;justify-content:center !important;gap:0 !important;}
+    [data-slabel]{display:none !important;}
+    [data-settingsbtn]{width:40px !important;padding:0 !important;justify-content:center !important;gap:0 !important;}
     [data-summary]{padding-left:12px !important;padding-right:12px !important;}
     [data-filterwrap]{padding:0 12px !important;margin-top:6px !important;}
     [data-filterpanel]{border-radius:14px !important;padding:2px 13px 11px !important;}
@@ -41,6 +44,10 @@
   }
   @media (min-width: 601px) and (max-width: 980px){
     [data-grid]{padding-left:clamp(14px,2.4vw,18px) !important;padding-right:clamp(14px,2.4vw,18px) !important;}
+  }
+  @media (max-width: 344px){
+    [data-blabel]{display:none !important;}
+    [data-ordersbtn]{width:40px !important;padding:0 !important;justify-content:center !important;gap:0 !important;}
   }
 
   }
@@ -66,13 +73,13 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ink-faint,#8A8474);pointer-events:none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <input type="search" value="{{ search }}" onChange="{{ onSearch }}" autocomplete="off" placeholder="Search drinks or ingredients…" style="width:100%;font-family:'Inter',sans-serif;font-size:15px;color:var(--ink,#262420);background:var(--field,#FBF9F3);border:1px solid var(--line,#DDD6C7);border-radius:11px;padding:11px 14px 11px 38px;outline:none;transition:border-color .15s ease,box-shadow .15s ease" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
       </div>
-      <button type="button" data-surprise onClick="{{ onSurprise }}" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><span style="font-size:13px">✦</span>Surprise me</button>
-      <button type="button" onClick="{{ onOpenLedger }}" title="The Ledger" aria-label="Open The Ledger" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 13h4v7H4zm6-9h4v16h-4zm6 5h4v11h-4z"></path></svg>Ledger</button>
-      <button type="button" data-ordersbtn onClick="{{ onToggleOrders }}" title="The Pass" aria-label="Open The Pass" style="position:relative;font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent)">
+      <button type="button" data-surprise onClick="{{ onSurprise }}" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px" style-hover="border-color:var(--accent);background:var(--bg2)"><span style="font-size:13px">✦</span>Surprise me</button>
+      <button type="button" data-ordersbtn onClick="{{ onToggleOrders }}" title="The Pass" aria-label="Open The Pass" style="position:relative;font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent)">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 7L5.66 5h12.69l-1.78 2H7.43z"></path></svg>
         <span data-blabel>The Pass</span><sc-if value="{{ hasOrders }}" hint-placeholder-val=""><span style="{{ ordersBadgeStyle }}">{{ ordersCount }}</span></sc-if>
       </button>
-      <button type="button" onClick="{{ onOpenSettings }}" title="Settings" aria-label="Settings" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:10px 12px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><sc-if value="{{ hasMyName }}" hint-placeholder-val=""><span>{{ settingsName }}</span></sc-if></button>
+      <button type="button" data-ledgerbtn onClick="{{ onOpenLedger }}" title="The Ledger" aria-label="Open The Ledger" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 13h4v7H4zm6-9h4v16h-4zm6 5h4v11h-4z"></path></svg><span data-llabel>Ledger</span></button>
+      <button type="button" data-settingsbtn onClick="{{ onOpenSettings }}" title="Settings" aria-label="Settings" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg><sc-if value="{{ hasMyName }}" hint-placeholder-val=""><span data-slabel>{{ settingsName }}</span></sc-if></button>
     </div>
 
     <sc-if value="{{ hasMyDrinks }}" hint-placeholder-val="">
@@ -296,7 +303,7 @@
                   <button type="button" onClick="{{ o.onView }}" style="font-size:12px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:999px;padding:5px 12px;cursor:pointer" style-hover="border-color:var(--accent)">Recipe</button>
                   <button type="button" onClick="{{ o.onMake }}" style="font-size:12px;font-weight:600;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:6px 13px;cursor:pointer">Make now</button>
                   <span style="flex:1"></span>
-                  <button type="button" onClick="{{ o.onRemove }}" aria-label="Remove order" style="font-size:12px;font-weight:600;color:var(--ink-faint,#827E6D);background:transparent;border:none;cursor:pointer;padding:5px 6px">Remove</button>
+                  <button type="button" onClick="{{ o.onRemove }}" aria-label="Remove order" style="font-size:12px;font-weight:600;color:#CC7A6A;background:transparent;border:none;cursor:pointer;padding:5px 6px">Remove</button>
                 </div>
               </div>
             </sc-for>
@@ -331,7 +338,7 @@
                 <div style="display:flex;align-items:center;gap:8px;margin-top:11px">
                   <button type="button" onClick="{{ b.onOpen }}" style="font-size:12.5px;font-weight:600;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:7px 15px;cursor:pointer">Open &amp; make</button>
                   <span style="flex:1"></span>
-                  <button type="button" onClick="{{ b.onRemove }}" aria-label="Remove round" style="font-size:12px;font-weight:600;color:var(--ink-faint,#827E6D);background:transparent;border:none;cursor:pointer;padding:5px 6px">Remove</button>
+                  <button type="button" onClick="{{ b.onRemove }}" aria-label="Remove round" style="font-size:12px;font-weight:600;color:#CC7A6A;background:transparent;border:none;cursor:pointer;padding:5px 6px">Remove</button>
                 </div>
               </div>
             </sc-for>
@@ -383,8 +390,8 @@
                   <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dotted var(--line,#2D3422)">
                     <span style="font-size:12.5px;color:var(--ink-soft,#B7B3A1)"><span style="color:var(--ink-faint,#827E6D)">For</span> {{ od.who }}{{ od.qtyLabel }}</span>
                     <span style="flex:1"></span>
-                    <button type="button" onClick="{{ od.onRail }}" title="Send back to the rail" style="font-size:11.5px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:999px;padding:3px 10px;cursor:pointer">→ Rail</button>
-                    <button type="button" onClick="{{ od.onRemove }}" title="Remove this order" style="font-size:11.5px;font-weight:600;color:var(--ink-faint,#827E6D);background:transparent;border:none;cursor:pointer;padding:3px 5px">Remove</button>
+                    <button type="button" onClick="{{ od.onRail }}" title="Send back to the rail" aria-label="Send back to the rail" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;border:1px solid var(--pill-line,#3A4430);background:transparent;color:var(--accent,#A6BB8E);cursor:pointer;padding:0" style-hover="border-color:var(--accent)"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"></path></svg></button>
+                    <button type="button" onClick="{{ od.onRemove }}" title="Remove this order" aria-label="Remove this order" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;border:1px solid #6E4A44;background:transparent;color:#CC7A6A;cursor:pointer;padding:0" style-hover="background:rgba(204,122,106,.14)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
                   </div>
                 </sc-for>
               </div>
@@ -418,7 +425,7 @@
         </div>
         <sc-if value="{{ makeIsBatch }}" hint-placeholder-val="">
           <footer style="padding:12px 16px;border-top:1px solid var(--card-border,#2D3422);display:flex;gap:10px">
-            <button type="button" onClick="{{ onMakeRemove }}" style="font-size:12.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 16px;cursor:pointer">Remove round</button>
+            <button type="button" onClick="{{ onMakeRemove }}" style="font-size:12.5px;font-weight:600;color:#CC7A6A;background:transparent;border:1px solid #6E4A44;border-radius:11px;padding:11px 16px;cursor:pointer">Remove round</button>
             <span style="flex:1"></span>
             <sc-if value="{{ makeAllMade }}" hint-placeholder-val="">
               <button type="button" onClick="{{ onMakeReopen }}" style="font-size:13px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 18px;cursor:pointer">Reopen</button>
@@ -681,6 +688,19 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ confirmOpen }}" hint-placeholder-val="">
+    <div data-chrome data-modalwrap onClick="{{ onCloseConfirm }}" style="position:fixed;inset:0;z-index:66;background:rgba(12,11,8,.62);display:flex;align-items:center;justify-content:center;padding:20px">
+      <div onClick="{{ stop }}" style="width:min(330px,100%);background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.5);padding:22px">
+        <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:20px;margin:0 0 6px;color:var(--ink,#ECE7D7)">{{ confirmTitle }}</h2>
+        <p style="font-size:13px;line-height:1.5;color:var(--ink-soft,#B7B3A1);margin:0">{{ confirmBody }}</p>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button type="button" onClick="{{ onCloseConfirm }}" style="flex:1;font-size:13px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px;cursor:pointer">Cancel</button>
+          <button type="button" onClick="{{ onDoConfirm }}" style="flex:1;font-size:13px;font-weight:700;color:#F4E9E6;background:#B0564B;border:none;border-radius:11px;padding:11px;cursor:pointer">{{ confirmLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ showTop }}" hint-placeholder-val="">
     <button type="button" data-chrome onClick="{{ onScrollTop }}" aria-label="Back to top" style="position:fixed;right:18px;bottom:24px;z-index:50;width:46px;height:46px;border-radius:999px;border:1px solid var(--pill-line,#B9C6AC);background:var(--accent,#2F3D2C);color:var(--accent-ink,#F4F1E6);box-shadow:0 8px 22px rgba(0,0,0,.28);cursor:pointer;display:inline-flex;align-items:center;justify-content:center" style-hover="filter:brightness(1.08)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"></path></svg></button>
   </sc-if>
@@ -708,7 +728,7 @@ class Component extends DCLogic {
       draftGuest: '', draftQty: 1, draftNote: '', toast: null, showTop: false,
       eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto', eightySixTab: 'ingredients', chimePref: 'auto',
       ledgerOpen: false, ledgerRows: [], ledgerNightStart: '', ledgerNow: '', ledgerScope: 'tonight',
-      settingsOpen: false, myName: '', welcomeOpen: false, welcomeName: '',
+      settingsOpen: false, myName: '', welcomeOpen: false, welcomeName: '', confirm: null,
     };
     this.GROUPS = [
       { key:'spirit',   label:'Spirit',   mode:'or',  order:['Gin','Bourbon','Rye','Tequila','Rum','Vodka','Cognac','Aperitivo','THC'] },
@@ -961,12 +981,17 @@ class Component extends DCLogic {
   resolveChime(){ const pref = this.state.chimePref || 'auto'; if (pref === 'off') return null; if (pref === 'auto'){ return ({ herbarium:'cricket', halloween:'whisper', christmas:'jingle', birthday:'partyhorn' })[this.state.direction] || 'cricket'; } return pref; }
   chime(){ const name = this.resolveChime(); if (name) this.playChime(name); }
   setChime(name){ try { localStorage.setItem('hollow_chime', name); } catch(e){} this.unlockAudio(); this.setState({ chimePref: name }); if (name !== 'off'){ const themed = ({ herbarium:'cricket', halloween:'whisper', christmas:'jingle', birthday:'partyhorn' })[this.state.direction] || 'cricket'; this.playChime(name === 'auto' ? themed : name); } }
-  removeBatch(batchId){
+  removeBatch(batchId){ this.askConfirm({ title:'Remove round', body:'Delete this whole round and all its orders? This can’t be undone.', label:'Remove round', onYes: () => this._removeBatch(batchId) }); }
+  _removeBatch(batchId){
     this.setState({ makeView: null });
     this.api('DELETE', '/api/rounds/' + batchId).then(() => this.refreshState()).catch(()=>{});
   }
+  askConfirm(opts){ this.setState({ confirm: opts }); }
+  closeConfirm(){ this.setState({ confirm: null }); }
+  doConfirm(){ const c = this.state.confirm; this.setState({ confirm: null }); if (c && c.onYes) c.onYes(); }
   clearDoneBatches(){ const ids = (this.state.batches || []).filter(b => b.status==='up' || b.status==='done').map(b => b.id); if (!ids.length) return; Promise.all(ids.map(id => this.api('DELETE', '/api/rounds/' + id))).then(() => this.refreshState()).catch(() => this.refreshState()); }
-  removeOrder(id){
+  removeOrder(id){ this.askConfirm({ title:'Remove order', body:'Delete this order? It won’t go back to the rail.', label:'Remove', onYes: () => this._removeOrder(id) }); }
+  _removeOrder(id){
     this.setState(s => { const sel = Object.assign({}, s.selected); delete sel[id]; return { selected: sel }; });
     this.api('DELETE', '/api/tickets/' + id).then(() => this.refreshState()).catch(()=>{});
   }
@@ -1069,7 +1094,7 @@ class Component extends DCLogic {
     const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
     const pal = st.dark ? dir.dark : dir.light;
     try { document.documentElement.style.background = pal.bg; document.body.style.background = pal.bg; } catch(e){}
-    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.ledgerOpen || st.settingsOpen || st.welcomeOpen);
+    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.ledgerOpen || st.settingsOpen || st.welcomeOpen || st.confirm);
     if (_overlay && !this._overlayLocked) { this._overlayLocked = true; this.lockScroll(); }
     else if (!_overlay && this._overlayLocked) { this._overlayLocked = false; this.unlockScroll(); }
     const meta = dir.meta;
@@ -1400,6 +1425,8 @@ class Component extends DCLogic {
       appearanceLightStyle: themeChip(!st.dark), appearanceDarkStyle: themeChip(st.dark),
       onSetLight: () => this.setDark(false), onSetDark: () => this.setDark(true), onResetMyData: () => this.resetMyData(),
       welcomeOpen: st.welcomeOpen, welcomeName: st.welcomeName, onWelcomeName: (e) => this.onWelcomeName(e), onWelcomeSave: () => this.welcomeSave(), onWelcomeSkip: () => this.welcomeSkip(),
+      confirmOpen: !!st.confirm, confirmTitle: st.confirm ? st.confirm.title : '', confirmBody: st.confirm ? st.confirm.body : '', confirmLabel: st.confirm ? st.confirm.label : 'Confirm',
+      onCloseConfirm: () => this.closeConfirm(), onDoConfirm: () => this.doConfirm(),
       onToggleOrders: () => this.toggleOrders(),
       ordersOpen: st.ordersOpen, hasOrders: activeCount > 0, ordersCount: String(activeCount),
       ordersBadgeStyle, ordersSummary,

@@ -94,6 +94,16 @@ db.exec(`CREATE TABLE IF NOT EXISTS reactions (
     db.exec("CREATE TABLE reactions (cid TEXT NOT NULL, drink TEXT NOT NULL, emoji TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now')), PRIMARY KEY (cid, drink, emoji))");
   }
 }
+// Order cancellations: when the bar pulls a guest's order, a short-lived record
+// so that guest's device can notify them (and stop asking for a rating).
+db.exec(`CREATE TABLE IF NOT EXISTS cancellations (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  ticket_id  INTEGER NOT NULL,
+  drink      TEXT NOT NULL,
+  guest      TEXT,
+  reason     TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now'))
+);`);
 
 const Q = {
   insertTicket:  db.prepare("INSERT INTO tickets (drink, guest_name, notes, qty) VALUES (?,?,?,?)"),
@@ -128,6 +138,9 @@ const Q = {
   historyHasRoundDrink:    db.prepare("SELECT 1 FROM history WHERE round_id = ? AND drink = ? LIMIT 1"),
   deleteHistoryRoundDrink: db.prepare("DELETE FROM history WHERE round_id = ? AND drink = ?"),
   deleteHistoryRound:      db.prepare("DELETE FROM history WHERE round_id = ?"),
+  insertCancellation:  db.prepare("INSERT INTO cancellations (ticket_id, drink, guest, reason) VALUES (?,?,?,?)"),
+  recentCancellations: db.prepare("SELECT id, ticket_id, drink, guest, reason, created_at FROM cancellations WHERE created_at >= strftime('%Y-%m-%d %H:%M:%f','now','-30 minutes') ORDER BY id DESC LIMIT 50"),
+  clearCancellations:  db.prepare("DELETE FROM cancellations"),
   clearHistory:  db.prepare("DELETE FROM history"),
   insertWall: db.prepare("INSERT INTO wall (text, name) VALUES (?, ?)"),
   wallRows:   db.prepare("SELECT id, text, name, created_at FROM wall ORDER BY created_at DESC, id DESC"),
@@ -203,7 +216,7 @@ function getState() {
   const manualNS = (nsRow && nsRow.value) || "";
   const autoNS = lastResetUTC(new Date());
   const nightStart = (manualNS && manualNS > autoNS) ? manualNS : autoNS;
-  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions, nightStart };
+  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions, nightStart, cancellations: Q.recentCancellations.all() };
 }
 
 /* ---- Server-Sent Events ---- */
@@ -267,6 +280,20 @@ const server = http.createServer(async (req, res) => {
       const id = Number(m[1]); const t = Q.getTicket.get(id);
       Q.deleteTicket.run(id);
       if (t) recomputeRound(t.round_id);   // keep the round (or clean it up) in sync
+      broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+
+    // Bar pulls a guest's order (with an optional reason) — records a cancellation the
+    // guest's device picks up, then removes the ticket.
+    if ((m = pathname.match(/^\/api\/tickets\/(\d+)\/cancel$/)) && method === "POST") {
+      const id = Number(m[1]); const t = Q.getTicket.get(id);
+      const b = await readBody(req);
+      if (t) {
+        Q.insertCancellation.run(id, t.drink, t.guest_name || null, str(b.reason, 120) || null);
+        Q.deleteTicket.run(id);
+        recomputeRound(t.round_id);
+      }
       broadcast();
       return sendJSON(res, 200, { ok: true });
     }
@@ -389,7 +416,8 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
       Q.setSetting.run("night_start", Q.nowStr.get().t);
-      Q.clearReactions.run();   // fresh favorite race for the new night
+      Q.clearReactions.run();
+      Q.clearCancellations.run();   // fresh favorite race for the new night
       broadcast();
       return sendJSON(res, 200, { ok: true, nightStart: Q.nowStr.get().t });
     }
@@ -399,6 +427,7 @@ const server = http.createServer(async (req, res) => {
       Q.clearHistory.run();
       Q.clearWall.run();
       Q.clearReactions.run();
+      Q.clearCancellations.run();
       Q.setSetting.run("night_start", Q.nowStr.get().t);
       broadcast();
       return sendJSON(res, 200, { ok: true });

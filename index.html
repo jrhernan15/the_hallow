@@ -842,6 +842,24 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ cancelOpen }}" hint-placeholder-val="">
+    <div data-chrome data-modalwrap onClick="{{ onCloseCancel }}" style="position:fixed;inset:0;z-index:66;background:rgba(12,11,8,.6);display:flex;align-items:center;justify-content:center;padding:20px">
+      <div data-modal onClick="{{ stop }}" style="width:min(400px,100%);background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.5);padding:22px 22px 20px">
+        <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:21px;margin:0;color:var(--ink,#ECE7D7)">86 the {{ cancelDrink }}?</h2>
+        <div style="font-size:12.5px;color:var(--ink-faint,#827E6D);margin-top:3px">{{ cancelForLine }}the guest will be told it was pulled.</div>
+        <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:16px 0 8px">Reason (optional)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px">
+          <sc-for list="{{ cancelChips }}" as="c" hint-placeholder-count="3"><button type="button" onClick="{{ c.onTap }}" style="{{ c.chipStyle }}">{{ c.label }}</button></sc-for>
+        </div>
+        <input type="text" value="{{ cancelReason }}" onChange="{{ onCancelReason }}" placeholder="Add a note…" style="width:100%;box-sizing:border-box;margin-top:10px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:11px 13px;outline:none" style-focus="border-color:var(--accent);box-shadow:0 0 0 3px var(--focus)">
+        <div style="display:flex;gap:9px;margin-top:18px">
+          <button type="button" onClick="{{ onCloseCancel }}" style="flex:1;font-size:13px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:transparent;border:1px solid var(--card-border,#2D3422);border-radius:11px;padding:11px;cursor:pointer">Keep it</button>
+          <button type="button" onClick="{{ onDoCancel }}" style="flex:2;font-size:13px;font-weight:700;color:#fff;background:#B0564B;border:none;border-radius:11px;padding:11px;cursor:pointer">86 it</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ confirmOpen }}" hint-placeholder-val="">
     <div data-chrome data-modalwrap onClick="{{ onCloseConfirm }}" style="position:fixed;inset:0;z-index:66;background:rgba(12,11,8,.62);display:flex;align-items:center;justify-content:center;padding:20px">
       <div onClick="{{ stop }}" style="width:min(330px,100%);background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.5);padding:22px">
@@ -917,6 +935,14 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ cancelNoticeOpen }}" hint-placeholder-val="">
+    <div data-chrome style="position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:73;background:#B0564B;color:#fff;padding:12px 14px 12px 18px;border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.4);font-size:13px;font-weight:600;display:flex;align-items:center;gap:12px;width:min(440px,calc(100vw - 24px));box-sizing:border-box">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"></path></svg>
+      <span style="flex:1;line-height:1.35">{{ cancelNoticeText }}</span>
+      <button type="button" onClick="{{ onDismissCancelNotice }}" aria-label="Dismiss" style="flex:none;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:15px;line-height:1;cursor:pointer;border-radius:999px;width:26px;height:26px">×</button>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ bartenderAlert }}" hint-placeholder-val="">
     <div data-chrome onClick="{{ onOpenOrdersFromAlert }}" style="position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:72;background:var(--accent2,#CFA267);color:#13160F;padding:13px 20px;border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.34);font-size:13.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;width:min(440px,calc(100vw - 24px));box-sizing:border-box">
       <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5S10.5 3.17 10.5 4v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"></path></svg>
@@ -945,6 +971,7 @@ class Component extends DCLogic {
       orders: [], batches: [], reactions: {}, myPours: [], serverNightStart: '', stripCollapsed: false, dismissedTix: {}, dismissedPours: {}, ordersOpen: false, stationTab: 'queue',
       selected: {}, makeView: null, orderModalName: null,
       draftGuest: '', draftQty: 1, draftNote: '', toast: null, toastAction: null, showTop: false,
+      cancelOrder: null, cancelReason: '', cancelNotice: null,
       eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto', eightySixTab: 'ingredients', chimePref: 'auto',
       ledgerOpen: false, ledgerRows: [], ledgerNightStart: '', ledgerNow: '', ledgerScope: 'tonight',
       settingsOpen: false, myName: '', welcomeOpen: false, welcomeName: '', confirm: null, helpOpen: false,
@@ -1044,6 +1071,27 @@ class Component extends DCLogic {
     this._prevMine = cur;
     if (justReady) this.chime();
     const theme = (d && d.theme) || 'auto';
+    try {
+      const cx = (d && Array.isArray(d.cancellations)) ? d.cancellations : [];
+      if (cx.length) {
+        let ack = {}; try { ack = JSON.parse(localStorage.getItem('hollow_cancel_ack') || '{}') || {}; } catch(e){}
+        let notice = null, touched = false;
+        cx.forEach(c => {
+          if (c && (this._mine || []).indexOf(c.ticket_id) !== -1 && !ack[c.id]) {
+            ack[c.id] = true; touched = true;
+            this._mine = (this._mine || []).filter(x => x !== c.ticket_id);
+            try { localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){}
+            let pours = []; try { pours = JSON.parse(localStorage.getItem('hollow_myorders_v1') || '[]') || []; } catch(e){}
+            pours = pours.filter(p => p.drink !== c.drink);
+            try { localStorage.setItem('hollow_myorders_v1', JSON.stringify(pours)); } catch(e){}
+            this.setState({ myPours: pours });
+            notice = { drink: c.drink, reason: (c.reason || '').trim() };
+          }
+        });
+        if (touched) { try { localStorage.setItem('hollow_cancel_ack', JSON.stringify(ack)); } catch(e){} }
+        if (notice) { this.setState({ cancelNotice: notice }); try { this.unlockAudio(); this.playChime('sad'); } catch(e){} }
+      }
+    } catch(e){}
     this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {}, serverNightStart: (d && d.nightStart) || '' });
     if (this.state.bookOpen){ if (this.state.bookTab === 'wall') this.fetchWall(); else this.fetchHistory(); }
   }
@@ -1158,6 +1206,11 @@ class Component extends DCLogic {
       {f:880,  type:'sine', dur:0.26, g:0.28, atk:0.02, gap:0.16},
       {f:1320, type:'sine', dur:0.30, g:0.28, atk:0.02, gap:0.30},
     ],
+    sad: [
+      {f:392.00, type:'triangle', dur:0.32, g:0.24, atk:0.01, gap:0.28, slideTo:369.99},
+      {f:329.63, type:'triangle', dur:0.32, g:0.24, atk:0.01, gap:0.28, slideTo:311.13},
+      {f:277.18, type:'sawtooth', dur:0.80, g:0.22, atk:0.02, gap:0.80, slideTo:207.65, vib:5, vibd:6},
+    ],
   }; }
   _voice(ctx, t, n){
     const dur = n.dur || 0.25, g0 = (n.g == null ? 0.25 : n.g);
@@ -1247,7 +1300,12 @@ class Component extends DCLogic {
   closeConfirm(){ this.setState({ confirm: null }); }
   doConfirm(){ const c = this.state.confirm; this.setState({ confirm: null }); if (c && c.onYes) c.onYes(); }
   clearDoneBatches(){ const ids = (this.state.batches || []).filter(b => b.status==='up' || b.status==='done').map(b => b.id); if (!ids.length) return; Promise.all(ids.map(id => this.api('DELETE', '/api/rounds/' + id))).then(() => this.refreshState()).catch(() => this.refreshState()); }
-  removeOrder(id){ this.askConfirm({ title:'Remove order', body:'Delete this order? It won’t go back to the rail.', label:'Remove', onYes: () => this._removeOrder(id) }); }
+  removeOrder(id, drink, guest){ this.setState({ cancelOrder: { id: id, drink: drink || '', guest: guest || '' }, cancelReason: '' }); }
+  setCancelReason(r){ this.setState({ cancelReason: r }); }
+  onCancelReason(e){ this.setState({ cancelReason: (e.target.value || '').slice(0, 120) }); }
+  closeCancel(){ this.setState({ cancelOrder: null }); }
+  doCancel(){ const c = this.state.cancelOrder; if (!c) return; const reason = (this.state.cancelReason || '').trim(); this.api('POST', '/api/tickets/' + c.id + '/cancel', { reason: reason }).then(() => this.refreshState()).catch(() => this.flashToast('Could not pull it', 2000)); this.setState({ cancelOrder: null }); this.flashToast('Order 86’d', 1800); }
+  dismissCancelNotice(){ this.setState({ cancelNotice: null }); }
   _removeOrder(id){
     this.setState(s => { const sel = Object.assign({}, s.selected); delete sel[id]; return { selected: sel }; });
     this.api('DELETE', '/api/tickets/' + id).then(() => this.refreshState()).catch(()=>{});
@@ -1387,7 +1445,7 @@ class Component extends DCLogic {
     const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
     const pal = st.dark ? dir.dark : dir.light;
     try { document.documentElement.style.background = pal.bg; document.body.style.background = pal.bg; } catch(e){}
-    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.bookOpen || st.settingsOpen || st.welcomeOpen || st.confirm || st.verdictDrink || st.helpOpen || st.peekDrink);
+    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.bookOpen || st.settingsOpen || st.welcomeOpen || st.confirm || st.verdictDrink || st.helpOpen || st.peekDrink || st.cancelOrder);
     if (_overlay && !this._overlayLocked) { this._overlayLocked = true; this.lockScroll(); }
     else if (!_overlay && this._overlayLocked) { this._overlayLocked = false; this.unlockScroll(); }
     const meta = dir.meta;
@@ -1529,7 +1587,7 @@ class Component extends DCLogic {
         onToggleSelect: () => this.toggleSelect(o.id),
         onView: () => this.openMake('order', o.id),
         onMake: () => this.makeOrderNow(o.id),
-        onRemove: () => this.removeOrder(o.id),
+        onRemove: () => this.removeOrder(o.id, o.drink, o.guest),
       };
     });
     const selCount = Object.keys(st.selected).filter(id => queueOrders.some(o => o.id===id)).length;
@@ -1583,7 +1641,7 @@ class Component extends DCLogic {
             specRows: c ? rowsOf(scaleSpec(c.spec, agg[d])) : [], steps: c?c.steps:[],
             notesList: notes[d]||[], hasNotes: !!(notes[d]&&notes[d].length), isBatchLine:true, made,
             forLabel: (forNames[d]||[]).join(', '), hasFor: !!(forNames[d]&&forNames[d].length),
-            orders: ords.filter(o=>o.drink===d).map(o => ({ key:String(o.id), who:(o.guest&&o.guest.trim())||'No name', qtyLabel:(o.qty>1?' ×'+o.qty:''), onRail:()=>this.ticketToRail(o.id), onRemove:()=>this.removeOrder(o.id) })),
+            orders: ords.filter(o=>o.drink===d).map(o => ({ key:String(o.id), who:(o.guest&&o.guest.trim())||'No name', qtyLabel:(o.qty>1?' ×'+o.qty:''), onRail:()=>this.ticketToRail(o.id), onRemove:()=>this.removeOrder(o.id, o.drink, o.guest) })),
             checkMark: made ? '✓' : '',
             boxStyle: { flex:'none', width:'24px', height:'24px', borderRadius:'7px', border:'1.5px solid ' + (made?'var(--accent2)':'var(--pill-line)'), background: made?'var(--accent2)':'transparent', color:'var(--accent-ink)', display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:'15px', lineHeight:1, cursor:'pointer' },
             lineStyle:{ background:'var(--card)', border:'1px solid ' + (made?'var(--accent2)':'var(--card-border)'), borderRadius:'14px', padding:'15px 16px 14px', opacity: made?0.62:1 },
@@ -1790,6 +1848,10 @@ class Component extends DCLogic {
       verdictOpen: !!st.verdictDrink, verdictTitle: verdictTitle, verdictOptions: verdictOptions, verdictPicks: verdictPicks, onCloseVerdict: () => this.closeVerdict(),
       peekOpen: peekOpen, peekName: peekName, peekBase: peekBase, peekMeta: peekMeta, peekSummary: peekSummary, peekSpec: peekSpec, peekSteps: peekSteps, hasPeekSteps: peekSteps.length>0,
       onClosePeek: () => this.closePeek(), onOrderPeek: () => { this.closePeek(); this.openOrder(peekName); }, onVerdictPeek: () => { this.closePeek(); this.openVerdict(peekName); },
+      cancelOpen: !!st.cancelOrder, cancelDrink: st.cancelOrder ? st.cancelOrder.drink : '', cancelForLine: (st.cancelOrder && st.cancelOrder.guest) ? ('For ' + st.cancelOrder.guest + ' · ') : '',
+      cancelReason: st.cancelReason, onCancelReason: (e) => this.onCancelReason(e), onCloseCancel: () => this.closeCancel(), onDoCancel: () => this.doCancel(),
+      cancelChips: ['Out of an ingredient','Made a substitution','Cancelled'].map(r => ({ label:r, chipStyle: (st.cancelReason===r) ? { fontSize:'12px',fontWeight:600,color:'var(--accent-ink)',background:'var(--accent2)',border:'1px solid var(--accent2)',borderRadius:'999px',padding:'6px 12px',cursor:'pointer' } : { fontSize:'12px',fontWeight:600,color:'var(--ink-soft)',background:'transparent',border:'1px solid var(--card-border)',borderRadius:'999px',padding:'6px 12px',cursor:'pointer' }, onTap: () => this.setCancelReason(r) })),
+      cancelNoticeOpen: !!st.cancelNotice, cancelNoticeText: st.cancelNotice ? ('Your ' + st.cancelNotice.drink + ' got 86’d' + (st.cancelNotice.reason ? (' — ' + st.cancelNotice.reason) : ' — ask the bar')) : '', onDismissCancelNotice: () => this.dismissCancelNotice(),
       greeting: (st.myName && String(st.myName).trim()) ? ("What'll it be, " + String(st.myName).trim() + "?") : "What'll it be?",
       bartenderMode: st.bartenderMode, onToggleBartender: () => this.toggleBartender(),
       bartenderArmed: passArmed, passBtnStyle: passBtnStyle, passTitle: passArmed ? 'The Pass · on duty' : 'The Pass',

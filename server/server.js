@@ -278,11 +278,12 @@ function lastResetUTC(now) {
 // play pools from it at startup; "blank" cards are excluded from play until a fill UI
 // exists. The small fallback keeps the games working if the file is ever missing.
 const PARLOUR_FALLBACK = {
-  confession: { tame: ["Never have I ever fallen asleep at a party."], spicy: ["Never have I ever texted an ex after midnight."] },
-  fork: { tame: ["Coast | Mountains"], spicy: ["Truth | Dare"] },
+  confession: { tame: ["Never have I ever fallen asleep at a party."], spicy: ["Never have I ever texted an ex after midnight."], raunchy: ["Never have I ever sent a spicy text to the wrong chat."] },
+  fork: { tame: ["Coast | Mountains"], spicy: ["Truth | Dare"], raunchy: ["Skinny dip | Streak"] },
 };
+const PARLOUR_TIERS = ["tame", "spicy", "raunchy"];
 function loadParlourPrompts() {
-  const out = { confession: { tame: [], spicy: [] }, fork: { tame: [], spicy: [] } };
+  const out = { confession: { tame: [], spicy: [], raunchy: [] }, fork: { tame: [], spicy: [], raunchy: [] } };
   try {
     const raw = JSON.parse(fs.readFileSync(path.join(__dirname, "parlour-prompts.json"), "utf8"));
     for (const g of ["confession", "fork"]) {
@@ -290,45 +291,79 @@ function loadParlourPrompts() {
         if (!e || e.blank) continue;                                 // fill-in cards aren't playable yet
         const text = g === "confession" ? e.t : ((e.a && e.b) ? (e.a + " | " + e.b) : null);
         if (!text || text.includes("___")) continue;   // never deal an unfilled blank
-        out[g][e.cat === "spicy" ? "spicy" : "tame"].push(text);
+        const tier = e.cat === "raunchy" ? "raunchy" : (e.cat === "spicy" ? "spicy" : "tame");
+        out[g][tier].push(text);
       }
     }
   } catch (err) { console.warn("parlour-prompts.json not loaded (" + err.message + ") \u2014 using fallback"); }
   for (const g of ["confession", "fork"]) {
-    if (!out[g].tame.length && !out[g].spicy.length) out[g] = { tame: PARLOUR_FALLBACK[g].tame.slice(), spicy: PARLOUR_FALLBACK[g].spicy.slice() };
+    if (!out[g].tame.length && !out[g].spicy.length && !out[g].raunchy.length) out[g] = { tame: PARLOUR_FALLBACK[g].tame.slice(), spicy: PARLOUR_FALLBACK[g].spicy.slice(), raunchy: PARLOUR_FALLBACK[g].raunchy.slice() };
   }
   return out;
 }
 const PARLOUR_PROMPTS = loadParlourPrompts();
-const PARLOUR_DEFAULT = { game: null, phase: "ended", round: 0, prompt: "", dealt: [], spicy: false, advance: "host", showWho: true, scoring: true, startedAt: "" };
+// "The Spice" \u2014 host dials 0..4; each level is a blend weight over [tame, spicy, raunchy].
+// Level 0 (No Spice) is pure tame; raunchy stays out until Medium; the top is spicy/raunchy only.
+const SPICE_LEVELS = ["No Spice", "Mild", "Medium", "Hot", "All The Spice"];
+const SPICE_WEIGHTS = [
+  { tame: 100, spicy: 0,  raunchy: 0  },   // 0 No Spice
+  { tame: 60,  spicy: 40, raunchy: 0  },   // 1 Mild
+  { tame: 30,  spicy: 50, raunchy: 20 },   // 2 Medium
+  { tame: 5,   spicy: 45, raunchy: 50 },   // 3 Hot
+  { tame: 0,   spicy: 35, raunchy: 65 },   // 4 All The Spice
+];
+function spiceLevel(p) { const n = Math.round(Number(p && p.spice)); return (n >= 0 && n <= 4) ? n : 1; }
+const PARLOUR_DEFAULT = { game: null, phase: "ended", round: 0, prompt: "", promptHeat: "tame", dealt: [], spice: 1, advance: "host", showWho: true, scoring: true, startedAt: "" };
 function getParlour() {
   const row = Q.getSetting.get("parlour");
   if (!row || !row.value) return { ...PARLOUR_DEFAULT };
-  try { return { ...PARLOUR_DEFAULT, ...JSON.parse(row.value) }; } catch (e) { return { ...PARLOUR_DEFAULT }; }
+  try {
+    const stored = JSON.parse(row.value);
+    if (stored.spice == null && typeof stored.spicy === "boolean") stored.spice = stored.spicy ? 2 : 0;  // migrate the old binary toggle
+    const p = { ...PARLOUR_DEFAULT, ...stored };
+    p.spice = spiceLevel(p);
+    return p;
+  } catch (e) { return { ...PARLOUR_DEFAULT }; }
 }
 function saveParlour(p) { Q.setSetting.run("parlour", JSON.stringify(p)); }
 function resetParlour() { Q.parlourClearPlayers.run(); Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run(); Q.parlourClearScores.run(); Q.parlourClearPrompts.run(); saveParlour({ ...PARLOUR_DEFAULT }); }
 function dealParlourPrompt(p) {
-  const bundled = PARLOUR_PROMPTS[p.game] || { tame: [], spicy: [] };
-  let base = (bundled.tame || []).slice();
-  if (p.spicy) base = base.concat(bundled.spicy || []);
-  const custom = [];   // player/host-submitted — these get priority
-  for (const r of Q.parlourPrompts.all(p.game)) { if (!r.spicy || p.spicy) custom.push(r.text); }
+  const bundled = PARLOUR_PROMPTS[p.game] || { tame: [], spicy: [], raunchy: [] };
+  const w = SPICE_WEIGHTS[spiceLevel(p)];
+  const allow = { tame: w.tame > 0, spicy: w.spicy > 0, raunchy: w.raunchy > 0 };   // tiers this spice level permits
   p.dealt = Array.isArray(p.dealt) ? p.dealt : [];
-  // Prefer unused player-submitted prompts; fall back to the bundled pack.
-  let avail = custom.filter((t) => p.dealt.indexOf(t) === -1);
-  if (!avail.length) avail = base.filter((t) => p.dealt.indexOf(t) === -1);
-  if (!avail.length) { p.dealt = []; avail = custom.length ? custom.slice() : base.slice(); }  // all used → start over, still preferring custom
-  if (!avail.length) return null;
+  const unused = (arr) => (arr || []).filter((t) => p.dealt.indexOf(t) === -1);
+  // Player/host-submitted prompts keep priority — but only if their tier is allowed at this spice level.
+  const custom = { tame: [], spicy: [] };
+  for (const r of Q.parlourPrompts.all(p.game)) { const tier = r.spicy ? "spicy" : "tame"; if (allow[tier]) custom[tier].push(r.text); }
+  const customAvail = unused(custom.tame).concat(unused(custom.spicy));
+  if (customAvail.length) {
+    const pick = customAvail[Math.floor(Math.random() * customAvail.length)];
+    p.dealt.push(pick);
+    return { text: pick, heat: custom.spicy.indexOf(pick) !== -1 ? "spicy" : "tame" };
+  }
+  // Otherwise draw from the bundled pack, weighting which tier by the spice level.
+  const pickTier = () => {
+    const pool = PARLOUR_TIERS.filter((t) => allow[t] && unused(bundled[t]).length);
+    if (!pool.length) return null;
+    let total = 0; for (const t of pool) total += w[t];
+    let roll = Math.random() * total;
+    for (const t of pool) { roll -= w[t]; if (roll <= 0) return t; }
+    return pool[pool.length - 1];
+  };
+  let tier = pickTier();
+  if (!tier) { p.dealt = []; tier = pickTier(); }   // every allowed tier exhausted → reset no-repeat memory, retry
+  if (!tier) return null;
+  const avail = unused(bundled[tier]);
   const pick = avail[Math.floor(Math.random() * avail.length)];
   p.dealt.push(pick);
-  return pick;
+  return { text: pick, heat: tier };
 }
 function canAdvance(body) { const p = getParlour(); return p.advance === "anyone" || String(body.code) === CODE; }
 function parlourState() {
   const p = getParlour();
   const players = Q.parlourActivePlayers.all();   // only recently-seen devices count as "in the room"
-  const out = { game: p.game, phase: p.phase, round: p.round || 0, prompt: p.prompt || "", spicy: !!p.spicy, advance: p.advance || "host", showWho: !!p.showWho, scoring: !!p.scoring, players, present: players.length };
+  const out = { game: p.game, phase: p.phase, round: p.round || 0, prompt: p.prompt || "", heat: p.promptHeat || "tame", spice: spiceLevel(p), spiceLabel: SPICE_LEVELS[spiceLevel(p)], advance: p.advance || "host", showWho: !!p.showWho, scoring: !!p.scoring, players, present: players.length };
   if (p.game && (p.phase === "answer" || p.phase === "guess" || p.phase === "reveal")) {
     out.answered = Q.parlourRoundCount.get(p.round).n;
     const atReveal = p.phase === "reveal";
@@ -694,7 +729,7 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
       const p = getParlour();
-      if (b.spicy != null) p.spicy = !!b.spicy;
+      if (b.spice != null) p.spice = spiceLevel({ spice: b.spice });
       if (b.advance != null) p.advance = b.advance === "anyone" ? "anyone" : "host";
       if (b.showWho != null) p.showWho = !!b.showWho;
       if (b.scoring != null) p.scoring = !!b.scoring;
@@ -708,7 +743,7 @@ const server = http.createServer(async (req, res) => {
       if (!PARLOUR_PROMPTS[game]) return sendJSON(res, 400, { error: "unknown game" });
       Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run(); Q.parlourClearScores.run();
       const p = getParlour();
-      p.game = game; p.phase = "lobby"; p.round = 0; p.prompt = ""; p.dealt = []; p.startedAt = Q.nowStr.get().t;
+      p.game = game; p.phase = "lobby"; p.round = 0; p.prompt = ""; p.promptHeat = "tame"; p.dealt = []; p.startedAt = Q.nowStr.get().t;
       saveParlour(p); broadcast();
       return sendJSON(res, 200, { ok: true });
     }
@@ -721,7 +756,7 @@ const server = http.createServer(async (req, res) => {
       const pr = dealParlourPrompt(p);
       if (!pr) return sendJSON(res, 400, { error: "out of prompts" });
       Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run();
-      p.prompt = pr; p.round = (p.round || 0) + 1; p.phase = "answer";
+      p.prompt = pr.text; p.promptHeat = pr.heat; p.round = (p.round || 0) + 1; p.phase = "answer";
       saveParlour(p); broadcast();
       return sendJSON(res, 200, { ok: true });
     }

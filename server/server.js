@@ -273,89 +273,33 @@ function lastResetUTC(now) {
 }
 
 /* ---- The Parlour (live party games) ---- */
-// Starter prompt packs. Deliberately small for v1 — we expand these after the
-// mechanics land. Guests/host can also add their own via /api/parlour/prompt.
-const PARLOUR_PROMPTS = {
-  confession: {
-    tame: [
-      "Never have I ever fallen asleep at a party.",
-      "Never have I ever sent a text to entirely the wrong person.",
-      "Never have I ever ghosted a group chat to dodge plans.",
-      "Never have I ever forgotten someone's name mid-introduction.",
-      "Never have I ever pretended to have read a book I hadn't.",
-      "Never have I ever re-gifted a present.",
-      "Never have I ever cried at a TV commercial.",
-      "Never have I ever binged a whole series in one sitting.",
-      "Never have I ever rehearsed a conversation in the shower.",
-      "Never have I ever laughed at completely the wrong moment.",
-      "Never have I ever googled my own name.",
-      "Never have I ever left a party without saying goodbye.",
-      "Never have I ever eaten dessert for dinner.",
-      "Never have I ever pretended my phone was dying to end a call.",
-    ],
-    spicy: [
-      "Never have I ever had a crush on a friend's partner.",
-      "Never have I ever snooped in someone's medicine cabinet.",
-      "Never have I ever texted an ex after midnight.",
-      "Never have I ever looked up an ex on social media this week.",
-      "Never have I ever lied about my age.",
-      "Never have I ever pretended to be busy to avoid someone in this room.",
-      "Never have I ever kept a secret from everyone here tonight.",
-      "Never have I ever had a work crush.",
-      "Never have I ever sworn in front of someone's parents.",
-    ],
-  },
-  // Fork prompts are "A | B" pairs; the client splits on the pipe.
-  fork: {
-    tame: [
-      "Coast | Mountains",
-      "Morning person | Night owl",
-      "Cats | Dogs",
-      "Sweet | Savory",
-      "Beach trip | City trip",
-      "Cook at home | Order in",
-      "Window seat | Aisle seat",
-      "Pineapple on pizza | Never in life",
-      "Rom-com | Horror",
-      "Early to the party | Fashionably late",
-      "Tea | Coffee",
-      "Text back now | Text back in three days",
-    ],
-    spicy: [
-      "Text the ex | Delete the number",
-      "Read receipts on | Off, obviously",
-      "Kiss and tell | Take it to the grave",
-      "Truth | Dare",
-      "Go through their phone | Blissful ignorance",
-      "Skinny dip | Absolutely not",
-    ],
-  },
-  // Usual prompts are open questions; everyone answers, then the room guesses who wrote what.
-  usual: {
-    tame: [
-      "Describe this party as a drink.",
-      "A hill you'd die on (nothing to do with drinks).",
-      "The most overrated food — be honest.",
-      "Your most irrational fear.",
-      "A weirdly specific talent you have.",
-      "The worst fashion choice you ever made.",
-      "If you had to give a TED talk right now, on what?",
-      "The pettiest reason you've disliked someone.",
-      "A small thing that makes you unreasonably happy.",
-      "Your villain origin story, in one line.",
-      "The last white lie you told.",
-      "Your go-to karaoke song.",
-    ],
-    spicy: [
-      "The wildest place you've fallen asleep.",
-      "A secret talent you'd never put on a résumé.",
-      "The worst date you've ever been on.",
-      "Something no one in this room knows about you.",
-      "Your most questionable 3am decision.",
-      "The pettiest grudge you're still holding.",
-    ],
-  },
+// Bundled game prompts live in server/parlour-prompts.json (categorized, with fill-in
+// "blank" cards labeled by bucket for a future fill mechanism). Build the tame/spicy
+// play pools from it at startup; "blank" cards are excluded from play until a fill UI
+// exists. The small fallback keeps the games working if the file is ever missing.
+const PARLOUR_FALLBACK = {
+  confession: { tame: ["Never have I ever fallen asleep at a party."], spicy: ["Never have I ever texted an ex after midnight."] },
+  fork: { tame: ["Coast | Mountains"], spicy: ["Truth | Dare"] },
 };
+function loadParlourPrompts() {
+  const out = { confession: { tame: [], spicy: [] }, fork: { tame: [], spicy: [] } };
+  try {
+    const raw = JSON.parse(fs.readFileSync(path.join(__dirname, "parlour-prompts.json"), "utf8"));
+    for (const g of ["confession", "fork"]) {
+      for (const e of (raw[g] || [])) {
+        if (!e || e.blank) continue;                                 // fill-in cards aren't playable yet
+        const text = g === "confession" ? e.t : ((e.a && e.b) ? (e.a + " | " + e.b) : null);
+        if (!text || text.includes("___")) continue;   // never deal an unfilled blank
+        out[g][e.cat === "spicy" ? "spicy" : "tame"].push(text);
+      }
+    }
+  } catch (err) { console.warn("parlour-prompts.json not loaded (" + err.message + ") \u2014 using fallback"); }
+  for (const g of ["confession", "fork"]) {
+    if (!out[g].tame.length && !out[g].spicy.length) out[g] = { tame: PARLOUR_FALLBACK[g].tame.slice(), spicy: PARLOUR_FALLBACK[g].spicy.slice() };
+  }
+  return out;
+}
+const PARLOUR_PROMPTS = loadParlourPrompts();
 const PARLOUR_DEFAULT = { game: null, phase: "ended", round: 0, prompt: "", dealt: [], spicy: false, advance: "host", showWho: true, scoring: true, startedAt: "" };
 function getParlour() {
   const row = Q.getSetting.get("parlour");

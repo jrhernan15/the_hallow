@@ -363,6 +363,22 @@ const server = http.createServer(async (req, res) => {
       return sendJSON(res, 200, { ok: true });
     }
 
+    // 86 a whole round with a reason — records a cancellation per ticket (so every
+    // guest in it is notified), then discards the round.
+    if ((m = pathname.match(/^\/api\/rounds\/(\d+)\/cancel$/)) && method === "POST") {
+      const id = Number(m[1]);
+      const b = await readBody(req);
+      const reason = str(b.reason, 120) || null;
+      const tix = Q.roundTickets.all(id);
+      db.transaction(() => {
+        for (const t of tix) { Q.insertCancellation.run(t.id, t.drink, t.guest_name || null, reason); }
+        Q.deleteRoundTickets.run(id);
+        Q.deleteRound.run(id);
+      })();
+      broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+
     if (pathname === "/api/theme" && method === "POST") {
       const b = await readBody(req);
       if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });

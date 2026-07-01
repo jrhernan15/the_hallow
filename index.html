@@ -747,7 +747,7 @@
           <div style="display:flex;align-items:center;gap:13px;padding:11px 0"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--accent2,#CFA267)"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zM21 18.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"></path></svg><div><div style="font-size:14.5px;color:var(--ink,#ECE7D7);font-weight:600">The Book</div><div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin-top:2px;line-height:1.4">Two tabs live inside:</div></div></div>
           <div style="margin-left:35px;border-left:2px solid var(--card-border,#2D3422);padding-left:15px;margin-bottom:2px">
             <div style="display:flex;align-items:center;gap:11px;padding:8px 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--accent2,#CFA267)"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path></svg><div><div style="font-size:13.5px;color:var(--ink,#ECE7D7);font-weight:600">The Wall</div><div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin-top:1px;line-height:1.4">Leave a toast or a one-liner for the night.</div></div></div>
-            <div style="display:flex;align-items:center;gap:11px;padding:8px 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--accent2,#CFA267)"><path d="M4 13h4v7H4zm6-9h4v16h-4zm6 5h4v11h-4z"></path></svg><div><div style="font-size:13.5px;color:var(--ink,#ECE7D7);font-weight:600">The Ledger</div><div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin-top:1px;line-height:1.4">Tonight's crowd favorite and the running tally.</div></div></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:8px 0"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--accent2,#CFA267)"><path d="M4 13h4v7H4zm6-9h4v16h-4zm6 5h4v11h-4z"></path></svg><div><div style="font-size:13.5px;color:var(--ink,#ECE7D7);font-weight:600">The Ledger</div><div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin-top:1px;line-height:1.4">The night's superlatives and stats.</div></div></div>
           </div>
 
           <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:18px 0 4px">Make it yours</div>
@@ -855,8 +855,8 @@
   <sc-if value="{{ cancelOpen }}" hint-placeholder-val="">
     <div data-chrome data-modalwrap onClick="{{ onCloseCancel }}" style="position:fixed;inset:0;z-index:66;background:rgba(12,11,8,.6);display:flex;align-items:center;justify-content:center;padding:20px">
       <div data-modal onClick="{{ stop }}" style="width:min(400px,100%);background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:18px;box-shadow:0 24px 64px rgba(0,0,0,.5);padding:22px 22px 20px">
-        <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:21px;margin:0;color:var(--ink,#ECE7D7)">86 the {{ cancelDrink }}?</h2>
-        <div style="font-size:12.5px;color:var(--ink-faint,#827E6D);margin-top:3px">{{ cancelForLine }}the guest will be told it was pulled.</div>
+        <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:21px;margin:0;color:var(--ink,#ECE7D7)">{{ cancelTitle }}</h2>
+        <div style="font-size:12.5px;color:var(--ink-faint,#827E6D);margin-top:3px">{{ cancelSubtitle }}</div>
         <div style="font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:16px 0 8px">Reason (optional)</div>
         <div style="display:flex;flex-wrap:wrap;gap:7px">
           <sc-for list="{{ cancelChips }}" as="c" hint-placeholder-count="3"><button type="button" onClick="{{ c.onTap }}" style="{{ c.chipStyle }}">{{ c.label }}</button></sc-for>
@@ -1085,21 +1085,27 @@ class Component extends DCLogic {
       const cx = (d && Array.isArray(d.cancellations)) ? d.cancellations : [];
       if (cx.length) {
         let ack = {}; try { ack = JSON.parse(localStorage.getItem('hollow_cancel_ack') || '{}') || {}; } catch(e){}
-        let notice = null, touched = false;
+        let hits = [];
         cx.forEach(c => {
-          if (c && (this._mine || []).indexOf(c.ticket_id) !== -1 && !ack[c.id]) {
-            ack[c.id] = true; touched = true;
-            this._mine = (this._mine || []).filter(x => x !== c.ticket_id);
-            try { localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){}
-            let pours = []; try { pours = JSON.parse(localStorage.getItem('hollow_myorders_v1') || '[]') || []; } catch(e){}
-            pours = pours.filter(p => p.drink !== c.drink);
-            try { localStorage.setItem('hollow_myorders_v1', JSON.stringify(pours)); } catch(e){}
-            this.setState({ myPours: pours });
-            notice = { drink: c.drink, reason: (c.reason || '').trim() };
-          }
+          if (c && (this._mine || []).indexOf(c.ticket_id) !== -1 && !ack[c.id]) { ack[c.id] = true; hits.push(c); }
         });
-        if (touched) { try { localStorage.setItem('hollow_cancel_ack', JSON.stringify(ack)); } catch(e){} }
-        if (notice) { this.setState({ cancelNotice: notice }); try { this.unlockAudio(); this.playChime('sad'); } catch(e){} }
+        if (hits.length) {
+          // Fold every cancellation that landed in this update into one banner (a whole
+          // round can pull several of my drinks at once).
+          const ids = hits.map(c => c.ticket_id), drinks = hits.map(c => c.drink);
+          this._mine = (this._mine || []).filter(x => ids.indexOf(x) === -1);
+          try { localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){}
+          let pours = []; try { pours = JSON.parse(localStorage.getItem('hollow_myorders_v1') || '[]') || []; } catch(e){}
+          pours = pours.filter(p => drinks.indexOf(p.drink) === -1);
+          try { localStorage.setItem('hollow_myorders_v1', JSON.stringify(pours)); } catch(e){}
+          try { localStorage.setItem('hollow_cancel_ack', JSON.stringify(ack)); } catch(e){}
+          const reason = ((hits.find(c => c.reason && c.reason.trim()) || {}).reason || '').trim();
+          const notice = (hits.length === 1)
+            ? { drink: hits[0].drink, count: 1, reason: (hits[0].reason || '').trim() }
+            : { drink: '', count: hits.length, reason: reason };
+          this.setState({ myPours: pours, cancelNotice: notice });
+          try { this.unlockAudio(); this.playChime('sad'); } catch(e){}
+        }
       }
     } catch(e){}
     this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {}, serverNightStart: (d && d.nightStart) || '' });
@@ -1301,21 +1307,17 @@ class Component extends DCLogic {
   resolveChime(){ const pref = this.state.chimePref || 'auto'; if (pref === 'off') return null; if (pref === 'auto'){ return ({ herbarium:'cricket', halloween:'whisper', christmas:'jingle', birthday:'partyhorn' })[this.state.direction] || 'cricket'; } return pref; }
   chime(){ const name = this.resolveChime(); if (name) this.playChime(name); }
   setChime(name){ try { localStorage.setItem('hollow_chime', name); } catch(e){} this.unlockAudio(); this.setState({ chimePref: name }); if (name !== 'off'){ const themed = ({ herbarium:'cricket', halloween:'whisper', christmas:'jingle', birthday:'partyhorn' })[this.state.direction] || 'cricket'; this.playChime(name === 'auto' ? themed : name); } }
-  removeBatch(batchId){ this.askConfirm({ title:'Remove round', body:'Delete this whole round and all its orders? This can’t be undone.', label:'Remove round', onYes: () => this._removeBatch(batchId) }); }
-  _removeBatch(batchId){
-    this.setState({ makeView: null });
-    this.api('DELETE', '/api/rounds/' + batchId).then(() => this.refreshState()).catch(()=>{});
-  }
+  removeBatch(batchId){ const n = (this.state.orders || []).filter(o => o.batchId===batchId).reduce((a,o) => a + (o.qty||1), 0); this.setState({ cancelOrder: { kind:'round', id: batchId, count: n }, cancelReason: '' }); }
   askConfirm(opts){ this.setState({ confirm: opts }); }
   closeConfirm(){ this.setState({ confirm: null }); }
   doConfirm(){ const c = this.state.confirm; this.setState({ confirm: null }); if (c && c.onYes) c.onYes(); }
   clearDoneBatches(){ const ids = (this.state.batches || []).filter(b => b.status==='up' || b.status==='done').map(b => b.id); if (!ids.length) return; Promise.all(ids.map(id => this.api('DELETE', '/api/rounds/' + id))).then(() => this.refreshState()).catch(() => this.refreshState()); }
   clearRound(id){ this.api('DELETE', '/api/rounds/' + id).then(() => this.refreshState()).catch(() => this.flashToast('Could not clear the round', 2000)); this.setState({ makeView: null }); this.flashToast('Round cleared', 1600); }
-  removeOrder(id, drink, guest){ this.setState({ cancelOrder: { id: id, drink: drink || '', guest: guest || '' }, cancelReason: '' }); }
+  removeOrder(id, drink, guest){ this.setState({ cancelOrder: { kind:'order', id: id, drink: drink || '', guest: guest || '' }, cancelReason: '' }); }
   setCancelReason(r){ this.setState({ cancelReason: r }); }
   onCancelReason(e){ this.setState({ cancelReason: (e.target.value || '').slice(0, 120) }); }
   closeCancel(){ this.setState({ cancelOrder: null }); }
-  doCancel(){ const c = this.state.cancelOrder; if (!c) return; const reason = (this.state.cancelReason || '').trim(); this.api('POST', '/api/tickets/' + c.id + '/cancel', { reason: reason }).then(() => this.refreshState()).catch(() => this.flashToast('Could not pull it', 2000)); this.setState({ cancelOrder: null }); this.flashToast('Order 86’d', 1800); }
+  doCancel(){ const c = this.state.cancelOrder; if (!c) return; const reason = (this.state.cancelReason || '').trim(); const path = (c.kind==='round') ? ('/api/rounds/' + c.id + '/cancel') : ('/api/tickets/' + c.id + '/cancel'); this.api('POST', path, { reason: reason }).then(() => this.refreshState()).catch(() => this.flashToast('Could not pull it', 2000)); this.setState({ cancelOrder: null, makeView: (c.kind==='round') ? null : this.state.makeView }); this.flashToast((c.kind==='round') ? 'Round 86’d' : 'Order 86’d', 1800); }
   dismissCancelNotice(){ this.setState({ cancelNotice: null }); }
   _removeOrder(id){
     this.setState(s => { const sel = Object.assign({}, s.selected); delete sel[id]; return { selected: sel }; });
@@ -1870,10 +1872,12 @@ class Component extends DCLogic {
       verdictOpen: !!st.verdictDrink, verdictTitle: verdictTitle, verdictOptions: verdictOptions, verdictPicks: verdictPicks, onCloseVerdict: () => this.closeVerdict(),
       peekOpen: peekOpen, peekName: peekName, peekBase: peekBase, peekMeta: peekMeta, peekSummary: peekSummary, peekSpec: peekSpec, peekSteps: peekSteps, hasPeekSteps: peekSteps.length>0,
       onClosePeek: () => this.closePeek(), onOrderPeek: () => { this.closePeek(); this.openOrder(peekName); }, onVerdictPeek: () => { this.closePeek(); this.openVerdict(peekName); },
-      cancelOpen: !!st.cancelOrder, cancelDrink: st.cancelOrder ? st.cancelOrder.drink : '', cancelForLine: (st.cancelOrder && st.cancelOrder.guest) ? ('For ' + st.cancelOrder.guest + ' · ') : '',
+      cancelOpen: !!st.cancelOrder,
+      cancelTitle: st.cancelOrder ? ((st.cancelOrder.kind==='round') ? '86 this whole round?' : ('86 the ' + (st.cancelOrder.drink||'drink') + '?')) : '',
+      cancelSubtitle: st.cancelOrder ? ((st.cancelOrder.kind==='round') ? ((st.cancelOrder.count||0) + ' drink' + ((st.cancelOrder.count===1)?'':'s') + ' · everyone in it will be told it was pulled.') : (((st.cancelOrder.guest) ? ('For ' + st.cancelOrder.guest + ' · ') : '') + 'the guest will be told it was pulled.')) : '',
       cancelReason: st.cancelReason, onCancelReason: (e) => this.onCancelReason(e), onCloseCancel: () => this.closeCancel(), onDoCancel: () => this.doCancel(),
       cancelChips: ['Out of an ingredient','Made a substitution','Cancelled'].map(r => ({ label:r, chipStyle: (st.cancelReason===r) ? { fontSize:'12px',fontWeight:600,color:'var(--accent-ink)',background:'var(--accent2)',border:'1px solid var(--accent2)',borderRadius:'999px',padding:'6px 12px',cursor:'pointer' } : { fontSize:'12px',fontWeight:600,color:'var(--ink-soft)',background:'transparent',border:'1px solid var(--card-border)',borderRadius:'999px',padding:'6px 12px',cursor:'pointer' }, onTap: () => this.setCancelReason(r) })),
-      cancelNoticeOpen: !!st.cancelNotice, cancelNoticeText: st.cancelNotice ? ('Your ' + st.cancelNotice.drink + ' got 86’d' + (st.cancelNotice.reason ? (' — ' + st.cancelNotice.reason) : ' — ask the bar')) : '', onDismissCancelNotice: () => this.dismissCancelNotice(),
+      cancelNoticeOpen: !!st.cancelNotice, cancelNoticeText: st.cancelNotice ? (((st.cancelNotice.count>1) ? ('Your ' + st.cancelNotice.count + ' drinks got 86’d') : ('Your ' + st.cancelNotice.drink + ' got 86’d')) + (st.cancelNotice.reason ? (' — ' + st.cancelNotice.reason) : ' — ask the bar')) : '', onDismissCancelNotice: () => this.dismissCancelNotice(),
       greeting: (st.myName && String(st.myName).trim()) ? ("What'll it be, " + String(st.myName).trim() + "?") : "What'll it be?",
       bartenderMode: st.bartenderMode, onToggleBartender: () => this.toggleBartender(),
       bartenderArmed: passArmed, passBtnStyle: passBtnStyle, passTitle: passArmed ? 'The Pass · on duty' : 'The Pass',

@@ -623,18 +623,28 @@
               <button type="button" onClick="{{ onPostWall }}" style="flex:none;font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:0 18px;cursor:pointer">Post</button>
             </div>
             <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin:7px 2px 0">Signed with your name from The Knobs.</div>
-            <sc-if value="{{ ledgerHasFave }}" hint-placeholder-val="">
-              <div style="display:flex;gap:9px;margin-top:14px">
-                <div onClick="{{ onPeekFave }}" role="button" style="flex:1;background:var(--card,#1D2217);border:1px solid var(--accent2,#CFA267);border-radius:14px;padding:11px 13px;cursor:pointer" style-hover="background:var(--bg2,#141810)">
-                  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">🔥 Crowd favorite</span><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--ink-faint,#827E6D)"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"></path></svg></div>
-                  <div style="font-family:'Fraunces',Georgia,serif;font-size:17px;color:var(--ink,#ECE7D7);margin-top:4px;line-height:1.15">{{ ledgerFave }}</div>
-                  <div style="font-size:11.5px;color:var(--accent2,#CFA267);margin-top:2px">{{ ledgerFaveN }} reactions</div>
-                </div>
-                <sc-if value="{{ ledgerHasPoop }}" hint-placeholder-val="">
-                  <div onClick="{{ onPeekPoop }}" role="button" style="flex:1;background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:14px;padding:11px 13px;cursor:pointer" style-hover="background:var(--bg2,#141810)">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">The 💩 award</span><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--ink-faint,#827E6D)"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"></path></svg></div>
-                    <div style="font-family:'Fraunces',Georgia,serif;font-size:17px;color:var(--ink,#ECE7D7);margin-top:4px;line-height:1.15">{{ ledgerPoop }}</div>
-                    <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:2px">{{ ledgerPoopN }} × 💩</div>
+            <sc-if value="{{ ledgerHasAwards }}" hint-placeholder-val="">
+              <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:16px 0 7px">Tonight's awards</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px">
+                <sc-if value="{{ ledgerHasFave }}" hint-placeholder-val="{{ true }}">
+                  <div onClick="{{ onPeekFave }}" role="button" style="background:var(--card,#1D2217);border:1px solid var(--accent2,#CFA267);border-radius:14px;padding:11px 13px;cursor:pointer" style-hover="background:var(--bg2,#141810)">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">🔥 The Crowd Favorite</span><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--ink-faint,#827E6D)"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"></path></svg></div>
+                    <div style="font-family:'Fraunces',Georgia,serif;font-size:17px;color:var(--ink,#ECE7D7);margin-top:4px;line-height:1.15">{{ ledgerFave }}</div>
+                    <div style="font-size:11.5px;color:var(--accent2,#CFA267);margin-top:2px">{{ ledgerFaveN }} · 🔥 👍</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ledgerHasDrain }}" hint-placeholder-val="">
+                  <div onClick="{{ onPeekDrain }}" role="button" style="background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:14px;padding:11px 13px;cursor:pointer" style-hover="background:var(--bg2,#141810)">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">💩 The Drain Pour</span><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--ink-faint,#827E6D)"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"></path></svg></div>
+                    <div style="font-family:'Fraunces',Georgia,serif;font-size:17px;color:var(--ink,#ECE7D7);margin-top:4px;line-height:1.15">{{ ledgerDrain }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:2px">{{ ledgerDrainN }} · 💩</div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ ledgerHasKo }}" hint-placeholder-val="">
+                  <div onClick="{{ onPeekKo }}" role="button" style="background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:14px;padding:11px 13px;cursor:pointer" style-hover="background:var(--bg2,#141810)">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><span style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint,#827E6D)">💀 The Knockout</span><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex:none;color:var(--ink-faint,#827E6D)"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"></path></svg></div>
+                    <div style="font-family:'Fraunces',Georgia,serif;font-size:17px;color:var(--ink,#ECE7D7);margin-top:4px;line-height:1.15">{{ ledgerKo }}</div>
+                    <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:2px">{{ ledgerKoN }} · 🥴 💀</div>
                   </div>
                 </sc-if>
               </div>
@@ -1739,7 +1749,7 @@ class Component extends DCLogic {
     const lgOz = (a) => { const r=lgAmt(a); return /^oz\b/.test(r.unit) ? r.n : 0; };
     const fmtOz = (v) => { const r = Math.round(v*10)/10; return (Math.abs(r-Math.round(r))<0.05 ? String(Math.round(r)) : String(r)); };
     const lgBar = (frac, col) => ({ width: Math.max(5, Math.round((frac||0)*100)) + '%', height:'6px', borderRadius:'999px', background: col, marginTop:'5px' });
-    let ledgerVals = { hasLedger:false, ledgerEmpty:false, ledgerTotalDrinks:'0', ledgerTotalOz:'0', ledgerGuestCount:'0', ledgerKinds:'0', ledgerSince:'', ledgerTop:[], ledgerOz:[], ledgerSupers:[], ledgerFeed:[], ledgerStaff:false, hasFave:false, ledgerFave:'', ledgerFaveN:'0', hasPoop:false, ledgerPoop:'', ledgerPoopN:'0' };
+    let ledgerVals = { hasLedger:false, ledgerEmpty:false, ledgerTotalDrinks:'0', ledgerTotalOz:'0', ledgerGuestCount:'0', ledgerKinds:'0', ledgerSince:'', ledgerTop:[], ledgerOz:[], ledgerSupers:[], ledgerFeed:[], ledgerStaff:false, hasFave:false, ledgerFave:'', ledgerFaveN:'0', hasDrain:false, ledgerDrain:'', ledgerDrainN:'0', hasKo:false, ledgerKo:'', ledgerKoN:'0' };
     if (st.bookOpen){
       const allRows = st.ledgerRows || [];
       const ns = st.ledgerNightStart || '';
@@ -1773,14 +1783,18 @@ class Component extends DCLogic {
       }
       const feed = rows.slice().sort((a,b)=>this.toMs(b.created_at)-this.toMs(a.created_at)).slice(0,40).map(r=>({ drink: r.drink + ((r.qty||1)>1?' ×'+r.qty:''), guest:(r.guest && String(r.guest).trim()) || 'House', time: fmtTime(this.toMs(r.created_at)) }));
       let lgStaff=false; try { lgStaff = localStorage.getItem('hollow_86_ok')==='1'; } catch(e){}
-      const rxAll = st.reactions || {}; let faveDrink='', faveN=0, poopDrink='', poopN=0;
-      Object.keys(rxAll).forEach(d => { const c=rxAll[d]; const total=Object.keys(c).reduce((a,e)=>a+(c[e]||0),0); if(total>faveN){faveN=total;faveDrink=d;} const p=c['💩']||0; if(p>poopN){poopN=p;poopDrink=d;} });
+      const rxAll = st.reactions || {}; let faveDrink='', faveN=0, drainDrink='', drainN=0, koDrink='', koN=0;
+      Object.keys(rxAll).forEach(d => { const c=rxAll[d];
+        const love=(c['🔥']||0)+(c['👍']||0); if(love>faveN){faveN=love;faveDrink=d;}
+        const nope=c['💩']||0; if(nope>drainN){drainN=nope;drainDrink=d;}
+        const strong=(c['🥴']||0)+(c['💀']||0); if(strong>koN){koN=strong;koDrink=d;}
+      });
       ledgerVals = {
         hasLedger: rows.length>0, ledgerEmpty: rows.length===0,
         ledgerTotalDrinks: String(totalDrinks), ledgerTotalOz: fmtOz(totalOz), ledgerGuestCount: String(gArr.length), ledgerKinds: String(topArr.length),
         ledgerSince: (st.ledgerScope!=='all' && ns) ? ('Tonight · since ' + fmtTime(this.toMs(ns))) : 'All-time totals',
         ledgerTop, ledgerOz, ledgerSupers: sup, ledgerFeed: feed, ledgerStaff: lgStaff,
-        hasFave: faveN>0, ledgerFave: faveDrink, ledgerFaveN: String(faveN), hasPoop: poopN>0, ledgerPoop: poopDrink, ledgerPoopN: String(poopN),
+        hasFave: faveN>0, ledgerFave: faveDrink, ledgerFaveN: String(faveN), hasDrain: drainN>0, ledgerDrain: drainDrink, ledgerDrainN: String(drainN), hasKo: koN>0, ledgerKo: koDrink, ledgerKoN: String(koN),
       };
     }
 
@@ -1837,8 +1851,11 @@ class Component extends DCLogic {
       ledgerTotalDrinks: ledgerVals.ledgerTotalDrinks, ledgerTotalOz: ledgerVals.ledgerTotalOz, ledgerGuestCount: ledgerVals.ledgerGuestCount, ledgerKinds: ledgerVals.ledgerKinds,
       ledgerSince: ledgerVals.ledgerSince, hasLedger: ledgerVals.hasLedger, ledgerEmpty: ledgerVals.ledgerEmpty, ledgerStaff: ledgerVals.ledgerStaff,
       ledgerTop: ledgerVals.ledgerTop, ledgerOz: ledgerVals.ledgerOz, ledgerSupers: ledgerVals.ledgerSupers, ledgerFeed: ledgerVals.ledgerFeed,
-      ledgerHasFave: ledgerVals.hasFave, ledgerFave: ledgerVals.ledgerFave, ledgerFaveN: ledgerVals.ledgerFaveN, ledgerHasPoop: ledgerVals.hasPoop, ledgerPoop: ledgerVals.ledgerPoop, ledgerPoopN: ledgerVals.ledgerPoopN,
-      onPeekFave: () => this.openPeek(ledgerVals.ledgerFave), onPeekPoop: () => this.openPeek(ledgerVals.ledgerPoop),
+      ledgerHasAwards: (ledgerVals.hasFave || ledgerVals.hasDrain || ledgerVals.hasKo),
+      ledgerHasFave: ledgerVals.hasFave, ledgerFave: ledgerVals.ledgerFave, ledgerFaveN: ledgerVals.ledgerFaveN,
+      ledgerHasDrain: ledgerVals.hasDrain, ledgerDrain: ledgerVals.ledgerDrain, ledgerDrainN: ledgerVals.ledgerDrainN,
+      ledgerHasKo: ledgerVals.hasKo, ledgerKo: ledgerVals.ledgerKo, ledgerKoN: ledgerVals.ledgerKoN,
+      onPeekFave: () => this.openPeek(ledgerVals.ledgerFave), onPeekDrain: () => this.openPeek(ledgerVals.ledgerDrain), onPeekKo: () => this.openPeek(ledgerVals.ledgerKo),
       darkIconPath: st.dark ? sunPath : moonPath,
       settingsOpen: st.settingsOpen, onOpenSettings: () => this.openSettings(), onCloseSettings: () => this.closeSettings(),
       helpOpen: st.helpOpen, onOpenHelp: () => this.openHelp(), onCloseHelp: () => this.closeHelp(),

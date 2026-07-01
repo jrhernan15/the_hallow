@@ -136,6 +136,19 @@ db.exec(`CREATE TABLE IF NOT EXISTS parlour_prompts (
   id INTEGER PRIMARY KEY AUTOINCREMENT, game TEXT NOT NULL, text TEXT NOT NULL,
   spicy INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );`);
+// A dropped-in prompt starts life 'pending' (tonight only, dealt with priority so the room
+// can vote on it). If the room keeps it, it becomes 'saved' with a tier and joins the pool
+// permanently. Add the columns if we're upgrading an older DB.
+{ const cols = db.prepare("PRAGMA table_info(parlour_prompts)").all().map((c) => c.name);
+  if (!cols.includes("status")) db.exec("ALTER TABLE parlour_prompts ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'");
+  if (!cols.includes("tier"))   db.exec("ALTER TABLE parlour_prompts ADD COLUMN tier TEXT");
+  if (!cols.includes("night"))  db.exec("ALTER TABLE parlour_prompts ADD COLUMN night TEXT");
+  if (!cols.includes("author")) db.exec("ALTER TABLE parlour_prompts ADD COLUMN author TEXT"); }
+// The room's keep/skip vote on a pending prompt, one per device per round.
+db.exec(`CREATE TABLE IF NOT EXISTS parlour_keepvotes (
+  round INTEGER NOT NULL, cid TEXT NOT NULL, vote TEXT NOT NULL,
+  PRIMARY KEY (round, cid)
+);`);
 // The Usual: guesses (who each player thinks wrote each shuffled answer) + cumulative scores.
 db.exec(`CREATE TABLE IF NOT EXISTS parlour_guesses (
   round INTEGER NOT NULL, guesser_cid TEXT NOT NULL, answer_id INTEGER NOT NULL, guess_cid TEXT NOT NULL,
@@ -184,10 +197,19 @@ const Q = {
   parlourRoundVotes:   db.prepare("SELECT a.cid AS cid, a.value AS value, pl.name AS name FROM parlour_answers a LEFT JOIN parlour_players pl ON pl.cid = a.cid WHERE a.round = ?"),
   parlourRoundCount:   db.prepare("SELECT COUNT(*) AS n FROM parlour_answers WHERE round = ?"),
   parlourClearAnswers: db.prepare("DELETE FROM parlour_answers"),
-  parlourAddPrompt:    db.prepare("INSERT INTO parlour_prompts (game, text, spicy) VALUES (?, ?, ?)"),
-  parlourPrompts:      db.prepare("SELECT text, spicy FROM parlour_prompts WHERE game = ?"),
+  parlourAddPrompt:    db.prepare("INSERT INTO parlour_prompts (game, text, spicy, status, night, author) VALUES (?, ?, ?, 'pending', ?, ?)"),
+  parlourPendingList:  db.prepare("SELECT id, text FROM parlour_prompts WHERE game = ? AND status = 'pending' ORDER BY id"),
+  parlourSavedList:    db.prepare("SELECT text, tier FROM parlour_prompts WHERE game = ? AND status = 'saved'"),
+  parlourPromptById:   db.prepare("SELECT id, game, text, status FROM parlour_prompts WHERE id = ?"),
+  parlourSavePrompt:   db.prepare("UPDATE parlour_prompts SET status = 'saved', tier = ?, spicy = ? WHERE id = ?"),
+  parlourDiscardPrompt: db.prepare("DELETE FROM parlour_prompts WHERE id = ?"),
+  parlourClearPending: db.prepare("DELETE FROM parlour_prompts WHERE status = 'pending'"),
   parlourClearPrompts: db.prepare("DELETE FROM parlour_prompts"),
-  parlourPromptCount:  db.prepare("SELECT COUNT(*) AS n FROM parlour_prompts"),
+  parlourPendingCount: db.prepare("SELECT COUNT(*) AS n FROM parlour_prompts WHERE status = 'pending'"),
+  parlourSavedCount:   db.prepare("SELECT COUNT(*) AS n FROM parlour_prompts WHERE status = 'saved'"),
+  parlourKeepVote:     db.prepare("INSERT INTO parlour_keepvotes (round, cid, vote) VALUES (?, ?, ?) ON CONFLICT(round, cid) DO UPDATE SET vote = excluded.vote"),
+  parlourKeepTally:    db.prepare("SELECT vote, COUNT(*) AS n FROM parlour_keepvotes WHERE round = ? GROUP BY vote"),
+  parlourClearKeepVotes: db.prepare("DELETE FROM parlour_keepvotes"),
   // The Usual
   parlourRoundAnswers: db.prepare("SELECT cid, value, answer_id FROM parlour_answers WHERE round = ? ORDER BY answer_id"),
   parlourSetAnswerId:  db.prepare("UPDATE parlour_answers SET answer_id = ? WHERE round = ? AND cid = ?"),
@@ -314,7 +336,7 @@ const SPICE_WEIGHTS = [
   { tame: 0,   spicy: 35, raunchy: 65 },   // 4 All The Spice
 ];
 function spiceLevel(p) { const n = Math.round(Number(p && p.spice)); return (n >= 0 && n <= 4) ? n : 1; }
-const PARLOUR_DEFAULT = { game: null, phase: "ended", round: 0, prompt: "", promptHeat: "tame", dealt: [], spice: 1, advance: "host", showWho: true, scoring: true, startedAt: "" };
+const PARLOUR_DEFAULT = { game: null, phase: "ended", round: 0, prompt: "", promptHeat: "tame", promptFresh: false, pendingPromptId: null, dealt: [], spice: 1, advance: "host", showWho: true, scoring: true, startedAt: "" };
 function getParlour() {
   const row = Q.getSetting.get("parlour");
   if (!row || !row.value) return { ...PARLOUR_DEFAULT };
@@ -327,47 +349,52 @@ function getParlour() {
   } catch (e) { return { ...PARLOUR_DEFAULT }; }
 }
 function saveParlour(p) { Q.setSetting.run("parlour", JSON.stringify(p)); }
-function resetParlour() { Q.parlourClearPlayers.run(); Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run(); Q.parlourClearScores.run(); Q.parlourClearPrompts.run(); saveParlour({ ...PARLOUR_DEFAULT }); }
+// A new night wipes tonight's drop-ins and votes, but keeps the room's saved keepers.
+function resetParlour() { Q.parlourClearPlayers.run(); Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run(); Q.parlourClearScores.run(); Q.parlourClearPending.run(); Q.parlourClearKeepVotes.run(); saveParlour({ ...PARLOUR_DEFAULT }); }
 function dealParlourPrompt(p) {
   const bundled = PARLOUR_PROMPTS[p.game] || { tame: [], spicy: [], raunchy: [] };
-  const w = SPICE_WEIGHTS[spiceLevel(p)];
-  const allow = { tame: w.tame > 0, spicy: w.spicy > 0, raunchy: w.raunchy > 0 };   // tiers this spice level permits
   p.dealt = Array.isArray(p.dealt) ? p.dealt : [];
   const unused = (arr) => (arr || []).filter((t) => p.dealt.indexOf(t) === -1);
-  // Player/host-submitted prompts keep priority — but only if their tier is allowed at this spice level.
-  const custom = { tame: [], spicy: [] };
-  for (const r of Q.parlourPrompts.all(p.game)) { const tier = r.spicy ? "spicy" : "tame"; if (allow[tier]) custom[tier].push(r.text); }
-  const customAvail = unused(custom.tame).concat(unused(custom.spicy));
-  if (customAvail.length) {
-    const pick = customAvail[Math.floor(Math.random() * customAvail.length)];
-    p.dealt.push(pick);
-    return { text: pick, heat: custom.spicy.indexOf(pick) !== -1 ? "spicy" : "tame" };
+  // 1) Tonight's drop-ins get priority — shown so the room can vote to keep them. No tier gating.
+  const pending = Q.parlourPendingList.all(p.game);
+  if (pending.length) {
+    const pick = pending[0];   // oldest first, so drop-ins surface in the order added
+    return { text: pick.text, heat: "fresh", fresh: true, promptId: pick.id };
   }
-  // Otherwise draw from the bundled pack, weighting which tier by the spice level.
+  // 2) Otherwise draw from the bundled pack + the room's saved keepers, weighting tier by spice level.
+  const w = SPICE_WEIGHTS[spiceLevel(p)];
+  const allow = { tame: w.tame > 0, spicy: w.spicy > 0, raunchy: w.raunchy > 0 };
+  const pool = { tame: (bundled.tame || []).slice(), spicy: (bundled.spicy || []).slice(), raunchy: (bundled.raunchy || []).slice() };
+  for (const r of Q.parlourSavedList.all(p.game)) { const t = (r.tier === "raunchy" || r.tier === "spicy") ? r.tier : "tame"; pool[t].push(r.text); }
   const pickTier = () => {
-    const pool = PARLOUR_TIERS.filter((t) => allow[t] && unused(bundled[t]).length);
-    if (!pool.length) return null;
-    let total = 0; for (const t of pool) total += w[t];
+    const tiers = PARLOUR_TIERS.filter((t) => allow[t] && unused(pool[t]).length);
+    if (!tiers.length) return null;
+    let total = 0; for (const t of tiers) total += w[t];
     let roll = Math.random() * total;
-    for (const t of pool) { roll -= w[t]; if (roll <= 0) return t; }
-    return pool[pool.length - 1];
+    for (const t of tiers) { roll -= w[t]; if (roll <= 0) return t; }
+    return tiers[tiers.length - 1];
   };
   let tier = pickTier();
   if (!tier) { p.dealt = []; tier = pickTier(); }   // every allowed tier exhausted → reset no-repeat memory, retry
   if (!tier) return null;
-  const avail = unused(bundled[tier]);
+  const avail = unused(pool[tier]);
   const pick = avail[Math.floor(Math.random() * avail.length)];
   p.dealt.push(pick);
-  return { text: pick, heat: tier };
+  return { text: pick, heat: tier, fresh: false, promptId: null };
 }
 function canAdvance(body) { const p = getParlour(); return p.advance === "anyone" || String(body.code) === CODE; }
 function parlourState() {
   const p = getParlour();
   const players = Q.parlourActivePlayers.all();   // only recently-seen devices count as "in the room"
-  const out = { game: p.game, phase: p.phase, round: p.round || 0, prompt: p.prompt || "", heat: p.promptHeat || "tame", spice: spiceLevel(p), spiceLabel: SPICE_LEVELS[spiceLevel(p)], advance: p.advance || "host", showWho: !!p.showWho, scoring: !!p.scoring, added: Q.parlourPromptCount.get().n, players, present: players.length };
+  const out = { game: p.game, phase: p.phase, round: p.round || 0, prompt: p.prompt || "", heat: p.promptHeat || "tame", fresh: !!p.promptFresh, spice: spiceLevel(p), spiceLabel: SPICE_LEVELS[spiceLevel(p)], advance: p.advance || "host", showWho: !!p.showWho, scoring: !!p.scoring, added: Q.parlourPendingCount.get().n, saved: Q.parlourSavedCount.get().n, players, present: players.length };
   if (p.game && (p.phase === "answer" || p.phase === "guess" || p.phase === "reveal")) {
     out.answered = Q.parlourRoundCount.get(p.round).n;
     const atReveal = p.phase === "reveal";
+    if (atReveal && p.promptFresh) {   // the room is voting whether to keep this drop-in
+      let up = 0, down = 0;
+      for (const r of Q.parlourKeepTally.all(p.round)) { if (r.vote === "up") up = r.n; else if (r.vote === "down") down = r.n; }
+      out.keep = { up: up, down: down, majority: (up > down && up > 0) ? "up" : ((down >= up && (up + down) > 0) ? "down" : "none") };
+    }
     if (p.game === "confession" && atReveal) {
       let have = 0, total = 0;
       for (const r of Q.parlourRoundSplit.all(p.round)) { total += r.n; if (r.value === "have") have = r.n; }
@@ -744,7 +771,8 @@ const server = http.createServer(async (req, res) => {
       if (!PARLOUR_PROMPTS[game]) return sendJSON(res, 400, { error: "unknown game" });
       Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run(); Q.parlourClearScores.run();
       const p = getParlour();
-      p.game = game; p.phase = "lobby"; p.round = 0; p.prompt = ""; p.promptHeat = "tame"; p.dealt = []; p.startedAt = Q.nowStr.get().t;
+      p.game = game; p.phase = "lobby"; p.round = 0; p.prompt = ""; p.promptHeat = "tame"; p.promptFresh = false; p.pendingPromptId = null; p.dealt = []; p.startedAt = Q.nowStr.get().t;
+      Q.parlourClearKeepVotes.run();
       saveParlour(p); broadcast();
       return sendJSON(res, 200, { ok: true });
     }
@@ -754,11 +782,47 @@ const server = http.createServer(async (req, res) => {
       if (!canAdvance(b)) return sendJSON(res, 403, { error: "bad code" });
       const p = getParlour();
       if (!p.game) return sendJSON(res, 400, { error: "no game" });
+      // If the previous round showed a drop-in the host never saved, the room passed on it → discard.
+      if (p.pendingPromptId) { Q.parlourDiscardPrompt.run(p.pendingPromptId); p.pendingPromptId = null; }
+      Q.parlourClearKeepVotes.run();
       const pr = dealParlourPrompt(p);
       if (!pr) return sendJSON(res, 400, { error: "out of prompts" });
       Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run();
-      p.prompt = pr.text; p.promptHeat = pr.heat; p.round = (p.round || 0) + 1; p.phase = "answer";
+      p.prompt = pr.text; p.promptHeat = pr.heat; p.promptFresh = !!pr.fresh; p.pendingPromptId = pr.promptId || null; p.round = (p.round || 0) + 1; p.phase = "answer";
       saveParlour(p); broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    // the room votes to keep (or skip) tonight's drop-in — only while its reveal is up
+    if (pathname === "/api/parlour/keepvote" && method === "POST") {
+      const b = await readBody(req);
+      const cid = str(b.cid, 40), vote = b.vote === "up" ? "up" : "down";
+      if (!cid) return sendJSON(res, 400, { error: "cid required" });
+      const p = getParlour();
+      if (p.phase !== "reveal" || !p.promptFresh) return sendJSON(res, 409, { error: "not voting now" });
+      Q.parlourUpsertPlayer.run(cid, str(b.name, 60));
+      Q.parlourKeepVote.run(p.round, cid, vote);
+      broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    // host saves the current drop-in to the pool permanently, picking its spice tier
+    if (pathname === "/api/parlour/save-prompt" && method === "POST") {
+      const b = await readBody(req);
+      if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
+      const p = getParlour();
+      if (!p.pendingPromptId) return sendJSON(res, 409, { error: "nothing to save" });
+      const tier = (b.tier === "raunchy" || b.tier === "spicy") ? b.tier : "tame";
+      Q.parlourSavePrompt.run(tier, tier === "tame" ? 0 : 1, p.pendingPromptId);
+      p.pendingPromptId = null; p.promptFresh = false;
+      saveParlour(p); broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    // host discards the current drop-in
+    if (pathname === "/api/parlour/discard-prompt" && method === "POST") {
+      const b = await readBody(req);
+      if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
+      const p = getParlour();
+      if (p.pendingPromptId) { Q.parlourDiscardPrompt.run(p.pendingPromptId); p.pendingPromptId = null; p.promptFresh = false; saveParlour(p); }
+      broadcast();
       return sendJSON(res, 200, { ok: true });
     }
     if (pathname === "/api/parlour/answer" && method === "POST") {
@@ -820,27 +884,30 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
       const p = getParlour();
-      p.game = null; p.phase = "ended"; p.prompt = ""; p.round = 0; p.dealt = [];
-      Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run(); Q.parlourClearScores.run(); Q.parlourClearPlayers.run();
+      p.game = null; p.phase = "ended"; p.prompt = ""; p.round = 0; p.dealt = []; p.promptFresh = false; p.pendingPromptId = null;
+      Q.parlourClearAnswers.run(); Q.parlourClearGuesses.run(); Q.parlourClearScores.run(); Q.parlourClearPlayers.run(); Q.parlourClearKeepVotes.run();
       saveParlour(p); broadcast();
       return sendJSON(res, 200, { ok: true });
     }
-    // anyone can drop a prompt into the pool — no approval (it's friends)
+    // anyone can drop a prompt into the pool — no approval (it's friends). It lands 'pending':
+    // shown tonight so the room can vote to keep it, then either saved for good or discarded.
     if (pathname === "/api/parlour/prompt" && method === "POST") {
       const b = await readBody(req);
       const game = str(b.game, 20) || "confession";
       const text = str(b.text, 160);
       if (!PARLOUR_PROMPTS[game]) return sendJSON(res, 400, { error: "unknown game" });
       if (!text) return sendJSON(res, 400, { error: "text required" });
-      Q.parlourAddPrompt.run(game, text, b.spicy ? 1 : 0);
+      Q.parlourAddPrompt.run(game, text, 0, currentNightStart(), str(b.cid, 40));
       broadcast();
       return sendJSON(res, 201, { ok: true });
     }
-    // host: wipe every player-submitted prompt (e.g. clearing out test entries)
+    // host: clear tonight's un-voted drop-ins (saved keepers stay in the pool)
     if (pathname === "/api/parlour/clear-prompts" && method === "POST") {
       const b = await readBody(req);
       if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
-      Q.parlourClearPrompts.run();
+      Q.parlourClearPending.run();
+      const p = getParlour();
+      if (p.promptFresh) { p.promptFresh = false; p.pendingPromptId = null; saveParlour(p); }
       broadcast();
       return sendJSON(res, 200, { ok: true });
     }

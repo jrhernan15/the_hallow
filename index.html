@@ -1107,6 +1107,27 @@
                 </div>
               </sc-if>
             </sc-if>
+            <sc-if value="{{ pv.keepVoting }}" hint-placeholder-val="">
+              <div style="margin-top:18px;border-top:1px solid var(--card-border,#2D3422);padding-top:14px">
+                <div style="text-align:center;font-size:12.5px;color:var(--ink-soft,#B7B3A1);margin-bottom:10px">Add this one to the pool for next time?</div>
+                <div style="display:flex;gap:10px">
+                  <button type="button" onClick="{{ pv.onKeepUp }}" style="{{ pv.keepUpStyle }}">👍</button>
+                  <button type="button" onClick="{{ pv.onKeepDown }}" style="{{ pv.keepDownStyle }}">👎</button>
+                </div>
+                <div style="text-align:center;font-size:12px;color:var(--ink-faint,#827E6D);margin-top:8px">{{ pv.keepUpLabel }} 👍 · {{ pv.keepDownLabel }} 👎</div>
+                <sc-if value="{{ pv.keepHostSave }}" hint-placeholder-val="">
+                  <div style="margin-top:12px;background:rgba(166,187,142,.1);border:1px solid rgba(166,187,142,.35);border-radius:12px;padding:11px 12px">
+                    <div style="font-size:12.5px;color:var(--ink,#ECE7D7);font-weight:600;margin-bottom:9px;text-align:center">The room’s in 👍 — save it. How spicy?</div>
+                    <div style="display:flex;gap:8px">
+                      <button type="button" onClick="{{ pv.onSaveTame }}" style="{{ pv.keepTierTame }}">Tame</button>
+                      <button type="button" onClick="{{ pv.onSaveSpicy }}" style="{{ pv.keepTierSpicy }}">Spicy</button>
+                      <button type="button" onClick="{{ pv.onSaveRaunchy }}" style="{{ pv.keepTierRaunchy }}">Raunchy</button>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ pv.keepHostWait }}" hint-placeholder-val=""><div style="margin-top:10px;font-size:11.5px;color:var(--ink-faint,#827E6D);text-align:center;line-height:1.4">{{ pv.keepHostWaitNote }}</div></sc-if>
+              </div>
+            </sc-if>
             <sc-if value="{{ pv.showMyAnswer }}" hint-placeholder-val=""><div style="text-align:center;font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:12px">{{ pv.myAnswerLabel }}</div></sc-if>
             <sc-if value="{{ pv.canAdvance }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ pv.onDeal }}" style="display:block;width:100%;box-sizing:border-box;margin-top:20px;font-size:14px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:12px;padding:13px;cursor:pointer">Next round</button></sc-if>
             <sc-if value="{{ pv.waiting }}" hint-placeholder-val=""><div style="text-align:center;font-size:12.5px;color:var(--ink-faint,#827E6D);margin-top:16px">Waiting for the host…</div></sc-if>
@@ -1115,8 +1136,17 @@
           <sc-if value="{{ pv.live }}" hint-placeholder-val="">
             <div style="margin-top:22px;border-top:1px solid var(--card-border,#2D3422);padding-top:14px">
               <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:7px">Add one to the pool</div>
-              <input type="text" value="{{ parlourDraft }}" onChange="{{ onParlourDraft }}" placeholder="{{ pv.promptPlaceholder }}" style="width:100%;box-sizing:border-box;font-size:14px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:10px 12px;outline:none;margin-bottom:8px">
+              <sc-if value="{{ pv.isFork }}" hint-placeholder-val="">
+                <div style="font-size:11px;color:var(--ink-faint,#827E6D);margin-bottom:6px">Give the two things to choose between:</div>
+                <input type="text" value="{{ parlourDraft }}" onChange="{{ onParlourDraft }}" placeholder="Option one — “this”" style="width:100%;box-sizing:border-box;font-size:14px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:10px 12px;outline:none;margin-bottom:7px">
+                <div style="text-align:center;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint,#827E6D);margin-bottom:7px">or</div>
+                <input type="text" value="{{ parlourDraftB }}" onChange="{{ onParlourDraftB }}" placeholder="Option two — “that”" style="width:100%;box-sizing:border-box;font-size:14px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:10px 12px;outline:none;margin-bottom:8px">
+              </sc-if>
+              <sc-if value="{{ pv.notFork }}" hint-placeholder-val="{{ true }}">
+                <input type="text" value="{{ parlourDraft }}" onChange="{{ onParlourDraft }}" placeholder="{{ pv.promptPlaceholder }}" style="width:100%;box-sizing:border-box;font-size:14px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:10px 12px;outline:none;margin-bottom:8px">
+              </sc-if>
               <button type="button" onClick="{{ pv.onAddPrompt }}" style="display:block;width:100%;box-sizing:border-box;font-size:13.5px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent2,#CFA267);border:none;border-radius:11px;padding:11px;cursor:pointer">Drop it in the pool</button>
+              <div style="font-size:11px;color:var(--ink-faint,#827E6D);margin-top:7px;line-height:1.4;text-align:center">It’ll come up tonight for the room to vote to keep.</div>
             </div>
           </sc-if>
 
@@ -1149,7 +1179,7 @@
               </div>
               <sc-if value="{{ pv.hasAdded }}" hint-placeholder-val="">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
-                  <span style="font-size:13px;color:var(--ink-soft,#B7B3A1)">Added prompts <span style="color:var(--ink-faint,#827E6D)">({{ pv.addedCount }} in the pool)</span></span>
+                  <span style="font-size:13px;color:var(--ink-soft,#B7B3A1)">Tonight’s drop-ins <span style="color:var(--ink-faint,#827E6D)">({{ pv.addedCount }} waiting to vote)</span></span>
                   <button type="button" onClick="{{ pv.onClearPrompts }}" style="flex:none;font-size:12.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);border-radius:999px;padding:7px 14px;cursor:pointer">Clear</button>
                 </div>
               </sc-if>
@@ -1219,7 +1249,7 @@ class Component extends DCLogic {
       bartenderMode: false, bartenderAlert: null, bmBannerDismissed: false, verdictDrink: null, peekDrink: null,
       wallOpen: false, wallPosts: [], wallNightStart: '', wallScope: 'tonight', wallDraft: '',
       bookOpen: false, bookTab: 'wall', bookScope: 'tonight',
-      parlour: { game: null, phase: 'ended', players: [], present: 0 }, parlourOpen: false, parlourBannerDismissed: false, parlourDraft: '', parlourUsualDraft: '', parlourGate: '', parlourGateErr: false,
+      parlour: { game: null, phase: 'ended', players: [], present: 0 }, parlourOpen: false, parlourBannerDismissed: false, parlourDraft: '', parlourDraftB: '', parlourUsualDraft: '', parlourGate: '', parlourGateErr: false,
     };
     this.GROUPS = [
       { key:'spirit',   label:'Spirit',   mode:'or',  order:['Gin','Bourbon','Rye','Tequila','Rum','Vodka','Cognac','Aperitivo','THC'] },
@@ -1624,8 +1654,22 @@ class Component extends DCLogic {
   parlourEnd(){ this.api('POST','/api/parlour/end',{ code: this._parlourCode() }).then(()=>this.refreshState()).catch(()=>{}); }
   parlourSet(patch){ this.api('POST','/api/parlour/settings', Object.assign({ code: this._parlourCode() }, patch||{})).then(()=>this.refreshState()).catch(()=>{}); }
   onParlourDraft(e){ this.setState({ parlourDraft: (e.target.value||'').slice(0,160) }); }
-  parlourAddPrompt(){ const t = (this.state.parlourDraft||'').trim(); if (!t) return; const p = this.state.parlour || {}; this.api('POST','/api/parlour/prompt',{ game: p.game || 'confession', text: t, spicy: (((p.spice==null?1:p.spice)|0) >= 1) }).then(()=>{ this.setState({ parlourDraft: '' }); this.flashToast('Dropped in the pool ✓',1500); }).catch(()=>{}); }
-  parlourClearPrompts(){ this.api('POST','/api/parlour/clear-prompts',{ code: this._parlourCode() }).then(()=>{ this.refreshState(); this.flashToast('Added prompts cleared ✓',1600); }).catch(()=>this.flashToast('Only the host can clear',1800)); }
+  onParlourDraftB(e){ this.setState({ parlourDraftB: (e.target.value||'').slice(0,120) }); }
+  parlourAddPrompt(){
+    const p = this.state.parlour || {}; const game = p.game || 'confession';
+    let text;
+    if (game === 'fork'){
+      const a = (this.state.parlourDraft||'').trim(), b = (this.state.parlourDraftB||'').trim();
+      if (!a || !b){ this.flashToast('Fill in both options',1600); return; }
+      text = a + ' | ' + b;
+    } else { text = (this.state.parlourDraft||'').trim(); if (!text) return; }
+    this.api('POST','/api/parlour/prompt',{ game: game, text: text, cid: this._cid() }).then(()=>{ this.setState({ parlourDraft: '', parlourDraftB: '' }); this.flashToast('Dropped in — the room votes to keep it ✓',2000); }).catch(()=>{});
+  }
+  parlourClearPrompts(){ this.api('POST','/api/parlour/clear-prompts',{ code: this._parlourCode() }).then(()=>{ this.refreshState(); this.flashToast('Tonight’s drop-ins cleared ✓',1600); }).catch(()=>this.flashToast('Only the host can clear',1800)); }
+  parlourKeepVote(vote){ const p = this.state.parlour || {}; try { localStorage.setItem('hollow_parlour_keep', JSON.stringify({ round: p.round, vote: vote })); } catch(e){} this.forceUpdate(); this.api('POST','/api/parlour/keepvote',{ cid: this._cid(), vote: vote, name: this._myNameNow() }).then(()=>this.refreshState()).catch(()=>{}); }
+  parlourMyKeep(){ const p = this.state.parlour || {}; try { const k = JSON.parse(localStorage.getItem('hollow_parlour_keep')||'null'); if (k && k.round === p.round) return k.vote; } catch(e){} return null; }
+  parlourSavePrompt(tier){ this.api('POST','/api/parlour/save-prompt',{ code: this._parlourCode(), tier: tier }).then(()=>{ this.refreshState(); this.flashToast('Saved to the pool ✓',1600); }).catch(()=>this.flashToast('Only the host can save',1800)); }
+  parlourDiscardPrompt(){ this.api('POST','/api/parlour/discard-prompt',{ code: this._parlourCode() }).then(()=>{ this.refreshState(); this.flashToast('Discarded',1400); }).catch(()=>{}); }
   onParlourGate(e){ this.setState({ parlourGate: (e.target.value||'').slice(0,10) }); }
   parlourUnlock(){ if ((this.state.parlourGate||'').trim() === '5352'){ try { localStorage.setItem('hollow_86_ok','1'); } catch(e){} this.setState({ parlourGate: '', parlourGateErr: false }); this.flashToast('You’re hosting',1500); } else { this.setState({ parlourGateErr: true, parlourGate: '' }); } }
   openPeek(name){ if (name) this.setState({ peekDrink: name }); }
@@ -1783,16 +1827,37 @@ class Component extends DCLogic {
         background: i<=_spice ? _heatRamp[i] : 'var(--field,#161A11)',
         boxShadow: i<=_spice ? 'none' : 'inset 0 0 0 1px var(--card-border,#2D3422)' },
     }));
+    const _fresh = !!P.fresh;
     const _heat = P.heat || 'tame';
-    const heatBadge = _heat==='raunchy' ? '🔥 Raunchy' : (_heat==='spicy' ? '🌶 Spicy' : '');
-    const heatBadgeStyle = { fontSize:'9.5px', fontWeight:700, letterSpacing:'.06em', textTransform:'uppercase', padding:'3px 8px', borderRadius:'999px', whiteSpace:'nowrap', flex:'none',
-      background: _heat==='raunchy' ? 'rgba(176,70,59,.22)' : 'rgba(207,162,103,.2)',
-      color: _heat==='raunchy' ? '#E28C7C' : '#D8A867',
-      border: '1px solid '+(_heat==='raunchy' ? 'rgba(176,70,59,.55)' : 'rgba(207,162,103,.45)') };
+    const heatBadge = _fresh ? '✋ From the room' : (_heat==='raunchy' ? '🔥 Raunchy' : (_heat==='spicy' ? '🌶 Spicy' : ''));
+    const heatBadgeStyle = _fresh
+      ? { fontSize:'9.5px', fontWeight:700, letterSpacing:'.06em', textTransform:'uppercase', padding:'3px 8px', borderRadius:'999px', whiteSpace:'nowrap', flex:'none',
+          background:'rgba(166,187,142,.2)', color:'var(--accent,#A6BB8E)', border:'1px solid rgba(166,187,142,.5)' }
+      : { fontSize:'9.5px', fontWeight:700, letterSpacing:'.06em', textTransform:'uppercase', padding:'3px 8px', borderRadius:'999px', whiteSpace:'nowrap', flex:'none',
+          background: _heat==='raunchy' ? 'rgba(176,70,59,.22)' : 'rgba(207,162,103,.2)',
+          color: _heat==='raunchy' ? '#E28C7C' : '#D8A867',
+          border: '1px solid '+(_heat==='raunchy' ? 'rgba(176,70,59,.55)' : 'rgba(207,162,103,.45)') };
+    // ---- Keep-vote on a drop-in (reveal phase only) ----
+    const keepVoting = (pPhase==='reveal' && _fresh);
+    const _keep = P.keep || { up:0, down:0, majority:'none' };
+    const _myKeep = keepVoting ? this.parlourMyKeep() : null;
+    const _keepBtn = (kind, on) => ({ flex:'1', textAlign:'center', fontSize:'20px', lineHeight:'1', borderRadius:'12px', padding:'11px 0', cursor:'pointer',
+      border:'1px solid '+(on ? (kind==='up'?'var(--accent,#A6BB8E)':'#C56A44') : 'var(--card-border,#2D3422)'),
+      background: on ? (kind==='up'?'rgba(166,187,142,.18)':'rgba(197,106,68,.16)') : 'var(--field,#161A11)', filter: on?'none':'grayscale(.3) opacity(.85)' });
+    const _tierBtn = (c) => ({ flex:'1', textAlign:'center', fontSize:'12px', fontWeight:700, borderRadius:'10px', padding:'9px 6px', cursor:'pointer', color:'#13160F', background:c, border:'none' });
     const pv = {
       live: pLive, game: pGame, gameName: pGameName,
       spicePips: spicePips, spiceLabel: _spiceNames[_spice], spiceHint: _spiceHints[_spice], spiceColor: _heatRamp[_spice],
-      heatBadge: heatBadge, heatBadgeStyle: heatBadgeStyle,
+      heatBadge: heatBadge, heatBadgeStyle: heatBadgeStyle, notFork: !pIsFork,
+      keepVoting: keepVoting,
+      keepUpLabel: String(_keep.up||0), keepDownLabel: String(_keep.down||0),
+      keepUpStyle: _keepBtn('up', _myKeep==='up'), keepDownStyle: _keepBtn('down', _myKeep==='down'),
+      onKeepUp: () => this.parlourKeepVote('up'), onKeepDown: () => this.parlourKeepVote('down'),
+      keepHostSave: (pStaff && keepVoting && _keep.majority==='up'),
+      keepHostWait: (pStaff && keepVoting && _keep.majority!=='up'),
+      keepHostWaitNote: (_keep.majority==='down') ? 'The room’s leaning no — it’ll drop when you move on.' : 'Waiting on the room’s votes…',
+      keepTierTame: _tierBtn('#8FA06B'), keepTierSpicy: _tierBtn('#D68B4A'), keepTierRaunchy: _tierBtn('#C56A44'),
+      onSaveTame: () => this.parlourSavePrompt('tame'), onSaveSpicy: () => this.parlourSavePrompt('spicy'), onSaveRaunchy: () => this.parlourSavePrompt('raunchy'),
       isNone: (!pGame || pPhase==='ended'), isLobby: pPhase==='lobby', isAnswer: pPhase==='answer', isReveal: pPhase==='reveal',
       isConfession: pIsConfession, isFork: pIsFork, isUsual: pIsUsual, notUsual: !pIsUsual, isGuess: pPhase==='guess',
       staff: pStaff, notStaff: !pStaff, canAdvance: pCanAdvance, waiting: (pLive && !pCanAdvance),
@@ -2268,7 +2333,7 @@ class Component extends DCLogic {
       bookOpen: st.bookOpen, onOpenBook: () => this.openBook(), onCloseBook: () => this.closeBook(),
       pv: pv, parlourLive: pLive, parlourOpen: st.parlourOpen, onOpenParlour: () => this.openParlour(), onCloseParlour: () => this.closeParlour(),
       parlourBannerOpen: (pLive && !st.parlourOpen && !st.parlourBannerDismissed), onDismissParlourBanner: () => this.dismissParlourBanner(),
-      parlourDraft: st.parlourDraft, onParlourDraft: (e) => this.onParlourDraft(e), parlourUsualDraft: st.parlourUsualDraft, onParlourUsualDraft: (e) => this.onParlourUsualDraft(e), parlourGate: st.parlourGate, onParlourGate: (e) => this.onParlourGate(e), onParlourUnlock: () => this.parlourUnlock(),
+      parlourDraft: st.parlourDraft, onParlourDraft: (e) => this.onParlourDraft(e), parlourDraftB: st.parlourDraftB, onParlourDraftB: (e) => this.onParlourDraftB(e), parlourUsualDraft: st.parlourUsualDraft, onParlourUsualDraft: (e) => this.onParlourUsualDraft(e), parlourGate: st.parlourGate, onParlourGate: (e) => this.onParlourGate(e), onParlourUnlock: () => this.parlourUnlock(),
       bookTabWall: st.bookTab==='wall', bookTabLedger: st.bookTab==='ledger',
       bookWallTabStyle: bookTabStyle(st.bookTab==='wall'), bookLedgerTabStyle: bookTabStyle(st.bookTab==='ledger'), bookIndStyle: slideInd(st.bookTab==='ledger'?1:0, 2),
       onBookWall: () => this.setBookTab('wall'), onBookLedger: () => this.setBookTab('ledger'),

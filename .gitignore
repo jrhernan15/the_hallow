@@ -31,3 +31,6 @@ data/
 
 # Source design exports (kept locally, not committed)
 Gemini_Generated_Image_*.png
+
+# Full-res Parlor emblem masters (kept locally, optimized copies are in assets/)
+parlor-masters/

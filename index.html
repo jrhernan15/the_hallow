@@ -189,7 +189,7 @@
           <sc-if value="{{ isFleuron }}" hint-placeholder-val="{{ true }}">
             <span style="color:var(--div-line,#B9C6AC);font-size:13px;line-height:1">❧</span>
           </sc-if>
-          <span style="flex:none;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;letter-spacing:.05em;color:var(--accent,#2F3D2C);white-space:nowrap">{{ sec.spirit }}</span>
+          <span style="flex:none;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:17px;letter-spacing:.05em;color:var(--accent2,#AD7C44);white-space:nowrap">{{ sec.spirit }}</span>
           <sc-if value="{{ isSprig }}" hint-placeholder-val="{{ true }}">
             <svg viewBox="0 0 46 18" width="40" height="15" fill="none" stroke="var(--div-line,#B9C6AC)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 H32"/><path d="M30 9 Q24 1 16 4 Q22 8 30 9 Z"/><path d="M26 9 Q20 17 12 14 Q18 9 26 9 Z"/><path d="M32 9 q6 -1 9 -5"/><path d="M32 9 q6 1 9 5"/></svg>
           </sc-if>
@@ -721,7 +721,7 @@
       <aside onClick="{{ stop }}" style="width:min(440px,100%);height:100%;background:var(--bg2,#1A1E14);border-left:1px solid var(--card-border,#2D3422);box-shadow:-12px 0 48px rgba(0,0,0,.35);display:flex;flex-direction:column">
         <header style="padding:16px 18px 12px;border-bottom:1px solid var(--card-border,#2D3422)">
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
-            <div><div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267)">The Hollow</div><h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:2px 0 0;color:var(--ink,#ECE7D7)">The Ropes</h2></div>
+            <div><h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:0;color:var(--ink,#ECE7D7)">The Ropes</h2></div>
             <button type="button" onClick="{{ onCloseHelp }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
           </div>
         </header>
@@ -754,8 +754,7 @@
       <aside onClick="{{ stop }}" style="width:min(460px,100%);height:100%;background:var(--bg2,#1A1E14);border-left:1px solid var(--card-border,#2D3422);box-shadow:-12px 0 48px rgba(0,0,0,.35);display:flex;flex-direction:column">
         <header style="padding:16px 18px 14px;border-bottom:1px solid var(--card-border,#2D3422);display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
           <div>
-            <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267)">This device</div>
-            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:2px 0 0;color:var(--ink,#ECE7D7)">The Knobs</h2>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:0;color:var(--ink,#ECE7D7)">The Knobs</h2>
           </div>
           <button type="button" onClick="{{ onCloseSettings }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
         </header>
@@ -898,8 +897,9 @@
     <div data-chrome onClick="{{ onCloseVerdict }}" style="position:fixed;inset:0;z-index:68;background:rgba(12,11,8,.55);display:flex;align-items:flex-end;justify-content:center">
       <div onClick="{{ stop }}" style="width:min(460px,100%);background:var(--bg2,#1A1E14);border:1px solid var(--card-border,#2D3422);border-bottom:none;border-radius:18px 18px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.4);padding:16px 16px calc(20px + env(safe-area-inset-bottom))">
         <div style="width:36px;height:4px;border-radius:999px;background:var(--card-border,#2D3422);margin:0 auto 14px"></div>
+        <div style="font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);text-align:center;margin-bottom:4px">The Verdict</div>
         <div style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:20px;color:var(--ink,#ECE7D7);text-align:center">{{ verdictTitle }}</div>
-        <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);text-align:center;margin-top:3px">Tap all that fit — they're not either/or</div>
+        <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);text-align:center;margin-top:3px">Tap all that fit — the drink can't appeal.</div>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px">
           <sc-for list="{{ verdictOptions }}" as="o" hint-placeholder-count="5">
             <button type="button" onClick="{{ o.onTap }}" style="{{ o.tileStyle }}">
@@ -925,7 +925,7 @@
   </sc-if>
 
   <sc-if value="{{ toast }}" hint-placeholder-val="">
-    <div data-chrome style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:70;background:var(--accent,#A6BB8E);color:var(--accent-ink,#13160F);padding:11px 20px;border-radius:999px;box-shadow:0 12px 34px rgba(0,0,0,.32);font-size:13px;font-weight:600;letter-spacing:.02em">{{ toast }}</div>
+    <div data-chrome style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:70;background:var(--accent,#A6BB8E);color:var(--accent-ink,#13160F);padding:9px 16px;border-radius:999px;box-shadow:0 12px 34px rgba(0,0,0,.32);font-size:13px;font-weight:600;letter-spacing:.02em;display:inline-flex;align-items:center;gap:12px"><span>{{ toast }}</span><sc-if value="{{ toastAction }}" hint-placeholder-val=""><button type="button" onClick="{{ onToastAction }}" style="font-size:12.5px;font-weight:700;color:var(--accent-ink,#13160F);background:rgba(0,0,0,.14);border:none;border-radius:999px;padding:5px 13px;cursor:pointer">{{ toastActionLabel }}</button></sc-if></div>
   </sc-if>
 
 </div>
@@ -944,7 +944,7 @@ class Component extends DCLogic {
       open: {}, filtersOpen: true, highlight: null,
       orders: [], batches: [], reactions: {}, myPours: [], serverNightStart: '', stripCollapsed: false, dismissedTix: {}, dismissedPours: {}, ordersOpen: false, stationTab: 'queue',
       selected: {}, makeView: null, orderModalName: null,
-      draftGuest: '', draftQty: 1, draftNote: '', toast: null, showTop: false,
+      draftGuest: '', draftQty: 1, draftNote: '', toast: null, toastAction: null, showTop: false,
       eightySix: [], pantryOpen: false, pantryGate: false, gateInput: '', gateErr: false, serverTheme: 'auto', eightySixTab: 'ingredients', chimePref: 'auto',
       ledgerOpen: false, ledgerRows: [], ledgerNightStart: '', ledgerNow: '', ledgerScope: 'tonight',
       settingsOpen: false, myName: '', welcomeOpen: false, welcomeName: '', confirm: null, helpOpen: false,
@@ -1048,7 +1048,7 @@ class Component extends DCLogic {
     if (this.state.bookOpen){ if (this.state.bookTab === 'wall') this.fetchWall(); else this.fetchHistory(); }
   }
 
-  flashToast(msg, ms){ this.setState({ toast: msg }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast:null }), ms||2000); }
+  flashToast(msg, ms, action){ this.setState({ toast: msg, toastAction: action || null }); clearTimeout(this._tt); this._tt = setTimeout(() => this.setState({ toast:null, toastAction:null }), ms||2000); }
 
   openOrder(name){ this.setState({ orderModalName: name, draftGuest: this.state.myName || '', draftQty:1, draftNote:'' }); }
   closeOrder(){ this.setState({ orderModalName: null }); }
@@ -1061,23 +1061,37 @@ class Component extends DCLogic {
     const qty = this.state.draftQty || 1;
     this.unlockAudio(); this.preloadChime();
     this.api('POST', '/api/tickets', { drink: drink, name: name, notes: note, qty: qty })
-      .then(t => { try { this._mine = (this._mine || []).concat(t.id); localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){} this._recordMyOrder(drink); this.refreshState(); })
+      .then(t => {
+        try { this._mine = (this._mine || []).concat(t.id); localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){}
+        const pourTs = this._recordMyOrder(drink);
+        this.refreshState();
+        this.flashToast('Sent to the bar ✓', 6000, { label: 'Undo', onClick: () => this.undoOrder(t.id, drink, pourTs) });
+      })
       .catch(() => this.flashToast('Could not reach the bar — try again', 2400));
     this.setState({ orderModalName: null, draftGuest: this.state.myName || '' });
-    this.flashToast('Sent to the bar ✓', 2200);
+  }
+  undoOrder(id, drink, pourTs){
+    this.api('DELETE', '/api/tickets/' + id, null).then(() => this.refreshState()).catch(()=>{});
+    try { this._mine = (this._mine || []).filter(x => x !== id); localStorage.setItem('hollow_mine_v1', JSON.stringify(this._mine)); } catch(e){}
+    const arr = (this.state.myPours || []).filter(p => !(p.drink === drink && p.ts === pourTs));
+    try { localStorage.setItem('hollow_myorders_v1', JSON.stringify(arr)); } catch(e){}
+    this.setState({ myPours: arr });
+    this.flashToast('Order pulled back', 1800);
   }
 
   toggleStrip(){ this.setState(s => { const c = !s.stripCollapsed; try { localStorage.setItem('hollow_strip_collapsed', c ? '1' : '0'); } catch(e){} return { stripCollapsed: c }; }); }
   dismissTicket(id){ this.setState(s => { const d = Object.assign({}, s.dismissedTix); d[id] = true; try { localStorage.setItem('hollow_dismissed_tix_v1', JSON.stringify(d)); } catch(e){} return { dismissedTix: d }; }); }
   dismissPour(drink, ts){ this.setState(s => { const d = Object.assign({}, s.dismissedPours); d[drink] = (ts != null ? ts : Date.now()); try { localStorage.setItem('hollow_dismissed_pours_v1', JSON.stringify(d)); } catch(e){} return { dismissedPours: d }; }); }
   _recordMyOrder(drink){
-    if (!drink) return;
+    if (!drink) return null;
     let arr = []; try { arr = JSON.parse(localStorage.getItem('hollow_myorders_v1') || '[]') || []; } catch(e){}
     arr = arr.filter(x => x && x.drink !== drink);
-    arr.unshift({ drink: drink, ts: Date.now() });
+    const ts = Date.now();
+    arr.unshift({ drink: drink, ts: ts });
     if (arr.length > 40) arr = arr.slice(0, 40);
     try { localStorage.setItem('hollow_myorders_v1', JSON.stringify(arr)); } catch(e){}
     this.setState({ myPours: arr });
+    return ts;
   }
   toggleOrders(){ this.setState(s => ({ ordersOpen: !s.ordersOpen, makeView:null })); }
   setTab(t){ this.setState({ stationTab: t }); }
@@ -1452,7 +1466,7 @@ class Component extends DCLogic {
       const counts = (st.reactions && st.reactions[drink]) || {};
       const tally = VERDICT.filter(v => (counts[v[0]]||0) > 0).map(v => ({ emoji: v[0], count: String(counts[v[0]]) }));
       const mineN = Object.keys(myReax[drink] || {}).length;
-      return { onOpen: () => this.openVerdict(drink), tally: tally, hasTally: tally.length>0, label: mineN>0 ? 'Your verdict' : 'How was it?' };
+      return { onOpen: () => this.openVerdict(drink), tally: tally, hasTally: tally.length>0, label: mineN>0 ? 'Your Verdict' : 'The Verdict' };
     };
 
     const mkCard = (c) => {
@@ -1818,7 +1832,7 @@ class Component extends DCLogic {
       onDraftGuest: (e) => this.setState({ draftGuest: e.target.value }),
       onDraftNote: (e) => this.setState({ draftNote: e.target.value }),
       onIncQty: () => this.incQty(), onDecQty: () => this.decQty(),
-      toast: st.toast,
+      toast: st.toast, toastAction: !!st.toastAction, toastActionLabel: st.toastAction ? st.toastAction.label : '', onToastAction: () => { const a = this.state.toastAction; if (a && a.onClick) a.onClick(); this.setState({ toast:null, toastAction:null }); },
       onToggleDark: () => this.toggleDark(),
       showTop: st.showTop, onScrollTop: () => this.scrollTop(),
       onOpen86: () => this.openEightySix(),

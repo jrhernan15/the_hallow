@@ -171,6 +171,7 @@ const Q = {
   parlourClearPlayers: db.prepare("DELETE FROM parlour_players"),
   parlourSetAnswer:    db.prepare("INSERT INTO parlour_answers (round, cid, value) VALUES (?, ?, ?) ON CONFLICT(round, cid) DO UPDATE SET value = excluded.value, created_at = datetime('now')"),
   parlourRoundSplit:   db.prepare("SELECT value, COUNT(*) AS n FROM parlour_answers WHERE round = ? GROUP BY value"),
+  parlourRoundVotes:   db.prepare("SELECT a.cid AS cid, a.value AS value, pl.name AS name FROM parlour_answers a LEFT JOIN parlour_players pl ON pl.cid = a.cid WHERE a.round = ?"),
   parlourRoundCount:   db.prepare("SELECT COUNT(*) AS n FROM parlour_answers WHERE round = ?"),
   parlourClearAnswers: db.prepare("DELETE FROM parlour_answers"),
   parlourAddPrompt:    db.prepare("INSERT INTO parlour_prompts (game, text, spicy) VALUES (?, ?, ?)"),
@@ -283,6 +284,31 @@ const PARLOUR_PROMPTS = {
       "Never have I ever sworn in front of someone's parents.",
     ],
   },
+  // Fork prompts are "A | B" pairs; the client splits on the pipe.
+  fork: {
+    tame: [
+      "Coast | Mountains",
+      "Morning person | Night owl",
+      "Cats | Dogs",
+      "Sweet | Savory",
+      "Beach trip | City trip",
+      "Cook at home | Order in",
+      "Window seat | Aisle seat",
+      "Pineapple on pizza | Never in life",
+      "Rom-com | Horror",
+      "Early to the party | Fashionably late",
+      "Tea | Coffee",
+      "Text back now | Text back in three days",
+    ],
+    spicy: [
+      "Text the ex | Delete the number",
+      "Read receipts on | Off, obviously",
+      "Kiss and tell | Take it to the grave",
+      "Truth | Dare",
+      "Go through their phone | Blissful ignorance",
+      "Skinny dip | Absolutely not",
+    ],
+  },
 };
 const PARLOUR_DEFAULT = { game: null, phase: "ended", round: 0, prompt: "", dealt: [], spicy: false, advance: "host", showWho: true, scoring: true, startedAt: "" };
 function getParlour() {
@@ -315,11 +341,23 @@ function parlourState() {
   const out = { game: p.game, phase: p.phase, round: p.round || 0, prompt: p.prompt || "", spicy: !!p.spicy, advance: p.advance || "host", showWho: !!p.showWho, scoring: !!p.scoring, players, present: players.length };
   if (p.game && (p.phase === "answer" || p.phase === "reveal")) {
     out.answered = Q.parlourRoundCount.get(p.round).n;
-    if (p.phase === "reveal") {
+    const atReveal = p.phase === "reveal";
+    if (p.game === "confession" && atReveal) {
       let have = 0, total = 0;
       for (const r of Q.parlourRoundSplit.all(p.round)) { total += r.n; if (r.value === "have") have = r.n; }
       out.count = { have: have, total: total };
       out.fuzzy = total < 5;   // small groups: show "a few of you", not an exact count
+    }
+    if (p.game === "fork") {
+      // The Fork shows the split live while answering, and at reveal.
+      let a = 0, b = 0, total = 0;
+      for (const r of Q.parlourRoundSplit.all(p.round)) { total += r.n; if (r.value === "a") a = r.n; else if (r.value === "b") b = r.n; }
+      out.split = { a: a, b: b, total: total };
+      if (atReveal && p.showWho) {
+        const votes = Q.parlourRoundVotes.all(p.round);
+        out.namesA = votes.filter((v) => v.value === "a").map((v) => (v.name && String(v.name).trim()) || "Someone");
+        out.namesB = votes.filter((v) => v.value === "b").map((v) => (v.name && String(v.name).trim()) || "Someone");
+      }
     }
   }
   return out;

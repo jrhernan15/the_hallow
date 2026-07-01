@@ -34,6 +34,8 @@
     [data-ledgerbtn]{width:40px !important;padding:0 !important;justify-content:center !important;gap:0 !important;}
     [data-slabel]{display:none !important;}
     [data-settingsbtn]{width:40px !important;padding:0 !important;justify-content:center !important;gap:0 !important;}
+    [data-plabel]{display:none !important;}
+    [data-parlourbtn]{width:40px !important;padding:0 !important;justify-content:center !important;gap:0 !important;}
     [data-summary]{padding-left:12px !important;padding-right:12px !important;}
     [data-filterwrap]{padding:0 12px !important;margin-top:6px !important;}
     [data-filterpanel]{border-radius:14px !important;padding:2px 13px 11px !important;}
@@ -83,6 +85,7 @@
         <span data-blabel>The Pass</span><sc-if value="{{ hasOrders }}" hint-placeholder-val=""><span style="{{ ordersBadgeStyle }}">{{ ordersCount }}</span></sc-if><sc-if value="{{ bartenderArmed }}" hint-placeholder-val=""><span class="bmdot" aria-hidden="true"></span></sc-if>
       </button>
       <button type="button" data-ledgerbtn onClick="{{ onOpenBook }}" title="The Book" aria-label="Open The Book" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zM21 18.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"></path></svg><span data-llabel>The Book</span></button>
+      <button type="button" data-parlourbtn onClick="{{ onOpenParlour }}" title="The Parlour" aria-label="The Parlour" style="position:relative;font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM4 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm1.13 1.1c-.37-.06-.74-.1-1.13-.1-.99 0-1.93.21-2.78.58C.48 14.9 0 15.62 0 16.43V18h4.5v-1.61c0-.83.23-1.61.63-2.29zM20 13c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4 3.43c0-.81-.48-1.53-1.22-1.85C21.93 14.21 20.99 14 20 14c-.39 0-.76.04-1.13.1.4.68.63 1.46.63 2.29V18H24v-1.57zM12 6c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3z"></path></svg><span data-plabel>The Parlour</span><sc-if value="{{ parlourLive }}" hint-placeholder-val=""><span class="bmdot" aria-hidden="true"></span></sc-if></button>
       <button type="button" data-settingsbtn onClick="{{ onOpenSettings }}" title="The Knobs" aria-label="The Knobs" style="font-size:13px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0 14px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:7px" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"></path></svg><span data-slabel>The Knobs</span></button>
       <button type="button" data-helpbtn onClick="{{ onOpenHelp }}" title="The Ropes" aria-label="The Ropes" style="flex:none;width:40px;font-weight:600;color:var(--accent,#2F3D2C);background:var(--field,#FBF9F3);border:1px solid var(--pill-line,#B9C6AC);border-radius:11px;padding:0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center" style-hover="border-color:var(--accent);background:var(--bg2)"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8 3.59 8 8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"></path></svg></button>
     </div>
@@ -963,6 +966,117 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ parlourOpen }}" hint-placeholder-val="">
+    <div data-chrome onClick="{{ onCloseParlour }}" style="position:fixed;inset:0;z-index:59;background:rgba(12,11,8,.6);display:flex;justify-content:flex-end">
+      <aside onClick="{{ stop }}" style="width:min(440px,100%);height:100%;background:var(--bg2,#1A1E14);border-left:1px solid var(--card-border,#2D3422);box-shadow:-12px 0 48px rgba(0,0,0,.4);display:flex;flex-direction:column">
+        <header style="flex:none;padding:18px 18px 13px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid var(--card-border,#2D3422)">
+          <div>
+            <h2 style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:22px;margin:0;color:var(--ink,#ECE7D7)">The Parlour</h2>
+            <sc-if value="{{ pv.live }}" hint-placeholder-val=""><div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:2px">{{ pv.gameName }} · {{ pv.present }} in the room</div></sc-if>
+          </div>
+          <button type="button" onClick="{{ onCloseParlour }}" aria-label="Close" style="flex:none;width:34px;height:34px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-soft,#B7B3A1);font-size:19px;line-height:1;cursor:pointer">×</button>
+        </header>
+        <div style="flex:1;overflow:auto;overscroll-behavior:contain;padding:16px 18px 22px">
+
+          <sc-if value="{{ pv.isNone }}" hint-placeholder-val="{{ true }}">
+            <div style="text-align:center;padding:14px 6px 6px">
+              <div style="font-size:30px;opacity:.55;margin-bottom:8px">🎲</div>
+              <div style="font-family:'Fraunces',Georgia,serif;font-size:19px;color:var(--ink,#ECE7D7);margin-bottom:6px">No game running</div>
+              <div style="font-size:13px;color:var(--ink-soft,#B7B3A1);line-height:1.5">Live party games for the room — join on your phone, answer, everyone sees the reveal.</div>
+            </div>
+            <sc-if value="{{ pv.staff }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin:20px 0 8px">Start a game</div>
+              <button type="button" onClick="{{ pv.onOpenConfession }}" style="display:block;width:100%;box-sizing:border-box;text-align:left;background:var(--card,#1D2217);border:1px solid var(--card-border,#2D3422);border-radius:14px;padding:14px 15px;cursor:pointer">
+                <div style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:17px;color:var(--ink,#ECE7D7)">The Confession</div>
+                <div style="font-size:12px;color:var(--ink-soft,#B7B3A1);margin-top:2px">Never have I ever — answers stay anonymous, only the count shows.</div>
+              </button>
+            </sc-if>
+            <sc-if value="{{ pv.notStaff }}" hint-placeholder-val="">
+              <div style="font-size:12.5px;color:var(--ink-soft,#B7B3A1);text-align:center;margin:18px 0 12px">Waiting for the host to start one.</div>
+              <div style="border-top:1px solid var(--card-border,#2D3422);padding-top:12px">
+                <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:7px">Hosting? Unlock</div>
+                <div style="display:flex;gap:8px">
+                  <input type="password" value="{{ parlourGate }}" onChange="{{ onParlourGate }}" placeholder="Host code" style="flex:1;min-width:0;box-sizing:border-box;font-size:14px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:10px 12px;outline:none">
+                  <button type="button" onClick="{{ onParlourUnlock }}" style="flex:none;font-size:13px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:11px;padding:0 14px;cursor:pointer">Unlock</button>
+                </div>
+                <sc-if value="{{ pv.gateErr }}" hint-placeholder-val=""><div style="font-size:12px;color:#CC7A6A;margin-top:6px">Not the code.</div></sc-if>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ pv.isLobby }}" hint-placeholder-val="">
+            <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:8px">{{ pv.gameName }} · gathering</div>
+            <div style="font-size:13.5px;color:var(--ink-soft,#B7B3A1);line-height:1.5">Everyone taps in on their phone. Who's here:</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+              <sc-for list="{{ pv.players }}" as="pl" hint-placeholder-count="3"><span style="font-size:12.5px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);border-radius:999px;padding:5px 11px">{{ pl.name }}</span></sc-for>
+            </div>
+            <sc-if value="{{ pv.canAdvance }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ pv.onDeal }}" style="display:block;width:100%;box-sizing:border-box;margin-top:18px;font-size:14px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:12px;padding:13px;cursor:pointer">{{ pv.dealLabel }}</button></sc-if>
+            <sc-if value="{{ pv.waiting }}" hint-placeholder-val=""><div style="text-align:center;font-size:12.5px;color:var(--ink-faint,#827E6D);margin-top:16px">Waiting for the host to deal…</div></sc-if>
+          </sc-if>
+
+          <sc-if value="{{ pv.isAnswer }}" hint-placeholder-val="">
+            <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:10px">{{ pv.gameName }} · {{ pv.roundLabel }}</div>
+            <div style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:23px;line-height:1.3;color:var(--ink,#ECE7D7);margin-bottom:18px">{{ pv.prompt }}</div>
+            <button type="button" onClick="{{ pv.onAnswerHave }}" style="{{ pv.haveStyle }}">I have</button>
+            <button type="button" onClick="{{ pv.onAnswerNever }}" style="{{ pv.neverStyle }}">Never have I</button>
+            <div style="text-align:center;font-size:11.5px;color:var(--ink-faint,#827E6D);letter-spacing:.06em;margin-top:10px">{{ pv.answeredLabel }}</div>
+            <sc-if value="{{ pv.canAdvance }}" hint-placeholder-val=""><button type="button" onClick="{{ pv.onReveal }}" style="display:block;width:100%;box-sizing:border-box;margin-top:18px;font-size:13px;font-weight:600;color:var(--accent2,#CFA267);background:transparent;border:1px solid var(--accent2,#CFA267);border-radius:12px;padding:11px;cursor:pointer">Reveal the room</button></sc-if>
+          </sc-if>
+
+          <sc-if value="{{ pv.isReveal }}" hint-placeholder-val="">
+            <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:8px">{{ pv.gameName }} · reveal</div>
+            <div style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:16px;line-height:1.35;color:var(--ink-soft,#B7B3A1);margin-bottom:16px">{{ pv.prompt }}</div>
+            <div style="font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:46px;text-align:center;color:var(--ink,#ECE7D7);line-height:1">{{ pv.revealBig }}</div>
+            <div style="text-align:center;font-size:13px;color:var(--ink-faint,#827E6D);margin-top:4px">{{ pv.revealSub }}</div>
+            <div style="height:12px;border-radius:999px;background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);overflow:hidden;margin:16px 0 10px"><div style="{{ pv.barStyle }}"></div></div>
+            <div style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:15px;color:var(--accent2,#CFA267);text-align:center">{{ pv.wry }}</div>
+            <sc-if value="{{ pv.hasMyAnswer }}" hint-placeholder-val=""><div style="text-align:center;font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:12px">{{ pv.myAnswerLabel }}</div></sc-if>
+            <sc-if value="{{ pv.canAdvance }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ pv.onDeal }}" style="display:block;width:100%;box-sizing:border-box;margin-top:20px;font-size:14px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:12px;padding:13px;cursor:pointer">Next round</button></sc-if>
+            <sc-if value="{{ pv.waiting }}" hint-placeholder-val=""><div style="text-align:center;font-size:12.5px;color:var(--ink-faint,#827E6D);margin-top:16px">Waiting for the host…</div></sc-if>
+          </sc-if>
+
+          <sc-if value="{{ pv.live }}" hint-placeholder-val="">
+            <div style="margin-top:22px;border-top:1px solid var(--card-border,#2D3422);padding-top:14px">
+              <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--ink-faint,#827E6D);margin-bottom:7px">Add one to the pool</div>
+              <input type="text" value="{{ parlourDraft }}" onChange="{{ onParlourDraft }}" placeholder="Never have I ever…" style="width:100%;box-sizing:border-box;font-size:14px;color:var(--ink,#ECE7D7);background:var(--field,#161A11);border:1px solid var(--line,#2D3422);border-radius:11px;padding:10px 12px;outline:none;margin-bottom:8px">
+              <button type="button" onClick="{{ pv.onAddPrompt }}" style="font-size:12.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);border-radius:999px;padding:7px 14px;cursor:pointer">Drop it in</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ pv.staff }}" hint-placeholder-val="">
+            <div style="margin-top:20px;border-top:1px solid var(--card-border,#2D3422);padding-top:14px">
+              <div style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;color:var(--accent2,#CFA267);margin-bottom:10px">Host</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+                <span style="font-size:13px;color:var(--ink-soft,#B7B3A1)">Prompts</span>
+                <div style="display:flex;background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);border-radius:999px;padding:2px;width:140px">
+                  <button type="button" onClick="{{ pv.onSpicyOff }}" style="{{ pv.spicyOffStyle }}">Tame</button>
+                  <button type="button" onClick="{{ pv.onSpicyOn }}" style="{{ pv.spicyOnStyle }}">Spicy</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
+                <span style="font-size:13px;color:var(--ink-soft,#B7B3A1)">Who advances</span>
+                <div style="display:flex;background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);border-radius:999px;padding:2px;width:150px">
+                  <button type="button" onClick="{{ pv.onAdvHost }}" style="{{ pv.advHostStyle }}">Host</button>
+                  <button type="button" onClick="{{ pv.onAdvAnyone }}" style="{{ pv.advAnyoneStyle }}">Anyone</button>
+                </div>
+              </div>
+              <sc-if value="{{ pv.live }}" hint-placeholder-val=""><button type="button" onClick="{{ pv.onEnd }}" style="display:block;width:100%;box-sizing:border-box;font-size:13px;font-weight:600;color:#CC7A6A;background:transparent;border:1px solid #6E4A44;border-radius:12px;padding:11px;cursor:pointer">End the game</button></sc-if>
+            </div>
+          </sc-if>
+
+        </div>
+      </aside>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ parlourBannerOpen }}" hint-placeholder-val="">
+    <div data-chrome style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));z-index:72;display:flex;align-items:center;gap:11px;background:#2A331F;border:1px solid var(--accent,#A6BB8E);border-radius:999px;padding:8px 9px 8px 16px;box-shadow:0 12px 32px rgba(0,0,0,.42)">
+      <span style="font-size:13px;color:var(--ink,#ECE7D7);font-weight:600;white-space:nowrap">A game's afoot in The Parlour</span>
+      <button type="button" onClick="{{ onOpenParlour }}" style="flex:none;font-size:12px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:6px 14px;cursor:pointer">Join</button>
+      <button type="button" onClick="{{ onDismissParlourBanner }}" aria-label="Dismiss" style="flex:none;width:26px;height:26px;border-radius:999px;border:none;background:transparent;color:var(--ink-soft,#B7B3A1);font-size:16px;line-height:1;cursor:pointer">×</button>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ cancelNoticeOpen }}" hint-placeholder-val="">
     <div data-chrome style="position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:73;background:#B0564B;color:#fff;padding:12px 14px 12px 18px;border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.4);font-size:13px;font-weight:600;display:flex;align-items:center;gap:12px;width:min(440px,calc(100vw - 24px));box-sizing:border-box">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true" style="flex:none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"></path></svg>
@@ -1006,6 +1120,7 @@ class Component extends DCLogic {
       bartenderMode: false, bartenderAlert: null, bmBannerDismissed: false, verdictDrink: null, peekDrink: null,
       wallOpen: false, wallPosts: [], wallNightStart: '', wallScope: 'tonight', wallDraft: '',
       bookOpen: false, bookTab: 'wall', bookScope: 'tonight',
+      parlour: { game: null, phase: 'ended', players: [], present: 0 }, parlourOpen: false, parlourBannerDismissed: false, parlourDraft: '', parlourGate: '', parlourGateErr: false,
     };
     this.GROUPS = [
       { key:'spirit',   label:'Spirit',   mode:'or',  order:['Gin','Bourbon','Rye','Tequila','Rum','Vodka','Cognac','Aperitivo','THC'] },
@@ -1130,7 +1245,7 @@ class Component extends DCLogic {
     // the lifetime tally; my picks are per-night). Compare the night my picks belong to.
     const _ns = (d && d.nightStart) || '';
     try { const _rxNight = localStorage.getItem('hollow_reactions_night') || ''; if (_ns && _rxNight !== _ns) { localStorage.setItem('hollow_reactions', '{}'); localStorage.setItem('hollow_reactions_night', _ns); } } catch(e){}
-    this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {}, reactionsAll: (d && d.reactionsAll) || {}, serverNightStart: (d && d.nightStart) || '' });
+    this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {}, reactionsAll: (d && d.reactionsAll) || {}, serverNightStart: (d && d.nightStart) || '', parlour: (d && d.parlour) || { game: null, phase: 'ended', players: [], present: 0 } });
     if (this.state.bookOpen){ if (this.state.bookTab === 'wall') this.fetchWall(); else this.fetchHistory(); }
   }
 
@@ -1386,6 +1501,25 @@ class Component extends DCLogic {
   }
   openVerdict(drink){ this.setState({ verdictDrink: drink }); }
   closeVerdict(){ this.setState({ verdictDrink: null }); }
+  // ---- The Parlour ----
+  parlourStaff(){ let ok=false; try { ok = localStorage.getItem('hollow_86_ok')==='1'; } catch(e){} return ok; }
+  _parlourCode(){ return this.parlourStaff() ? '5352' : ''; }
+  _myNameNow(){ try { return localStorage.getItem('hollow_name_v1') || ''; } catch(e){ return ''; } }
+  openParlour(){ this.parlourJoin(); this.setState({ parlourOpen: true, parlourBannerDismissed: true }); }
+  closeParlour(){ this.setState({ parlourOpen: false }); }
+  dismissParlourBanner(){ this.setState({ parlourBannerDismissed: true }); }
+  parlourJoin(){ this.api('POST','/api/parlour/join',{ cid: this._cid(), name: this._myNameNow() }).then(()=>this.refreshState()).catch(()=>{}); }
+  parlourAnswer(value){ const p = this.state.parlour || {}; try { localStorage.setItem('hollow_parlour_ans', JSON.stringify({ round: p.round, value: value })); } catch(e){} this.forceUpdate(); this.api('POST','/api/parlour/answer',{ cid: this._cid(), value: value, name: this._myNameNow() }).then(()=>this.refreshState()).catch(()=>{}); }
+  parlourMyAnswer(){ const p = this.state.parlour || {}; try { const a = JSON.parse(localStorage.getItem('hollow_parlour_ans')||'null'); if (a && a.round === p.round) return a.value; } catch(e){} return null; }
+  parlourOpenGame(game){ this.api('POST','/api/parlour/open',{ game: game || 'confession', code: this._parlourCode() }).then(()=>this.refreshState()).catch(()=>this.flashToast('The host starts the games',1800)); }
+  parlourDeal(){ this.api('POST','/api/parlour/deal',{ code: this._parlourCode() }).then(()=>this.refreshState()).catch(()=>this.flashToast('Only the host can move it on',1800)); }
+  parlourReveal(){ this.api('POST','/api/parlour/reveal',{ code: this._parlourCode() }).then(()=>this.refreshState()).catch(()=>this.flashToast('Only the host can reveal',1800)); }
+  parlourEnd(){ this.api('POST','/api/parlour/end',{ code: this._parlourCode() }).then(()=>this.refreshState()).catch(()=>{}); }
+  parlourSet(patch){ this.api('POST','/api/parlour/settings', Object.assign({ code: this._parlourCode() }, patch||{})).then(()=>this.refreshState()).catch(()=>{}); }
+  onParlourDraft(e){ this.setState({ parlourDraft: (e.target.value||'').slice(0,160) }); }
+  parlourAddPrompt(){ const t = (this.state.parlourDraft||'').trim(); if (!t) return; const p = this.state.parlour || {}; this.api('POST','/api/parlour/prompt',{ game: p.game || 'confession', text: t, spicy: !!p.spicy }).then(()=>{ this.setState({ parlourDraft: '' }); this.flashToast('Dropped in the pool ✓',1500); }).catch(()=>{}); }
+  onParlourGate(e){ this.setState({ parlourGate: (e.target.value||'').slice(0,10) }); }
+  parlourUnlock(){ if ((this.state.parlourGate||'').trim() === '5352'){ try { localStorage.setItem('hollow_86_ok','1'); } catch(e){} this.setState({ parlourGate: '', parlourGateErr: false }); this.flashToast('You’re hosting',1500); } else { this.setState({ parlourGateErr: true, parlourGate: '' }); } }
   openPeek(name){ if (name) this.setState({ peekDrink: name }); }
   closePeek(){ this.setState({ peekDrink: null }); }
   fetchHistory(){ fetch('/api/history').then(r=>r.json()).then(d=>{ this.setState({ ledgerRows: Array.isArray(d.rows)?d.rows:[], ledgerNightStart: d.nightStart||'', ledgerNow: d.now||'' }); }).catch(()=>{}); }
@@ -1480,7 +1614,49 @@ class Component extends DCLogic {
     const dir = this.THEMES[st.direction] || this.THEMES.herbarium;
     const pal = st.dark ? dir.dark : dir.light;
     try { document.documentElement.style.background = pal.bg; document.body.style.background = pal.bg; } catch(e){}
-    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.bookOpen || st.settingsOpen || st.welcomeOpen || st.confirm || st.verdictDrink || st.helpOpen || st.peekDrink || st.cancelOrder);
+    const _overlay = !!(st.ordersOpen || st.orderModalName || st.makeView || st.pantryOpen || st.pantryGate || st.bookOpen || st.settingsOpen || st.welcomeOpen || st.confirm || st.verdictDrink || st.helpOpen || st.peekDrink || st.cancelOrder || st.parlourOpen);
+
+    // ---- The Parlour (view model) ----
+    const P = st.parlour || {};
+    const pGame = P.game, pPhase = P.phase;
+    const pLive = !!(pGame && pPhase !== 'ended');
+    const pStaff = this.parlourStaff();
+    const pAdvanceAnyone = P.advance === 'anyone';
+    const pCanAdvance = pStaff || pAdvanceAnyone;
+    const pMy = this.parlourMyAnswer();
+    const pPresent = P.present || 0, pAnswered = P.answered || 0;
+    const pGameName = ({ confession:'The Confession' })[pGame] || 'The Parlour';
+    const _pSeg = (on) => ({ flex:'1', textAlign:'center', fontFamily:"'Inter',sans-serif", fontSize:'12px', fontWeight:600, borderRadius:'999px', padding:'6px 10px', cursor:'pointer', border:'none', background: on ? 'var(--accent)' : 'transparent', color: on ? 'var(--accent-ink)' : 'var(--ink-soft)' });
+    const _pAns = (on) => ({ display:'block', width:'100%', boxSizing:'border-box', textAlign:'center', fontFamily:"'Fraunces',Georgia,serif", fontSize:'17px', fontWeight:500, borderRadius:'14px', padding:'15px', marginBottom:'10px', cursor:'pointer', color: on?'var(--ink)':'var(--ink-soft)', border:'1px solid '+(on?'var(--accent2)':'var(--card-border)'), background: on?'rgba(207,162,103,.13)':'var(--field)', transition:'background .15s ease, border-color .15s ease' });
+    let pRevealBig='', pRevealSub='', pWry='', pBarPct='0%';
+    if (pPhase==='reveal' && P.count){
+      const have = P.count.have||0, total = P.count.total||0;
+      pBarPct = (total ? Math.round(have/total*100) : 0) + '%';
+      if (P.fuzzy){ pRevealBig='A few'; pRevealSub='of you have'; pWry='Too few to say — mercifully.'; }
+      else {
+        pRevealBig = String(have); pRevealSub = 'of ' + total + ' have';
+        const r = total ? have/total : 0;
+        pWry = r===0 ? 'A room of saints, apparently.' : r<0.25 ? 'Mostly angels.' : r<0.5 ? 'A few skeletons, then.' : r<0.75 ? 'The room has stories.' : r<1 ? 'Nearly unanimous — bold crowd.' : 'Every last one of you.';
+      }
+    }
+    const pv = {
+      live: pLive, game: pGame, gameName: pGameName,
+      isNone: (!pGame || pPhase==='ended'), isLobby: pPhase==='lobby', isAnswer: pPhase==='answer', isReveal: pPhase==='reveal',
+      staff: pStaff, notStaff: !pStaff, canAdvance: pCanAdvance, waiting: (pLive && !pCanAdvance),
+      prompt: P.prompt || '', roundLabel: 'Round ' + (P.round||0),
+      answeredLabel: pAnswered + ' of ' + pPresent + ' in', present: String(pPresent), hasPlayers: pPresent>0,
+      players: (P.players||[]).map(x => ({ name: (x.name && String(x.name).trim()) || 'Someone' })),
+      onAnswerHave: () => this.parlourAnswer('have'), onAnswerNever: () => this.parlourAnswer('never'),
+      haveStyle: _pAns(pMy==='have'), neverStyle: _pAns(pMy==='never'),
+      revealBig: pRevealBig, revealSub: pRevealSub, wry: pWry,
+      barStyle: { width: pBarPct, height:'100%', background:'var(--accent)', borderRadius:'999px', transition:'width .5s cubic-bezier(.4,0,.2,1)' },
+      myAnswerLabel: pMy ? ('you said · ' + (pMy==='have'?'I have':'Never have I')) : '', hasMyAnswer: pMy!=null,
+      onDeal: () => this.parlourDeal(), onReveal: () => this.parlourReveal(), onEnd: () => this.parlourEnd(),
+      onOpenConfession: () => this.parlourOpenGame('confession'), dealLabel: pPhase==='lobby' ? 'Deal the first prompt' : 'Next round',
+      spicyOnStyle: _pSeg(!!P.spicy), spicyOffStyle: _pSeg(!P.spicy), onSpicyOn: () => this.parlourSet({ spicy:true }), onSpicyOff: () => this.parlourSet({ spicy:false }),
+      advHostStyle: _pSeg(!pAdvanceAnyone), advAnyoneStyle: _pSeg(pAdvanceAnyone), onAdvHost: () => this.parlourSet({ advance:'host' }), onAdvAnyone: () => this.parlourSet({ advance:'anyone' }),
+      onAddPrompt: () => this.parlourAddPrompt(), gateErr: st.parlourGateErr,
+    };
     if (_overlay && !this._overlayLocked) { this._overlayLocked = true; this.lockScroll(); }
     else if (!_overlay && this._overlayLocked) { this._overlayLocked = false; this.unlockScroll(); }
     const meta = dir.meta;
@@ -1920,6 +2096,9 @@ class Component extends DCLogic {
       wallNotes: wallNotes, hasWall: wallNotes.length>0, wallEmpty: wallNotes.length===0,
       myPourCards: myPourCards, hasMyPours: myPourCards.length>0,
       bookOpen: st.bookOpen, onOpenBook: () => this.openBook(), onCloseBook: () => this.closeBook(),
+      pv: pv, parlourLive: pLive, parlourOpen: st.parlourOpen, onOpenParlour: () => this.openParlour(), onCloseParlour: () => this.closeParlour(),
+      parlourBannerOpen: (pLive && !st.parlourOpen && !st.parlourBannerDismissed), onDismissParlourBanner: () => this.dismissParlourBanner(),
+      parlourDraft: st.parlourDraft, onParlourDraft: (e) => this.onParlourDraft(e), parlourGate: st.parlourGate, onParlourGate: (e) => this.onParlourGate(e), onParlourUnlock: () => this.parlourUnlock(),
       bookTabWall: st.bookTab==='wall', bookTabLedger: st.bookTab==='ledger',
       bookWallTabStyle: bookTabStyle(st.bookTab==='wall'), bookLedgerTabStyle: bookTabStyle(st.bookTab==='ledger'), bookIndStyle: slideInd(st.bookTab==='ledger'?1:0, 2),
       onBookWall: () => this.setBookTab('wall'), onBookLedger: () => this.setBookTab('ledger'),

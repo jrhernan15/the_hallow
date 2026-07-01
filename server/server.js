@@ -118,6 +118,24 @@ db.exec(`CREATE TABLE IF NOT EXISTS cancellations (
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now'))
 );`);
 
+// The Parlour: live party games. One game runs at a time; meta + toggles live in
+// a single settings JSON ('parlour'); these tables hold the roster, per-round
+// answers, and guest/host-added prompts.
+db.exec(`CREATE TABLE IF NOT EXISTS parlour_players (
+  cid TEXT PRIMARY KEY, name TEXT,
+  joined_at TEXT NOT NULL DEFAULT (datetime('now')),
+  last_seen TEXT NOT NULL DEFAULT (datetime('now'))
+);`);
+db.exec(`CREATE TABLE IF NOT EXISTS parlour_answers (
+  round INTEGER NOT NULL, cid TEXT NOT NULL, value TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (round, cid)
+);`);
+db.exec(`CREATE TABLE IF NOT EXISTS parlour_prompts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, game TEXT NOT NULL, text TEXT NOT NULL,
+  spicy INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);`);
+
 const Q = {
   insertTicket:  db.prepare("INSERT INTO tickets (drink, guest_name, notes, qty) VALUES (?,?,?,?)"),
   getTicket:     db.prepare("SELECT * FROM tickets WHERE id = ?"),
@@ -146,6 +164,18 @@ const Q = {
   getSetting: db.prepare("SELECT value FROM settings WHERE key = ?"),
   setSetting: db.prepare("INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"),
   nowStr:        db.prepare("SELECT strftime('%Y-%m-%d %H:%M:%f','now') AS t"),
+
+  // The Parlour
+  parlourUpsertPlayer: db.prepare("INSERT INTO parlour_players (cid, name) VALUES (?, ?) ON CONFLICT(cid) DO UPDATE SET name = COALESCE(excluded.name, parlour_players.name), last_seen = datetime('now')"),
+  parlourPlayers:      db.prepare("SELECT cid, name FROM parlour_players ORDER BY joined_at, cid"),
+  parlourClearPlayers: db.prepare("DELETE FROM parlour_players"),
+  parlourSetAnswer:    db.prepare("INSERT INTO parlour_answers (round, cid, value) VALUES (?, ?, ?) ON CONFLICT(round, cid) DO UPDATE SET value = excluded.value, created_at = datetime('now')"),
+  parlourRoundSplit:   db.prepare("SELECT value, COUNT(*) AS n FROM parlour_answers WHERE round = ? GROUP BY value"),
+  parlourRoundCount:   db.prepare("SELECT COUNT(*) AS n FROM parlour_answers WHERE round = ?"),
+  parlourClearAnswers: db.prepare("DELETE FROM parlour_answers"),
+  parlourAddPrompt:    db.prepare("INSERT INTO parlour_prompts (game, text, spicy) VALUES (?, ?, ?)"),
+  parlourPrompts:      db.prepare("SELECT text, spicy FROM parlour_prompts WHERE game = ?"),
+  parlourClearPrompts: db.prepare("DELETE FROM parlour_prompts"),
   insertHistory: db.prepare("INSERT INTO history (drink, qty, guest, round_id) VALUES (?,?,?,?)"),
   historyRows:   db.prepare("SELECT drink, qty, guest, round_id, created_at FROM history ORDER BY created_at, id"),
   historyHasRoundDrink:    db.prepare("SELECT 1 FROM history WHERE round_id = ? AND drink = ? LIMIT 1"),
@@ -220,6 +250,78 @@ function lastResetUTC(now) {
   return dbFmt(etWallToUTC(y, mo, d, RESET_HOUR));
 }
 
+/* ---- The Parlour (live party games) ---- */
+// Starter prompt packs. Deliberately small for v1 — we expand these after the
+// mechanics land. Guests/host can also add their own via /api/parlour/prompt.
+const PARLOUR_PROMPTS = {
+  confession: {
+    tame: [
+      "Never have I ever fallen asleep at a party.",
+      "Never have I ever sent a text to entirely the wrong person.",
+      "Never have I ever ghosted a group chat to dodge plans.",
+      "Never have I ever forgotten someone's name mid-introduction.",
+      "Never have I ever pretended to have read a book I hadn't.",
+      "Never have I ever re-gifted a present.",
+      "Never have I ever cried at a TV commercial.",
+      "Never have I ever binged a whole series in one sitting.",
+      "Never have I ever rehearsed a conversation in the shower.",
+      "Never have I ever laughed at completely the wrong moment.",
+      "Never have I ever googled my own name.",
+      "Never have I ever left a party without saying goodbye.",
+      "Never have I ever eaten dessert for dinner.",
+      "Never have I ever pretended my phone was dying to end a call.",
+    ],
+    spicy: [
+      "Never have I ever had a crush on a friend's partner.",
+      "Never have I ever snooped in someone's medicine cabinet.",
+      "Never have I ever texted an ex after midnight.",
+      "Never have I ever looked up an ex on social media this week.",
+      "Never have I ever lied about my age.",
+      "Never have I ever pretended to be busy to avoid someone in this room.",
+      "Never have I ever kept a secret from everyone here tonight.",
+      "Never have I ever had a work crush.",
+      "Never have I ever sworn in front of someone's parents.",
+    ],
+  },
+};
+const PARLOUR_DEFAULT = { game: null, phase: "ended", round: 0, prompt: "", dealt: [], spicy: false, advance: "host", showWho: true, scoring: true, startedAt: "" };
+function getParlour() {
+  const row = Q.getSetting.get("parlour");
+  if (!row || !row.value) return { ...PARLOUR_DEFAULT };
+  try { return { ...PARLOUR_DEFAULT, ...JSON.parse(row.value) }; } catch (e) { return { ...PARLOUR_DEFAULT }; }
+}
+function saveParlour(p) { Q.setSetting.run("parlour", JSON.stringify(p)); }
+function resetParlour() { Q.parlourClearPlayers.run(); Q.parlourClearAnswers.run(); Q.parlourClearPrompts.run(); saveParlour({ ...PARLOUR_DEFAULT }); }
+function dealParlourPrompt(p) {
+  const bundled = PARLOUR_PROMPTS[p.game] || { tame: [], spicy: [] };
+  let pool = (bundled.tame || []).slice();
+  if (p.spicy) pool = pool.concat(bundled.spicy || []);
+  for (const r of Q.parlourPrompts.all(p.game)) { if (!r.spicy || p.spicy) pool.push(r.text); }
+  p.dealt = Array.isArray(p.dealt) ? p.dealt : [];
+  let avail = pool.filter((t) => p.dealt.indexOf(t) === -1);
+  if (!avail.length) { p.dealt = []; avail = pool; }
+  if (!avail.length) return null;
+  const pick = avail[Math.floor(Math.random() * avail.length)];
+  p.dealt.push(pick);
+  return pick;
+}
+function canAdvance(body) { const p = getParlour(); return p.advance === "anyone" || String(body.code) === CODE; }
+function parlourState() {
+  const p = getParlour();
+  const players = Q.parlourPlayers.all();
+  const out = { game: p.game, phase: p.phase, round: p.round || 0, prompt: p.prompt || "", spicy: !!p.spicy, advance: p.advance || "host", showWho: !!p.showWho, scoring: !!p.scoring, players, present: players.length };
+  if (p.game && (p.phase === "answer" || p.phase === "reveal")) {
+    out.answered = Q.parlourRoundCount.get(p.round).n;
+    if (p.phase === "reveal") {
+      let have = 0, total = 0;
+      for (const r of Q.parlourRoundSplit.all(p.round)) { total += r.n; if (r.value === "have") have = r.n; }
+      out.count = { have: have, total: total };
+      out.fuzzy = total < 5;   // small groups: show "a few of you", not an exact count
+    }
+  }
+  return out;
+}
+
 function currentNightStart() {
   const nsRow = Q.getSetting.get("night_start");
   const manualNS = (nsRow && nsRow.value) || "";
@@ -236,7 +338,7 @@ function getState() {
   for (const r of Q.reactionCountsNight.all(nightStart)) { (reactions[r.drink] = reactions[r.drink] || {})[r.emoji] = r.n; }
   const reactionsAll = {};   // lifetime: every night stacked
   for (const r of Q.reactionCounts.all()) { (reactionsAll[r.drink] = reactionsAll[r.drink] || {})[r.emoji] = r.n; }
-  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions, reactionsAll, nightStart, cancellations: Q.recentCancellations.all() };
+  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions, reactionsAll, nightStart, cancellations: Q.recentCancellations.all(), parlour: parlourState() };
 }
 
 /* ---- Server-Sent Events ---- */
@@ -455,6 +557,7 @@ const server = http.createServer(async (req, res) => {
       // Reactions are kept — the night stamp drops old ones out of "tonight" on its own,
       // so drinks keep a lifetime tally and guests can re-rate the next night.
       Q.clearCancellations.run();   // fresh favorite race for the new night
+      resetParlour();               // games are ephemeral — clear the room
       broadcast();
       return sendJSON(res, 200, { ok: true, nightStart: Q.nowStr.get().t });
     }
@@ -465,6 +568,7 @@ const server = http.createServer(async (req, res) => {
       Q.clearWall.run();
       Q.clearReactions.run();
       Q.clearCancellations.run();
+      resetParlour();
       Q.setSetting.run("night_start", Q.nowStr.get().t);
       broadcast();
       return sendJSON(res, 200, { ok: true });
@@ -502,6 +606,90 @@ const server = http.createServer(async (req, res) => {
       if (b.on) Q.setReaction.run(cid, drink, emoji, ns); else Q.clearReaction.run(cid, drink, emoji, ns);
       broadcast();
       return sendJSON(res, 200, { ok: true });
+    }
+
+    // ---- The Parlour ----
+    if (pathname === "/api/parlour/join" && method === "POST") {
+      const b = await readBody(req);
+      const cid = str(b.cid, 40);
+      if (!cid) return sendJSON(res, 400, { error: "cid required" });
+      Q.parlourUpsertPlayer.run(cid, str(b.name, 60));
+      broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    if (pathname === "/api/parlour/settings" && method === "POST") {
+      const b = await readBody(req);
+      if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
+      const p = getParlour();
+      if (b.spicy != null) p.spicy = !!b.spicy;
+      if (b.advance != null) p.advance = b.advance === "anyone" ? "anyone" : "host";
+      if (b.showWho != null) p.showWho = !!b.showWho;
+      if (b.scoring != null) p.scoring = !!b.scoring;
+      saveParlour(p); broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    if (pathname === "/api/parlour/open" && method === "POST") {
+      const b = await readBody(req);
+      if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
+      const game = str(b.game, 20);
+      if (!PARLOUR_PROMPTS[game]) return sendJSON(res, 400, { error: "unknown game" });
+      Q.parlourClearAnswers.run();
+      const p = getParlour();
+      p.game = game; p.phase = "lobby"; p.round = 0; p.prompt = ""; p.dealt = []; p.startedAt = Q.nowStr.get().t;
+      saveParlour(p); broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    // deal = start the next round (also used for "next"); governed by the advance toggle
+    if (pathname === "/api/parlour/deal" && method === "POST") {
+      const b = await readBody(req);
+      if (!canAdvance(b)) return sendJSON(res, 403, { error: "bad code" });
+      const p = getParlour();
+      if (!p.game) return sendJSON(res, 400, { error: "no game" });
+      const pr = dealParlourPrompt(p);
+      if (!pr) return sendJSON(res, 400, { error: "out of prompts" });
+      Q.parlourClearAnswers.run();
+      p.prompt = pr; p.round = (p.round || 0) + 1; p.phase = "answer";
+      saveParlour(p); broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    if (pathname === "/api/parlour/answer" && method === "POST") {
+      const b = await readBody(req);
+      const cid = str(b.cid, 40), value = str(b.value, 20);
+      if (!cid || !value) return sendJSON(res, 400, { error: "cid, value required" });
+      const p = getParlour();
+      if (p.phase !== "answer") return sendJSON(res, 409, { error: "not accepting answers" });
+      Q.parlourUpsertPlayer.run(cid, str(b.name, 60));
+      Q.parlourSetAnswer.run(p.round, cid, value);
+      broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    if (pathname === "/api/parlour/reveal" && method === "POST") {
+      const b = await readBody(req);
+      if (!canAdvance(b)) return sendJSON(res, 403, { error: "bad code" });
+      const p = getParlour();
+      if (!p.game || p.phase !== "answer") return sendJSON(res, 409, { error: "nothing to reveal" });
+      p.phase = "reveal"; saveParlour(p); broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    if (pathname === "/api/parlour/end" && method === "POST") {
+      const b = await readBody(req);
+      if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
+      const p = getParlour();
+      p.game = null; p.phase = "ended"; p.prompt = ""; p.round = 0; p.dealt = [];
+      Q.parlourClearAnswers.run();
+      saveParlour(p); broadcast();
+      return sendJSON(res, 200, { ok: true });
+    }
+    // anyone can drop a prompt into the pool — no approval (it's friends)
+    if (pathname === "/api/parlour/prompt" && method === "POST") {
+      const b = await readBody(req);
+      const game = str(b.game, 20) || "confession";
+      const text = str(b.text, 160);
+      if (!PARLOUR_PROMPTS[game]) return sendJSON(res, 400, { error: "unknown game" });
+      if (!text) return sendJSON(res, 400, { error: "text required" });
+      Q.parlourAddPrompt.run(game, text, b.spicy ? 1 : 0);
+      broadcast();
+      return sendJSON(res, 201, { ok: true });
     }
 
     return sendJSON(res, 404, { error: "not found" });

@@ -390,9 +390,9 @@
                 </div>
                 <div style="font-size:11.5px;color:var(--ink-faint,#827E6D);margin-top:7px">{{ b.progressLabel }}</div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:11px">
-                  <button type="button" onClick="{{ b.onOpen }}" style="font-size:12.5px;font-weight:600;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:7px 15px;cursor:pointer">Open &amp; make</button>
+                  <button type="button" onClick="{{ b.onOpen }}" style="font-size:12.5px;font-weight:600;color:var(--accent-ink,#13160F);background:var(--accent,#A6BB8E);border:none;border-radius:999px;padding:7px 15px;cursor:pointer">{{ b.openLabel }}</button>
                   <span style="flex:1"></span>
-                  <button type="button" onClick="{{ b.onRemove }}" aria-label="Remove round" style="font-size:12px;font-weight:600;color:#CC7A6A;background:transparent;border:none;cursor:pointer;padding:5px 6px">Remove</button>
+                  <button type="button" onClick="{{ b.onRemove }}" aria-label="{{ b.removeLabel }}" style="font-size:12px;font-weight:600;color:#CC7A6A;background:transparent;border:none;cursor:pointer;padding:5px 6px">{{ b.removeLabel }}</button>
                 </div>
               </div>
             </sc-for>
@@ -444,8 +444,8 @@
                   <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dotted var(--line,#2D3422)">
                     <span style="font-size:12.5px;color:var(--ink-soft,#B7B3A1)"><span style="color:var(--ink-faint,#827E6D)">For</span> {{ od.who }}{{ od.qtyLabel }}</span>
                     <span style="flex:1"></span>
-                    <button type="button" onClick="{{ od.onRail }}" title="Send back to the rail" aria-label="Send back to the rail" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;border:1px solid var(--pill-line,#3A4430);background:transparent;color:var(--accent,#A6BB8E);cursor:pointer;padding:0" style-hover="border-color:var(--accent)"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"></path></svg></button>
-                    <button type="button" onClick="{{ od.onRemove }}" title="Remove this order" aria-label="Remove this order" style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:999px;border:1px solid #6E4A44;background:transparent;color:#CC7A6A;cursor:pointer;padding:0" style-hover="background:rgba(204,122,106,.14)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
+                    <button type="button" onClick="{{ od.onRail }}" title="Send back to the rail" aria-label="Send back to the rail" style="{{ od.railStyle }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"></path></svg></button>
+                    <button type="button" onClick="{{ od.onRemove }}" title="Remove this order" aria-label="Remove this order" style="{{ od.removeStyle }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg></button>
                   </div>
                 </sc-for>
               </div>
@@ -479,7 +479,7 @@
         </div>
         <sc-if value="{{ makeIsBatch }}" hint-placeholder-val="">
           <footer style="padding:12px 16px;border-top:1px solid var(--card-border,#2D3422);display:flex;gap:10px">
-            <button type="button" onClick="{{ onMakeRemove }}" style="font-size:12.5px;font-weight:600;color:#CC7A6A;background:transparent;border:1px solid #6E4A44;border-radius:11px;padding:11px 16px;cursor:pointer">Remove round</button>
+            <button type="button" onClick="{{ onMakeRemove }}" style="font-size:12.5px;font-weight:600;color:#CC7A6A;background:transparent;border:1px solid #6E4A44;border-radius:11px;padding:11px 16px;cursor:pointer">{{ makeRemoveLabel }}</button>
             <span style="flex:1"></span>
             <sc-if value="{{ makeAllMade }}" hint-placeholder-val="">
               <button type="button" onClick="{{ onMakeReopen }}" style="font-size:13px;font-weight:600;color:var(--accent,#A6BB8E);background:transparent;border:1px solid var(--pill-line,#3A4430);border-radius:11px;padding:11px 18px;cursor:pointer">Reopen</button>
@@ -1300,6 +1300,7 @@ class Component extends DCLogic {
   closeConfirm(){ this.setState({ confirm: null }); }
   doConfirm(){ const c = this.state.confirm; this.setState({ confirm: null }); if (c && c.onYes) c.onYes(); }
   clearDoneBatches(){ const ids = (this.state.batches || []).filter(b => b.status==='up' || b.status==='done').map(b => b.id); if (!ids.length) return; Promise.all(ids.map(id => this.api('DELETE', '/api/rounds/' + id))).then(() => this.refreshState()).catch(() => this.refreshState()); }
+  clearRound(id){ this.api('DELETE', '/api/rounds/' + id).then(() => this.refreshState()).catch(() => this.flashToast('Could not clear the round', 2000)); this.setState({ makeView: null }); this.flashToast('Round cleared', 1600); }
   removeOrder(id, drink, guest){ this.setState({ cancelOrder: { id: id, drink: drink || '', guest: guest || '' }, cancelReason: '' }); }
   setCancelReason(r){ this.setState({ cancelReason: r }); }
   onCancelReason(e){ this.setState({ cancelReason: (e.target.value || '').slice(0, 120) }); }
@@ -1615,7 +1616,9 @@ class Component extends DCLogic {
         statusLabel: isReady ? 'Ready' : 'Making', statusStyle: pill(isReady ? 'up' : 'making'),
         cardStyle: { background:'var(--card)', border:'1px solid var(--card-border)', borderRadius:'14px', padding:'13px 15px', opacity: isReady ? 0.72 : 1 },
         onOpen: () => this.openMake('batch', b.id),
-        onRemove: () => this.removeBatch(b.id),
+        openLabel: isReady ? 'Reopen' : 'Open & make',
+        onRemove: isReady ? (() => this.clearRound(b.id)) : (() => this.removeBatch(b.id)),
+        removeLabel: isReady ? 'Clear Round' : 'Remove',
       };
     });
 
@@ -1641,7 +1644,7 @@ class Component extends DCLogic {
             specRows: c ? rowsOf(scaleSpec(c.spec, agg[d])) : [], steps: c?c.steps:[],
             notesList: notes[d]||[], hasNotes: !!(notes[d]&&notes[d].length), isBatchLine:true, made,
             forLabel: (forNames[d]||[]).join(', '), hasFor: !!(forNames[d]&&forNames[d].length),
-            orders: ords.filter(o=>o.drink===d).map(o => ({ key:String(o.id), who:(o.guest&&o.guest.trim())||'No name', qtyLabel:(o.qty>1?' ×'+o.qty:''), onRail:()=>this.ticketToRail(o.id), onRemove:()=>this.removeOrder(o.id, o.drink, o.guest) })),
+            orders: ords.filter(o=>o.drink===d).map(o => ({ key:String(o.id), who:(o.guest&&o.guest.trim())||'No name', qtyLabel:(o.qty>1?' ×'+o.qty:''), locked: made, onRail: made ? (()=>{}) : (()=>this.ticketToRail(o.id)), onRemove: made ? (()=>{}) : (()=>this.removeOrder(o.id, o.drink, o.guest)), railStyle: { display:'inline-flex', alignItems:'center', justifyContent:'center', width:'30px', height:'30px', borderRadius:'999px', border:'1px solid '+(made?'var(--card-border,#2D3422)':'var(--pill-line,#3A4430)'), background:'transparent', color: made?'var(--ink-faint,#827E6D)':'var(--accent,#A6BB8E)', cursor: made?'default':'pointer', padding:'0', opacity: made?0.45:1 }, removeStyle: { display:'inline-flex', alignItems:'center', justifyContent:'center', width:'30px', height:'30px', borderRadius:'999px', border:'1px solid '+(made?'var(--card-border,#2D3422)':'#6E4A44'), background:'transparent', color: made?'var(--ink-faint,#827E6D)':'#CC7A6A', cursor: made?'default':'pointer', padding:'0', opacity: made?0.45:1 } })),
             checkMark: made ? '✓' : '',
             boxStyle: { flex:'none', width:'24px', height:'24px', borderRadius:'7px', border:'1.5px solid ' + (made?'var(--accent2)':'var(--pill-line)'), background: made?'var(--accent2)':'transparent', color:'var(--accent-ink)', display:'inline-flex', alignItems:'center', justifyContent:'center', fontSize:'15px', lineHeight:1, cursor:'pointer' },
             lineStyle:{ background:'var(--card)', border:'1px solid ' + (made?'var(--accent2)':'var(--card-border)'), borderRadius:'14px', padding:'15px 16px 14px', opacity: made?0.62:1 },
@@ -1653,7 +1656,8 @@ class Component extends DCLogic {
             allMade: allMade, lines,
             onMarkAll: () => this.setRoundStatus(b.id, 'up'),
             onReopen: () => this.setRoundStatus(b.id, 'working'),
-            onRemove: () => this.removeBatch(b.id) };
+            onRemove: allMade ? (() => this.clearRound(b.id)) : (() => this.removeBatch(b.id)),
+            removeLabel: allMade ? 'Clear Round' : 'Remove round' };
         }
       }
     }
@@ -1887,6 +1891,7 @@ class Component extends DCLogic {
       onMakeMarkAll: () => { if (makeData && makeData.onMarkAll) makeData.onMarkAll(); },
       onMakeReopen: () => { if (makeData && makeData.onReopen) makeData.onReopen(); },
       onMakeRemove: () => { if (makeData && makeData.onRemove) makeData.onRemove(); },
+      makeRemoveLabel: makeData ? (makeData.removeLabel || 'Remove round') : 'Remove round',
       orderModalName: st.orderModalName,
       onCloseOrder: () => this.closeOrder(), onPlaceOrder: () => this.placeOrder(),
       stop: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },

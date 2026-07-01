@@ -111,9 +111,11 @@
                   <span style="{{ md.style }}">{{ md.drink }} · {{ md.label }}</span>
                 </sc-if>
                 <sc-if value="{{ md.ready }}" hint-placeholder-val="">
-                  <span style="display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;border:1px solid var(--accent2,#CFA267);background:rgba(207,162,103,.12);border-radius:999px;padding:4px 6px 4px 12px">
-                    <span style="font-size:11.5px;font-weight:700;color:var(--accent2,#CFA267);white-space:nowrap">{{ md.drink }} up</span>
-                    <button type="button" onClick="{{ md.verdict.onOpen }}" style="font-size:11px;font-weight:700;color:var(--accent-ink,#13160F);background:var(--accent2,#CFA267);border:none;border-radius:999px;padding:3px 11px;cursor:pointer;white-space:nowrap">{{ md.verdict.label }}</button>
+                  <span style="display:inline-flex;flex-direction:column;gap:7px;min-width:186px;border:1px solid var(--accent2,#CFA267);background:rgba(207,162,103,.12);border-radius:14px;padding:8px 10px">
+                    <span style="font-size:11.5px;font-weight:700;color:var(--accent2,#CFA267);white-space:nowrap">{{ md.drink }} · up</span>
+                    <span style="display:flex;gap:5px">
+                      <sc-for list="{{ md.verdict.chips }}" as="ch" hint-placeholder-count="6"><button type="button" onClick="{{ ch.onTap }}" aria-pressed="{{ ch.mine }}" aria-label="{{ ch.aria }}" style="{{ ch.style }}">{{ ch.emoji }}<sc-if value="{{ ch.hasCount }}" hint-placeholder-val=""><span style="{{ ch.countStyle }}">{{ ch.count }}</span></sc-if></button></sc-for>
+                    </span>
                   </span>
                 </sc-if>
                 <button type="button" onClick="{{ md.onDismiss }}" aria-label="Dismiss" style="flex:none;width:18px;height:18px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-faint,#827E6D);font-size:12px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center">×</button>
@@ -121,9 +123,11 @@
             </sc-for>
             <sc-for list="{{ myPastPours }}" as="md" hint-placeholder-count="1">
               <span style="display:inline-flex;align-items:center;gap:4px">
-                <span style="display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;border:1px solid var(--card-border,#2D3422);background:var(--card,#1D2217);border-radius:999px;padding:4px 6px 4px 12px">
+                <span style="display:inline-flex;flex-direction:column;gap:7px;min-width:186px;border:1px solid var(--card-border,#2D3422);background:var(--card,#1D2217);border-radius:14px;padding:8px 10px">
                   <span style="font-size:11.5px;font-weight:600;color:var(--ink-soft,#B7B3A1);white-space:nowrap">{{ md.drink }}</span>
-                  <button type="button" onClick="{{ md.verdict.onOpen }}" style="font-size:11px;font-weight:600;color:var(--ink-soft,#B7B3A1);background:var(--field,#161A11);border:1px solid var(--card-border,#2D3422);border-radius:999px;padding:3px 11px;cursor:pointer;white-space:nowrap">{{ md.verdict.label }}</button>
+                  <span style="display:flex;gap:5px">
+                    <sc-for list="{{ md.verdict.chips }}" as="ch" hint-placeholder-count="6"><button type="button" onClick="{{ ch.onTap }}" aria-pressed="{{ ch.mine }}" aria-label="{{ ch.aria }}" style="{{ ch.style }}">{{ ch.emoji }}<sc-if value="{{ ch.hasCount }}" hint-placeholder-val=""><span style="{{ ch.countStyle }}">{{ ch.count }}</span></sc-if></button></sc-for>
+                  </span>
                 </span>
                 <button type="button" onClick="{{ md.onDismiss }}" aria-label="Dismiss" style="flex:none;width:18px;height:18px;border-radius:999px;border:1px solid var(--card-border,#2D3422);background:var(--field,#161A11);color:var(--ink-faint,#827E6D);font-size:12px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center">×</button>
               </span>
@@ -253,10 +257,11 @@
               <p style="font-size:13px;color:var(--ink-soft,#5C584D);font-style:italic;line-height:1.55;margin:0">{{ c.history }}</p>
             </div>
             <div style="margin-top:14px;font-size:12px;color:var(--ink-soft,#5C584D);background:var(--pill-bg,rgba(126,144,112,.08));border-left:2.5px solid var(--accent,#2F3D2C);border-radius:0 8px 8px 0;padding:9px 12px;line-height:1.5"><b style="color:var(--accent,#2F3D2C);font-weight:600">Source note —</b> {{ c.note }}</div>
-            <div style="margin-top:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="margin-top:16px">
               <span style="font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2,#AD7C44);font-weight:600">The Verdict</span>
-              <sc-for list="{{ c.verdict.tally }}" as="t" hint-placeholder-count="0"><span style="font-size:15px;line-height:1">{{ t.emoji }}<span style="font-size:11px;color:var(--ink-faint,#827E6D);margin-left:2px;vertical-align:1px">{{ t.count }}</span></span></sc-for>
-              <button type="button" onClick="{{ c.verdict.onOpen }}" style="font-size:12px;font-weight:600;color:var(--accent2,#AD7C44);background:none;border:1px solid var(--accent2,#AD7C44);border-radius:999px;padding:4px 13px;cursor:pointer">{{ c.verdict.label }}</button>
+              <span style="display:flex;gap:6px;margin-top:8px">
+                <sc-for list="{{ c.verdict.chips }}" as="ch" hint-placeholder-count="6"><button type="button" onClick="{{ ch.onTap }}" aria-pressed="{{ ch.mine }}" aria-label="{{ ch.aria }}" style="{{ ch.style }}">{{ ch.emoji }}<sc-if value="{{ ch.hasCount }}" hint-placeholder-val=""><span style="{{ ch.countStyle }}">{{ ch.count }}</span></sc-if></button></sc-for>
+              </span>
             </div>
           </div>
         </article>
@@ -806,9 +811,8 @@
                     <span style="font-size:14px;color:var(--ink,#ECE7D7)">{{ p.drink }}</span>
                     <span style="font-size:11px;color:var(--ink-faint,#827E6D)">{{ p.time }}</span>
                   </div>
-                  <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:9px">
-                    <sc-for list="{{ p.verdict.tally }}" as="t" hint-placeholder-count="0"><span style="font-size:15px;line-height:1">{{ t.emoji }}<span style="font-size:11px;color:var(--ink-faint,#827E6D);margin-left:2px;vertical-align:1px">{{ t.count }}</span></span></sc-for>
-                    <button type="button" onClick="{{ p.verdict.onOpen }}" style="font-size:11.5px;font-weight:600;color:var(--accent2,#CFA267);background:none;border:1px solid var(--accent2,#CFA267);border-radius:999px;padding:4px 12px;cursor:pointer">{{ p.verdict.label }}</button>
+                  <div style="display:flex;gap:6px;margin-top:10px">
+                    <sc-for list="{{ p.verdict.chips }}" as="ch" hint-placeholder-count="6"><button type="button" onClick="{{ ch.onTap }}" aria-pressed="{{ ch.mine }}" aria-label="{{ ch.aria }}" style="{{ ch.style }}">{{ ch.emoji }}<sc-if value="{{ ch.hasCount }}" hint-placeholder-val=""><span style="{{ ch.countStyle }}">{{ ch.count }}</span></sc-if></button></sc-for>
                   </div>
                 </div>
               </sc-for>
@@ -1551,11 +1555,16 @@ class Component extends DCLogic {
     const VERDICT = [['👍','Solid'],['🔥','Fire'],['🥴','Woozy'],['💀','Wrecked'],['👎','Meh'],['💩','Nope']];
     let myReax = {}; try { myReax = JSON.parse(localStorage.getItem('hollow_reactions') || '{}') || {}; } catch(e){}
     { let _ch=false; Object.keys(myReax).forEach(d => { if (typeof myReax[d] === 'string') { myReax[d] = myReax[d] ? { [myReax[d]]: true } : {}; _ch=true; } if (!myReax[d] || typeof myReax[d] !== 'object') myReax[d] = {}; }); if (_ch) { try { localStorage.setItem('hollow_reactions', JSON.stringify(myReax)); } catch(e){} } }
+    // The Tasting Rail: six equal-width chips that stay on ONE line (flex:1 1 0 + nowrap).
+    // Dim when untouched, gold-lit when it's your pick; the number is the room's tally.
+    const railChipStyle = (mine, has) => ({ flex:'1 1 0', minWidth:'0', display:'inline-flex', alignItems:'center', justifyContent:'center', gap:'3px', fontSize:'14.5px', lineHeight:'1', borderRadius:'999px', padding:'6px 4px', cursor:'pointer', border:'1px solid ' + (mine ? 'var(--accent2,#CFA267)' : 'var(--pill-line,#3A4430)'), background: mine ? 'rgba(207,162,103,.13)' : 'var(--field,#161A11)', color: mine ? 'var(--ink,#ECE7D7)' : 'var(--ink-soft,#B7B3A1)', opacity: (mine || has) ? 1 : 0.5, transition:'background .18s ease, border-color .18s ease, color .18s ease, opacity .18s ease' });
     const verdictFor = (drink) => {
       const counts = (st.reactionsAll && st.reactionsAll[drink]) || {};
+      const mineMap = myReax[drink] || {};
       const tally = VERDICT.filter(v => (counts[v[0]]||0) > 0).map(v => ({ emoji: v[0], count: String(counts[v[0]]) }));
-      const mineN = Object.keys(myReax[drink] || {}).length;
-      return { onOpen: () => this.openVerdict(drink), tally: tally, hasTally: tally.length>0, label: mineN>0 ? 'Your Verdict' : 'The Verdict' };
+      const mineN = Object.keys(mineMap).length;
+      const chips = VERDICT.map(v => { const em=v[0], n=counts[em]||0, mine=!!mineMap[em]; return { emoji: em, count: n>0 ? String(n) : '', hasCount: n>0, mine: mine, style: railChipStyle(mine, n>0), countStyle: { fontSize:'11px', marginLeft:'1px', fontVariantNumeric:'tabular-nums', color: mine ? 'var(--accent2,#CFA267)' : 'var(--ink-faint,#827E6D)' }, aria: (mine?'Your pick · ':'') + v[1] + (n>0?(' · '+n+' so far'):''), onTap: () => this.react(drink, em) }; });
+      return { onOpen: () => this.openVerdict(drink), tally: tally, hasTally: tally.length>0, chips: chips, label: mineN>0 ? 'Your Verdict' : 'The Verdict' };
     };
 
     const mkCard = (c) => {

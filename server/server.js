@@ -78,11 +78,12 @@ db.exec(`CREATE TABLE IF NOT EXISTS wall (
 // Reactions: one per device (cid) per drink; tap to set/switch/clear.
 // Reactions ("The Verdict"): one row per device (cid) per drink per emoji — multi-select.
 db.exec(`CREATE TABLE IF NOT EXISTS reactions (
-  cid        TEXT NOT NULL,
-  drink      TEXT NOT NULL,
-  emoji      TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now')),
-  PRIMARY KEY (cid, drink, emoji)
+  cid         TEXT NOT NULL,
+  drink       TEXT NOT NULL,
+  emoji       TEXT NOT NULL,
+  night_start TEXT NOT NULL DEFAULT '',
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now')),
+  PRIMARY KEY (cid, drink, emoji, night_start)
 );`);
 // One-time migration: older DBs keyed reactions by (cid, drink) — one emoji per person.
 // Rebuild with emoji in the primary key so a person can pick more than one.
@@ -92,6 +93,18 @@ db.exec(`CREATE TABLE IF NOT EXISTS reactions (
   if (!_emoji || _emoji.pk === 0) {
     db.exec("DROP TABLE IF EXISTS reactions");
     db.exec("CREATE TABLE reactions (cid TEXT NOT NULL, drink TEXT NOT NULL, emoji TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now')), PRIMARY KEY (cid, drink, emoji))");
+  }
+}
+// One-time migration: stamp reactions with the night they were cast, so drinks keep
+// lifetime reactions while a device can react once per drink per night (fresh each night).
+// Existing rows get night_start='' — they count toward all-time, never toward "tonight".
+{
+  const _ri = db.prepare("PRAGMA table_info(reactions)").all();
+  if (!_ri.some((c) => c.name === "night_start")) {
+    db.exec("ALTER TABLE reactions RENAME TO reactions_old");
+    db.exec("CREATE TABLE reactions (cid TEXT NOT NULL, drink TEXT NOT NULL, emoji TEXT NOT NULL, night_start TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%d %H:%M:%f','now')), PRIMARY KEY (cid, drink, emoji, night_start))");
+    db.exec("INSERT OR IGNORE INTO reactions (cid, drink, emoji, night_start, created_at) SELECT cid, drink, emoji, '', created_at FROM reactions_old");
+    db.exec("DROP TABLE reactions_old");
   }
 }
 // Order cancellations: when the bar pulls a guest's order, a short-lived record
@@ -146,9 +159,10 @@ const Q = {
   wallRows:   db.prepare("SELECT id, text, name, created_at FROM wall ORDER BY created_at DESC, id DESC"),
   deleteWall: db.prepare("DELETE FROM wall WHERE id = ?"),
   clearWall:  db.prepare("DELETE FROM wall"),
-  setReaction:    db.prepare("INSERT OR IGNORE INTO reactions (cid, drink, emoji) VALUES (?,?,?)"),
-  clearReaction:  db.prepare("DELETE FROM reactions WHERE cid = ? AND drink = ? AND emoji = ?"),
+  setReaction:    db.prepare("INSERT OR IGNORE INTO reactions (cid, drink, emoji, night_start) VALUES (?,?,?,?)"),
+  clearReaction:  db.prepare("DELETE FROM reactions WHERE cid = ? AND drink = ? AND emoji = ? AND night_start = ?"),
   reactionCounts: db.prepare("SELECT drink, emoji, COUNT(*) AS n FROM reactions GROUP BY drink, emoji"),
+  reactionCountsNight: db.prepare("SELECT drink, emoji, COUNT(*) AS n FROM reactions WHERE night_start = ? GROUP BY drink, emoji"),
   clearReactions: db.prepare("DELETE FROM reactions"),
   markDrinkUp:      db.prepare("UPDATE tickets SET status='up', updated_at=datetime('now') WHERE round_id = ? AND drink = ?"),
   markDrinkWorking: db.prepare("UPDATE tickets SET status='working', updated_at=datetime('now') WHERE round_id = ? AND drink = ?"),
@@ -206,17 +220,23 @@ function lastResetUTC(now) {
   return dbFmt(etWallToUTC(y, mo, d, RESET_HOUR));
 }
 
+function currentNightStart() {
+  const nsRow = Q.getSetting.get("night_start");
+  const manualNS = (nsRow && nsRow.value) || "";
+  const autoNS = lastResetUTC(new Date());
+  return (manualNS && manualNS > autoNS) ? manualNS : autoNS; // a later manual reset wins
+}
+
 function getState() {
   const rail = Q.railTickets.all();
   const rounds = Q.allRounds.all().map((r) => ({ ...r, tickets: Q.roundTickets.all(r.id) }));
   const themeRow = Q.getSetting.get("theme");
-  const reactions = {};
-  for (const r of Q.reactionCounts.all()) { (reactions[r.drink] = reactions[r.drink] || {})[r.emoji] = r.n; }
-  const nsRow = Q.getSetting.get("night_start");
-  const manualNS = (nsRow && nsRow.value) || "";
-  const autoNS = lastResetUTC(new Date());
-  const nightStart = (manualNS && manualNS > autoNS) ? manualNS : autoNS;
-  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions, nightStart, cancellations: Q.recentCancellations.all() };
+  const nightStart = currentNightStart();
+  const reactions = {};      // tonight only: drink -> emoji -> # of devices this night
+  for (const r of Q.reactionCountsNight.all(nightStart)) { (reactions[r.drink] = reactions[r.drink] || {})[r.emoji] = r.n; }
+  const reactionsAll = {};   // lifetime: every night stacked
+  for (const r of Q.reactionCounts.all()) { (reactionsAll[r.drink] = reactionsAll[r.drink] || {})[r.emoji] = r.n; }
+  return { rail, rounds, eightySix: Q.all86.all().map((r) => r.ingredient), theme: (themeRow && themeRow.value) || "auto", reactions, reactionsAll, nightStart, cancellations: Q.recentCancellations.all() };
 }
 
 /* ---- Server-Sent Events ---- */
@@ -432,7 +452,8 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       if (String(b.code) !== CODE) return sendJSON(res, 403, { error: "bad code" });
       Q.setSetting.run("night_start", Q.nowStr.get().t);
-      Q.clearReactions.run();
+      // Reactions are kept — the night stamp drops old ones out of "tonight" on its own,
+      // so drinks keep a lifetime tally and guests can re-rate the next night.
       Q.clearCancellations.run();   // fresh favorite race for the new night
       broadcast();
       return sendJSON(res, 200, { ok: true, nightStart: Q.nowStr.get().t });
@@ -477,7 +498,8 @@ const server = http.createServer(async (req, res) => {
       const b = await readBody(req);
       const cid = str(b.cid, 40), drink = str(b.drink, 80), emoji = str(b.emoji, 16);
       if (!cid || !drink || !emoji) return sendJSON(res, 400, { error: "cid, drink, emoji required" });
-      if (b.on) Q.setReaction.run(cid, drink, emoji); else Q.clearReaction.run(cid, drink, emoji);
+      const ns = currentNightStart();
+      if (b.on) Q.setReaction.run(cid, drink, emoji, ns); else Q.clearReaction.run(cid, drink, emoji, ns);
       broadcast();
       return sendJSON(res, 200, { ok: true });
     }

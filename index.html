@@ -992,7 +992,7 @@ class Component extends DCLogic {
       search: '', sort: 'spirit',
       filters: { spirit: [], tags: [], build: [], glass: [], occasion: [] },
       open: {}, filtersOpen: true, highlight: null,
-      orders: [], batches: [], reactions: {}, myPours: [], serverNightStart: '', stripCollapsed: false, dismissedTix: {}, dismissedPours: {}, ordersOpen: false, stationTab: 'queue',
+      orders: [], batches: [], reactions: {}, reactionsAll: {}, myPours: [], serverNightStart: '', stripCollapsed: false, dismissedTix: {}, dismissedPours: {}, ordersOpen: false, stationTab: 'queue',
       selected: {}, makeView: null, orderModalName: null,
       draftGuest: '', draftQty: 1, draftNote: '', toast: null, toastAction: null, showTop: false,
       cancelOrder: null, cancelReason: '', cancelNotice: null,
@@ -1122,7 +1122,11 @@ class Component extends DCLogic {
         }
       }
     } catch(e){}
-    this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {}, serverNightStart: (d && d.nightStart) || '' });
+    // When the night rolls over, drop my own picks so I can react fresh (the server keeps
+    // the lifetime tally; my picks are per-night). Compare the night my picks belong to.
+    const _ns = (d && d.nightStart) || '';
+    try { const _rxNight = localStorage.getItem('hollow_reactions_night') || ''; if (_ns && _rxNight !== _ns) { localStorage.setItem('hollow_reactions', '{}'); localStorage.setItem('hollow_reactions_night', _ns); } } catch(e){}
+    this.setState({ orders: orders, batches: batches, eightySix: (d && Array.isArray(d.eightySix)) ? d.eightySix : [], serverTheme: theme, direction: this.resolveTheme(theme), reactions: (d && d.reactions) || {}, reactionsAll: (d && d.reactionsAll) || {}, serverNightStart: (d && d.nightStart) || '' });
     if (this.state.bookOpen){ if (this.state.bookTab === 'wall') this.fetchWall(); else this.fetchHistory(); }
   }
 
@@ -1548,7 +1552,7 @@ class Component extends DCLogic {
     let myReax = {}; try { myReax = JSON.parse(localStorage.getItem('hollow_reactions') || '{}') || {}; } catch(e){}
     { let _ch=false; Object.keys(myReax).forEach(d => { if (typeof myReax[d] === 'string') { myReax[d] = myReax[d] ? { [myReax[d]]: true } : {}; _ch=true; } if (!myReax[d] || typeof myReax[d] !== 'object') myReax[d] = {}; }); if (_ch) { try { localStorage.setItem('hollow_reactions', JSON.stringify(myReax)); } catch(e){} } }
     const verdictFor = (drink) => {
-      const counts = (st.reactions && st.reactions[drink]) || {};
+      const counts = (st.reactionsAll && st.reactionsAll[drink]) || {};
       const tally = VERDICT.filter(v => (counts[v[0]]||0) > 0).map(v => ({ emoji: v[0], count: String(counts[v[0]]) }));
       const mineN = Object.keys(myReax[drink] || {}).length;
       return { onOpen: () => this.openVerdict(drink), tally: tally, hasTally: tally.length>0, label: mineN>0 ? 'Your Verdict' : 'The Verdict' };
@@ -1803,7 +1807,7 @@ class Component extends DCLogic {
       }
       const feed = rows.slice().sort((a,b)=>this.toMs(b.created_at)-this.toMs(a.created_at)).slice(0,40).map(r=>({ drink: r.drink + ((r.qty||1)>1?' ×'+r.qty:''), guest:(r.guest && String(r.guest).trim()) || 'House', time: fmtTime(this.toMs(r.created_at)) }));
       let lgStaff=false; try { lgStaff = localStorage.getItem('hollow_86_ok')==='1'; } catch(e){}
-      const rxAll = st.reactions || {}; let faveDrink='', faveN=0, drainDrink='', drainN=0, koDrink='', koN=0;
+      const rxAll = ((st.ledgerScope === 'all') ? st.reactionsAll : st.reactions) || {}; let faveDrink='', faveN=0, drainDrink='', drainN=0, koDrink='', koN=0;
       const _brk = (drink, ems) => ems.map(e => (((rxAll[drink]||{})[e]||0)>0) ? (e+' '+((rxAll[drink]||{})[e]||0)) : null).filter(Boolean).join('  ·  ');
       Object.keys(rxAll).forEach(d => { const c=rxAll[d];   // intense reactions (🔥/💀/💩) count double
         const love=2*(c['🔥']||0)+(c['👍']||0); if(love>faveN){faveN=love;faveDrink=d;}
